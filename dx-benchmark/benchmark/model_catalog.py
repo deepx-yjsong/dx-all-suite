@@ -1,55 +1,59 @@
-"""Model catalog – discover .dxnn models and classify by task/size.
+"""Model catalog – load .dxnn models from the manifest and classify by task/size.
 
-Builds a sorted list of (model_name, abs_path, task, size) tuples
-from a model directory, with filtering by task and size.
+The manifest (model_list.json) is the single source of truth for both download
+(setup.sh) and classification. Filenames are opaque here — task/size come from
+the manifest, so a future naming-rule change only touches the JSON, not this code.
 """
 
-import re
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import TASK_MAP, SIZES, MODEL_DIR
+from .config import TASK_MAP, SIZES, MODEL_DIR, MODEL_LIST_JSON
 
 
 @dataclass
 class ModelEntry:
     """One YOLO26 model file."""
-    name: str          # e.g. "yolo26s.dxnn" or "yolo26s-pose.dxnn"
+    name: str          # e.g. "yolo26-s_640x640.dxnn"
     path: Path         # absolute path
-    task: str          # e.g. "object_detection"
-    task_suffix: str   # e.g. "od", "pose", "seg"
-    size: str          # e.g. "n", "s", "m", "l", "x"
+    task: str          # full task name, e.g. "object_detection"
+    task_suffix: str   # manifest key, e.g. "od", "pose", "seg", "obb", "cls"
+    size: str          # "n", "s", "m", "l", "x"
 
     def __str__(self) -> str:
         return f"{self.name} (task={self.task}, size={self.size})"
 
 
-# Pattern: yolo26{size}.dxnn  OR  yolo26{size}-{suffix}.dxnn
-_MODEL_RE = re.compile(r"^yolo26([nslmx])(?:-(.+))?\.dxnn$")
-
-# sort keys
 _SIZE_ORDER = {s: i for i, s in enumerate(SIZES)}
 _TASK_ORDER = {k: i for i, k in enumerate(TASK_MAP.keys())}
 
 
-def discover_models(model_dir: Path = MODEL_DIR) -> list[ModelEntry]:
-    """Scan *model_dir* for .dxnn files and return classified entries."""
+def _load_manifest(manifest: Path = MODEL_LIST_JSON) -> list[dict]:
+    with open(manifest) as f:
+        return json.load(f)["models"]
+
+
+def discover_models(
+    model_dir: Path = MODEL_DIR,
+    manifest: Path = MODEL_LIST_JSON,
+) -> list[ModelEntry]:
+    """Return classified entries for manifest models present in *model_dir*."""
     entries = []
-    for p in sorted(model_dir.glob("*.dxnn")):
-        m = _MODEL_RE.match(p.name)
-        if not m:
-            continue
-        size = m.group(1)
-        suffix = m.group(2) or "od"  # no suffix → object detection
+    for m in _load_manifest(manifest):
+        suffix = m["task"]
         task = TASK_MAP.get(suffix)
         if task is None:
             continue
+        path = (model_dir / m["file"]).resolve()
+        if not path.exists():
+            continue  # parity with the old glob: only present files
         entries.append(ModelEntry(
-            name=p.name,
-            path=p.resolve(),
+            name=m["file"],
+            path=path,
             task=task,
             task_suffix=suffix,
-            size=size,
+            size=m["size"],
         ))
     entries.sort(key=lambda e: (_TASK_ORDER.get(e.task_suffix, 99), _SIZE_ORDER.get(e.size, 99)))
     return entries
