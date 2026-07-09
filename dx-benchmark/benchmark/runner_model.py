@@ -6,7 +6,6 @@ Two benchmark families:
 """
 
 import json
-import os
 import re
 import shutil
 import statistics
@@ -184,7 +183,6 @@ def run_throughput(
         cmd.append("--use-ort")
 
     num_runs = max(1, cfg.model_throughput_runs)
-    ort_s = "ON" if use_ort else "OFF"
     ort_tag = "ort_on" if use_ort else "ort_off"
 
     # Warmup run (discard result)
@@ -307,7 +305,6 @@ def run_latency(
         cmd.append("--use-ort")
 
     num_runs = max(1, cfg.model_latency_runs)
-    ort_s = "ON" if use_ort else "OFF"
     ort_tag = "ort_on" if use_ort else "ort_off"
 
     # Warmup run (discard result)

@@ -17,7 +17,7 @@ import re
 import statistics
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 from .aggregator import aggregate_result_directories, save_dataset_json

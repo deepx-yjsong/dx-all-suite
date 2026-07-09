@@ -12,8 +12,7 @@ Report table structure (per section):
 
 import csv
 import json
-from datetime import datetime, timezone
-from io import StringIO
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
