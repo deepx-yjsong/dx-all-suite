@@ -224,7 +224,9 @@ class BenchmarkConfig:
     output_dir: Optional[str] = None
     # ── Product info (optional, shown in report Environment) ───────
     product_name: Optional[str] = None
-    
+    # ── dx-all-suite version (optional; shown in Version Trend axis) ──
+    dx_all_suite_version: Optional[str] = None
+
     def get_video(self, task: str | None = None) -> Path:
         """Get video path, optionally task-specific."""
         if self.video:

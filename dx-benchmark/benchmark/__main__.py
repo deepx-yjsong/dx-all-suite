@@ -24,7 +24,7 @@ from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
 from .config import BenchmarkConfig, SIZES, TASK_GROUP_MAP, TASK_GROUP_VIDEOS, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
 from .dashboard_builder import build_static_dashboard
-from .env_fingerprint import collect_fingerprint, check_preflight, save_fingerprint, get_video_info
+from .env_fingerprint import collect_fingerprint, check_preflight, save_fingerprint, get_video_info, resolve_dx_all_suite_version
 from .model_catalog import discover_models, filter_models
 from .npu_monitor import parse_npu_log_temp_clock
 from .reporter import (
@@ -165,6 +165,21 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     if cfg.product_name:
         fp["product_name"] = cfg.product_name
+
+    suite_ver = resolve_dx_all_suite_version(cfg.dx_all_suite_version)
+    if suite_ver is None:
+        if sys.stdin.isatty():
+            try:
+                entered = input(
+                    "dx-all-suite version not found (no --dx-all-suite-version, no release.ver). "
+                    "Enter version (e.g. v2.4.0), or leave blank to skip: ").strip()
+            except (EOFError, KeyboardInterrupt):
+                entered = ""
+            suite_ver = entered or None
+        if suite_ver is None:
+            print("[WARN] dx-all-suite version unknown; this run will bucket as "
+                  "'unknown' in the Version Trend tab.")
+    fp["dx_all_suite_version"] = suite_ver
 
     out_dir = _resolve_output_dir(cfg, resume_dir, fp, run_id)
     existing_fp = _load_json_object(out_dir / "environment.json") if resume_dir else {}
@@ -902,6 +917,7 @@ def _build_config(args: argparse.Namespace) -> BenchmarkConfig:
         fps_threshold=_fps_thr if _fps_thr is not None else base_cfg.fps_threshold,
         output_dir=getattr(args, "output", base_cfg.output_dir),
         product_name=getattr(args, "product_name", base_cfg.product_name),
+        dx_all_suite_version=getattr(args, "dx_all_suite_version", base_cfg.dx_all_suite_version),
     )
 
 
@@ -1138,6 +1154,9 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
                         help="Override output root directory (runs are stored under <output>/<hw_id>/<run_id>)")
     parser.add_argument("--product-name", default=None,
                         help="Product name to include in report (e.g. DX-AIPlayer-N97)")
+    parser.add_argument("--dx-all-suite-version", default=None,
+                        help="dx-all-suite release version for the Version Trend axis "
+                             "(e.g. v2.4.0). Default: auto-read from suite-root release.ver.")
 
 
 def _add_benchmark_args(parser: argparse.ArgumentParser, defaults: BenchmarkConfig) -> None:
