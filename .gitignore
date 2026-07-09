@@ -4,3 +4,7 @@ dx-benchmark/benchmark/assets/
 dx-benchmark/venv/
 # generated aggregate — rebuild with `run.sh dashboard`
 dx-benchmark/results/dashboard/
+
+# Python bytecode
+__pycache__/
+*.pyc
