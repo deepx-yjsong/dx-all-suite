@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import shutil
+import functools
 import signal
 import statistics
 import subprocess
@@ -89,8 +90,10 @@ class PipelineResult:
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
+@functools.lru_cache(maxsize=None)
 def _get_frame_count(video_path: str) -> int:
-    """Count frames via ffprobe."""
+    """Count frames via ffprobe (memoized per video — the count is file-invariant,
+    so the expensive full-decode runs once even across the multi-stream sweep)."""
     if not shutil.which("ffprobe"):
         return 0
     try:
