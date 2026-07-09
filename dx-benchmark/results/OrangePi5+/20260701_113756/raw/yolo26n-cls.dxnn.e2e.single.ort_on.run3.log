@@ -1,0 +1,7 @@
+
+WARNING: erroneous pipeline: no element "dxpreprocess"
+Command exited with non-zero status 1
+__CPU_PERCENT__=99%
+__MAX_RSS_KB__=12744
+
+__EXIT_CODE__=1

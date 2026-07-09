@@ -1,0 +1,62 @@
+Runtime Framework Version: v3.2.0
+Device Driver Version: v2.1.0
+PCIe Driver Version: v2.0.1
+
+modelFile: /home/deepx/sijo_feat_windows_env/dx_stream/apps/benchmark/assets/models_dx_com220rc2/yolo26l-obb.dxnn
+inputFile: 
+outputFile: output.bin
+benchmark: 0
+loops: 30
+Device specification: 'all' (default)
+Run model target mode : Benchmark Mode
+Inference by time: duration=30(s)
+
+=== Model File: /home/deepx/sijo_feat_windows_env/dx_stream/apps/benchmark/assets/models_dx_com220rc2/yolo26l-obb.dxnn ===
+
+Model Input Tensors:
+  - images
+Model Output Tensors:
+  - output0
+
+Tasks:
+  [ ] -> npu_0 -> [cpu_0, ]
+  Task[0] npu_0, NPU, NPU memory usage 387,738,752 bytes (input 3,145,728 bytes, output 1,720,320 bytes)
+  Inputs
+     -  images, UINT8, [1, 1024, 1024, 3 ]
+  Outputs
+    -  /model.23/one2one_cv2.0/one2one_cv2.0.2/Conv_output_0, FLOAT, [1, 4, 128, 128 ]
+    -  /model.23/one2one_cv4.0/one2one_cv4.0.2/Conv_output_0, FLOAT, [1, 1, 128, 128 ]
+    -  /model.23/one2one_cv2.1/one2one_cv2.1.2/Conv_output_0, FLOAT, [1, 4, 64, 64 ]
+    -  /model.23/one2one_cv4.1/one2one_cv4.1.2/Conv_output_0, FLOAT, [1, 1, 64, 64 ]
+    -  /model.23/one2one_cv3.0/one2one_cv3.0.2/Conv_output_0, FLOAT, [1, 15, 128, 128 ]
+    -  /model.23/one2one_cv3.1/one2one_cv3.1.2/Conv_output_0, FLOAT, [1, 15, 64, 64 ]
+    -  /model.23/one2one_cv2.2/one2one_cv2.2.2/Conv_output_0, FLOAT, [1, 4, 32, 32 ]
+    -  /model.23/one2one_cv4.2/one2one_cv4.2.2/Conv_output_0, FLOAT, [1, 1, 32, 32 ]
+    -  /model.23/one2one_cv3.2/one2one_cv3.2.2/Conv_output_0, FLOAT, [1, 15, 32, 32 ]
+
+  [ npu_0, ] -> cpu_0 -> []
+  Task[1] cpu_0, CPU, input 1,720,320 bytes, output 9,600 bytes
+  Inputs
+     -  /model.23/one2one_cv2.0/one2one_cv2.0.2/Conv_output_0, FLOAT, [1, 4, 128, 128 ]
+     -  /model.23/one2one_cv2.1/one2one_cv2.1.2/Conv_output_0, FLOAT, [1, 4, 64, 64 ]
+     -  /model.23/one2one_cv2.2/one2one_cv2.2.2/Conv_output_0, FLOAT, [1, 4, 32, 32 ]
+     -  /model.23/one2one_cv4.0/one2one_cv4.0.2/Conv_output_0, FLOAT, [1, 1, 128, 128 ]
+     -  /model.23/one2one_cv4.2/one2one_cv4.2.2/Conv_output_0, FLOAT, [1, 1, 32, 32 ]
+     -  /model.23/one2one_cv4.1/one2one_cv4.1.2/Conv_output_0, FLOAT, [1, 1, 64, 64 ]
+     -  /model.23/one2one_cv3.0/one2one_cv3.0.2/Conv_output_0, FLOAT, [1, 15, 128, 128 ]
+     -  /model.23/one2one_cv3.1/one2one_cv3.1.2/Conv_output_0, FLOAT, [1, 15, 64, 64 ]
+     -  /model.23/one2one_cv3.2/one2one_cv3.2.2/Conv_output_0, FLOAT, [1, 15, 32, 32 ]
+  Outputs
+     -  output0, FLOAT, [1, 300, 7 ]
+     -  /model.23/TopK_output_0, FLOAT, [1, 300 ]
+
+
+Performing 1 warmup run(s)...
+Warmup completed.
+Inference by time: total-inference-time=30.3144(s) total-loops=620
+=============================================
+* Benchmark Result (620 inputs)
+  - FPS : 20.45                              
+=============================================
+
+__CPU_PERCENT__=24%

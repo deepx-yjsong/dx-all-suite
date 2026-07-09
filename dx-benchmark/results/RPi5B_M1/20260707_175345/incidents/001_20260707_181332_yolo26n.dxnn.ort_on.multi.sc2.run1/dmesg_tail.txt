@@ -1,0 +1,200 @@
+[Tue Jul  7 17:50:19 2026] usb 3-2: Product: USB 2.0 Hub
+[Tue Jul  7 17:50:19 2026] Console: switching to colour frame buffer device 320x90
+[Tue Jul  7 17:50:20 2026] hub 3-2:1.0: USB hub found
+[Tue Jul  7 17:50:20 2026] hub 3-2:1.0: 4 ports detected
+[Tue Jul  7 17:50:20 2026] vc4-drm axi:gpu: [drm] fb0: vc4drmfb frame buffer device
+[Tue Jul  7 17:50:20 2026] usb 3-2.1: new full-speed USB device number 3 using xhci-hcd
+[Tue Jul  7 17:50:20 2026] usb 3-2.1: New USB device found, idVendor=2019, idProduct=0530, bcdDevice=23.00
+[Tue Jul  7 17:50:20 2026] usb 3-2.1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[Tue Jul  7 17:50:20 2026] usb 3-2.1: Product: Microsoft_KM-V1.3
+[Tue Jul  7 17:50:20 2026] usb 3-2.1: SerialNumber: 20171017
+[Tue Jul  7 17:50:20 2026] EXT4-fs (mmcblk0p2): orphan cleanup on readonly fs
+[Tue Jul  7 17:50:20 2026] EXT4-fs (mmcblk0p2): mounted filesystem 409cfbb0-1e8c-4a72-b8ed-33baa55a93cd ro with ordered data mode. Quota mode: none.
+[Tue Jul  7 17:50:20 2026] input: Microsoft_KM-V1.3 as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.1/3-2.1:1.0/0003:2019:0530.0001/input/input5
+[Tue Jul  7 17:50:20 2026] hid-generic 0003:2019:0530.0001: input,hidraw0: USB HID v1.10 Keyboard [Microsoft_KM-V1.3] on usb-xhci-hcd.1-2.1/input0
+[Tue Jul  7 17:50:20 2026] input: Microsoft_KM-V1.3 as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.1/3-2.1:1.1/0003:2019:0530.0002/input/input6
+[Tue Jul  7 17:50:20 2026] hid-generic 0003:2019:0530.0002: input,hidraw1: USB HID v1.10 Mouse [Microsoft_KM-V1.3] on usb-xhci-hcd.1-2.1/input1
+[Tue Jul  7 17:50:20 2026] input: Microsoft_KM-V1.3 as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.1/3-2.1:1.2/0003:2019:0530.0003/input/input7
+[Tue Jul  7 17:50:20 2026] systemd[1]: System time before build time, advancing clock.
+[Tue Jul  7 17:50:20 2026] hid-generic 0003:2019:0530.0003: input,hidraw2: USB HID v1.10 Device [Microsoft_KM-V1.3] on usb-xhci-hcd.1-2.1/input2
+[Tue Jul  7 17:50:20 2026] NET: Registered PF_INET6 protocol family
+[Tue Jul  7 17:50:20 2026] Segment Routing with IPv6
+[Tue Jul  7 17:50:20 2026] In-situ OAM (IOAM) with IPv6
+[Tue Jul  7 17:50:20 2026] input: Microsoft_KM-V1.3 System Control as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.1/3-2.1:1.3/0003:2019:0530.0004/input/input8
+[Tue Jul  7 17:50:20 2026] systemd[1]: systemd 252.39-1~deb12u2 running in system mode (+PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified)
+[Tue Jul  7 17:50:20 2026] systemd[1]: Detected architecture arm64.
+[Tue Jul  7 17:50:20 2026] systemd[1]: Hostname set to <raspberrypi>.
+[Tue Jul  7 17:50:20 2026] input: Microsoft_KM-V1.3 Consumer Control as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.1/3-2.1:1.3/0003:2019:0530.0004/input/input9
+[Tue Jul  7 17:50:20 2026] hid-generic 0003:2019:0530.0004: input,hidraw3: USB HID v1.10 Device [Microsoft_KM-V1.3] on usb-xhci-hcd.1-2.1/input3
+[Tue Jul  7 17:50:20 2026] usb 3-2.2: new high-speed USB device number 4 using xhci-hcd
+[Tue Jul  7 17:50:21 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Tue Jul  7 17:50:21 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Tue Jul  7 17:50:21 2026] usb 3-2.2: Product: USB2.1 Hub
+[Tue Jul  7 17:50:21 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Tue Jul  7 17:50:21 2026] hub 3-2.2:1.0: USB hub found
+[Tue Jul  7 17:50:21 2026] hub 3-2.2:1.0: 4 ports detected
+[Tue Jul  7 17:50:21 2026] systemd[1]: Queued start job for default target graphical.target.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Created slice system-getty.slice - Slice /system/getty.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Created slice system-modprobe.slice - Slice /system/modprobe.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Created slice system-serial\x2dgetty.slice - Slice /system/serial-getty.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Created slice system-systemd\x2dfsck.slice - Slice /system/systemd-fsck.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Created slice user.slice - User and Session Slice.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Started systemd-ask-password-wall.path - Forward Password Requests to Wall Directory Watch.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Set up automount proc-sys-fs-binfmt_misc.automount - Arbitrary Executable File Formats File System Automount Point.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Expecting device dev-disk-by\x2dpartuuid-d5c29546\x2d01.device - /dev/disk/by-partuuid/d5c29546-01...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Expecting device dev-dri-card0.device - /dev/dri/card0...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Expecting device dev-dri-renderD128.device - /dev/dri/renderD128...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Expecting device dev-ttyAMA10.device - /dev/ttyAMA10...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Reached target integritysetup.target - Local Integrity Protected Volumes.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Reached target nss-user-lookup.target - User and Group Name Lookups.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Reached target slices.target - Slice Units.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Reached target swap.target - Swaps.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Reached target veritysetup.target - Local Verity Protected Volumes.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Listening on systemd-fsckd.socket - fsck to fsckd communication Socket.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Listening on systemd-initctl.socket - initctl Compatibility Named Pipe.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Listening on systemd-journald-audit.socket - Journal Audit Socket.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Listening on systemd-journald-dev-log.socket - Journal Socket (/dev/log).
+[Tue Jul  7 17:50:21 2026] systemd[1]: Listening on systemd-journald.socket - Journal Socket.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Listening on systemd-udevd-control.socket - udev Control Socket.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Listening on systemd-udevd-kernel.socket - udev Kernel Socket.
+[Tue Jul  7 17:50:21 2026] systemd[1]: dev-hugepages.mount - Huge Pages File System was skipped because of an unmet condition check (ConditionPathExists=/sys/kernel/mm/hugepages).
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounting dev-mqueue.mount - POSIX Message Queue File System...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounting sys-kernel-debug.mount - Kernel Debug File System...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounting sys-kernel-tracing.mount - Kernel Trace File System...
+[Tue Jul  7 17:50:21 2026] systemd[1]: auth-rpcgss-module.service - Kernel Module supporting RPCSEC_GSS was skipped because of an unmet condition check (ConditionPathExists=/etc/krb5.keytab).
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting fake-hwclock.service - Restore / save the current clock...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting keyboard-setup.service - Set the console keyboard layout...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting kmod-static-nodes.service - Create List of Static Device Nodes...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting modprobe@configfs.service - Load Kernel Module configfs...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting modprobe@dm_mod.service - Load Kernel Module dm_mod...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting modprobe@efi_pstore.service - Load Kernel Module efi_pstore...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting modprobe@fuse.service - Load Kernel Module fuse...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting modprobe@loop.service - Load Kernel Module loop...
+[Tue Jul  7 17:50:21 2026] systemd[1]: systemd-fsck-root.service - File System Check on Root Device was skipped because of an unmet condition check (ConditionPathExists=!/run/initramfs/fsck-root).
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting systemd-journald.service - Journal Service...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting systemd-modules-load.service - Load Kernel Modules...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting systemd-remount-fs.service - Remount Root and Kernel File Systems...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting systemd-udev-trigger.service - Coldplug All udev Devices...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounted dev-mqueue.mount - POSIX Message Queue File System.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounted sys-kernel-debug.mount - Kernel Debug File System.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounted sys-kernel-tracing.mount - Kernel Trace File System.
+[Tue Jul  7 17:50:21 2026] device-mapper: ioctl: 4.48.0-ioctl (2023-03-01) initialised: dm-devel@lists.linux.dev
+[Tue Jul  7 17:50:21 2026] systemd[1]: Finished kmod-static-nodes.service - Create List of Static Device Nodes.
+[Tue Jul  7 17:50:21 2026] systemd[1]: modprobe@configfs.service: Deactivated successfully.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Finished modprobe@configfs.service - Load Kernel Module configfs.
+[Tue Jul  7 17:50:21 2026] systemd[1]: modprobe@dm_mod.service: Deactivated successfully.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Finished modprobe@dm_mod.service - Load Kernel Module dm_mod.
+[Tue Jul  7 17:50:21 2026] systemd[1]: modprobe@efi_pstore.service: Deactivated successfully.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Finished modprobe@efi_pstore.service - Load Kernel Module efi_pstore.
+[Tue Jul  7 17:50:21 2026] systemd[1]: modprobe@drm.service: Deactivated successfully.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Finished modprobe@drm.service - Load Kernel Module drm.
+[Tue Jul  7 17:50:21 2026] systemd[1]: modprobe@loop.service: Deactivated successfully.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Finished modprobe@loop.service - Load Kernel Module loop.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounting sys-kernel-config.mount - Kernel Configuration File System...
+[Tue Jul  7 17:50:21 2026] systemd[1]: systemd-repart.service - Repartition Root Disk was skipped because no trigger condition checks were met.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounted sys-kernel-config.mount - Kernel Configuration File System.
+[Tue Jul  7 17:50:21 2026] fuse: init (API version 7.41)
+[Tue Jul  7 17:50:21 2026] systemd[1]: modprobe@fuse.service: Deactivated successfully.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Finished modprobe@fuse.service - Load Kernel Module fuse.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounting sys-fs-fuse-connections.mount - FUSE Control File System...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Mounted sys-fs-fuse-connections.mount - FUSE Control File System.
+[Tue Jul  7 17:50:21 2026] EXT4-fs (mmcblk0p2): re-mounted 409cfbb0-1e8c-4a72-b8ed-33baa55a93cd r/w.
+[Tue Jul  7 17:50:21 2026] systemd[1]: Finished systemd-remount-fs.service - Remount Root and Kernel File Systems.
+[Tue Jul  7 17:50:21 2026] systemd[1]: systemd-firstboot.service - First Boot Wizard was skipped because of an unmet condition check (ConditionFirstBoot=yes).
+[Tue Jul  7 17:50:21 2026] systemd[1]: systemd-pstore.service - Platform Persistent Storage Archival was skipped because of an unmet condition check (ConditionDirectoryNotEmpty=/sys/fs/pstore).
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting systemd-random-seed.service - Load/Save Random Seed...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Starting systemd-sysusers.service - Create System Users...
+[Tue Jul  7 17:50:21 2026] systemd[1]: Started systemd-journald.service - Journal Service.
+[Tue Jul  7 17:50:21 2026] i2c_dev: i2c /dev entries driver
+[Tue Jul  7 17:50:21 2026] systemd-journald[334]: Received client request to flush runtime journal.
+[Tue Jul  7 17:50:21 2026] usb 3-2.2.3: new full-speed USB device number 5 using xhci-hcd
+[Tue Jul  7 17:50:21 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Tue Jul  7 17:50:21 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Tue Jul  7 17:50:21 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Tue Jul  7 17:50:21 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 107d508500.gpiomem: window base 0x107d508500 size 0x00000040
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 107d508500.gpiomem: initialised 1 regions as /dev/gpiomem1
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 107d517c00.gpiomem: window base 0x107d517c00 size 0x00000040
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 107d517c00.gpiomem: initialised 1 regions as /dev/gpiomem2
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 107d504100.gpiomem: window base 0x107d504100 size 0x00000020
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 107d504100.gpiomem: initialised 1 regions as /dev/gpiomem3
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 107d510700.gpiomem: window base 0x107d510700 size 0x00000020
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 107d510700.gpiomem: initialised 1 regions as /dev/gpiomem4
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 1f000d0000.gpiomem: window base 0x1f000d0000 size 0x00030000
+[Tue Jul  7 17:50:21 2026] rpi-gpiomem 1f000d0000.gpiomem: initialised 1 regions as /dev/gpiomem0
+[Tue Jul  7 17:50:21 2026] rp1-firmware rp1_firmware: RP1 Firmware version 23fca1cd776798b50bd3e640ecb242215778e7f8
+[Tue Jul  7 17:50:21 2026] rp1-pio 1f00178000.pio: Created instance as pio0
+[Tue Jul  7 17:50:21 2026] mc: Linux media interface: v0.10
+[Tue Jul  7 17:50:21 2026] dx_dma: loading out-of-tree module taints kernel.
+[Tue Jul  7 17:50:21 2026] videodev: Linux video capture interface: v2.00
+[Tue Jul  7 17:50:21 2026] dx_dma_pcie 0001:01:00.0: enabling device (0100 -> 0102)
+[Tue Jul  7 17:50:21 2026] dx_dma_pcie 0001:01:00.0: dw->dx_ver: 3
+[Tue Jul  7 17:50:21 2026] debugfs: Directory '0001:01:00.0' with parent 'dmaengine' already present!
+[Tue Jul  7 17:50:21 2026] dx_dma_pcie 0001:01:00.0: [dx_dma_pcie_probe] Probe Done!!
+[Tue Jul  7 17:50:21 2026] dxrt_driver_cdev_init: 1 devices
+[Tue Jul  7 17:50:21 2026]  [200] created device 0:509:0, 0000000011b8c684, 0000000000000000
+[Tue Jul  7 17:50:21 2026] pispbe 1000880000.pisp_be: bcm2712_iommu_of_xlate: MMU 1000005100.iommu
+[Tue Jul  7 17:50:21 2026] pispbe 1000880000.pisp_be: bcm2712_iommu_probe_device: MMU 1000005100.iommu
+[Tue Jul  7 17:50:21 2026] pispbe 1000880000.pisp_be: bcm2712_iommu_device_group: MMU 1000005100.iommu
+[Tue Jul  7 17:50:21 2026] pispbe 1000880000.pisp_be: Adding to iommu group 0
+[Tue Jul  7 17:50:21 2026] pispbe 1000880000.pisp_be: bcm2712_iommu_attach_dev: MMU 1000005100.iommu
+[Tue Jul  7 17:50:21 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.0005/input/input10
+[Tue Jul  7 17:50:21 2026] hid-generic 0003:12C9:1017.0005: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Tue Jul  7 17:50:21 2026] rpi-hevc-dec 1000800000.codec: bcm2712_iommu_of_xlate: MMU 1000005100.iommu
+[Tue Jul  7 17:50:21 2026] rpi-hevc-dec 1000800000.codec: bcm2712_iommu_probe_device: MMU 1000005100.iommu
+[Tue Jul  7 17:50:21 2026] rpi-hevc-dec 1000800000.codec: bcm2712_iommu_device_group: MMU 1000005100.iommu
+[Tue Jul  7 17:50:21 2026] rpi-hevc-dec 1000800000.codec: Adding to iommu group 0
+[Tue Jul  7 17:50:21 2026] rpi-hevc-dec 1000800000.codec: bcm2712_iommu_attach_dev: MMU 1000005100.iommu
+[Tue Jul  7 17:50:21 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0006/input/input11
+[Tue Jul  7 17:50:21 2026] rpi-hevc-dec 1000800000.codec: Device registered as /dev/video19
+[Tue Jul  7 17:50:21 2026] cfg80211: Loading compiled-in X.509 certificates for regulatory database
+[Tue Jul  7 17:50:21 2026] Loaded X.509 cert 'benh@debian.org: 577e021cb980e0e820821ba7b54b4961b8b4fadf'
+[Tue Jul  7 17:50:21 2026] Loaded X.509 cert 'romain.perier@gmail.com: 3abbc6ec146e09d1b6016ab9d6cf71dd233f0328'
+[Tue Jul  7 17:50:21 2026] Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+[Tue Jul  7 17:50:21 2026] Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'
+[Tue Jul  7 17:50:21 2026] Bluetooth: Core ver 2.22
+[Tue Jul  7 17:50:21 2026] NET: Registered PF_BLUETOOTH protocol family
+[Tue Jul  7 17:50:21 2026] Bluetooth: HCI device and connection manager initialized
+[Tue Jul  7 17:50:21 2026] Bluetooth: HCI socket layer initialized
+[Tue Jul  7 17:50:21 2026] Bluetooth: L2CAP socket layer initialized
+[Tue Jul  7 17:50:21 2026] Bluetooth: SCO socket layer initialized
+[Tue Jul  7 17:50:21 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0006/input/input12
+[Tue Jul  7 17:50:21 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0006/input/input13
+[Tue Jul  7 17:50:21 2026] hid-generic 0003:12C9:1017.0006: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Tue Jul  7 17:50:21 2026] hid-generic 0003:12C9:1017.0007: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Tue Jul  7 17:50:22 2026] Bluetooth: HCI UART driver ver 2.3
+[Tue Jul  7 17:50:22 2026] Bluetooth: HCI UART protocol H4 registered
+[Tue Jul  7 17:50:22 2026] Bluetooth: HCI UART protocol Three-wire (H5) registered
+[Tue Jul  7 17:50:22 2026] hci_uart_bcm serial0-0: supply vbat not found, using dummy regulator
+[Tue Jul  7 17:50:22 2026] hci_uart_bcm serial0-0: supply vddio not found, using dummy regulator
+[Tue Jul  7 17:50:22 2026] Bluetooth: HCI UART protocol Broadcom registered
+[Tue Jul  7 17:50:22 2026] brcmfmac: F1 signature read @0x18000000=0x15264345
+[Tue Jul  7 17:50:22 2026] brcmfmac: brcmf_fw_alloc_request: using brcm/brcmfmac43455-sdio for chip BCM4345/6
+[Tue Jul  7 17:50:22 2026] usbcore: registered new interface driver brcmfmac
+[Tue Jul  7 17:50:22 2026] brcmfmac: brcmf_c_process_txcap_blob: no txcap_blob available (err=-2)
+[Tue Jul  7 17:50:22 2026] brcmfmac: brcmf_c_preinit_dcmds: Firmware: BCM4345/6 wl0: Aug 29 2023 01:47:08 version 7.45.265 (28bca26 CY) FWID 01-b677b91b
+[Tue Jul  7 17:50:22 2026] Bluetooth: hci0: BCM: chip id 107
+[Tue Jul  7 17:50:22 2026] Bluetooth: hci0: BCM: features 0x2f
+[Tue Jul  7 17:50:22 2026] Bluetooth: hci0: BCM4345C0
+[Tue Jul  7 17:50:22 2026] Bluetooth: hci0: BCM4345C0 (003.001.025) build 0000
+[Tue Jul  7 17:50:22 2026] Bluetooth: hci0: BCM4345C0 'brcm/BCM4345C0.raspberrypi,5-model-b.hcd' Patch
+[Tue Jul  7 17:50:22 2026] Adding 524272k swap on /var/swap.  Priority:-2 extents:8 across:13893616k SS
+[Tue Jul  7 17:50:22 2026] dxrt_recovery_device
+[Tue Jul  7 17:50:22 2026] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+[Tue Jul  7 17:50:22 2026] Bluetooth: BNEP filters: protocol multicast
+[Tue Jul  7 17:50:22 2026] Bluetooth: BNEP socket layer initialized
+[Tue Jul  7 17:50:23 2026] Bluetooth: hci0: BCM: features 0x2f
+[Tue Jul  7 17:50:23 2026] Bluetooth: hci0: BCM43455 37.4MHz Raspberry Pi 3+-0190
+[Tue Jul  7 17:50:23 2026] Bluetooth: hci0: BCM4345C0 (003.001.025) build 0382
+[Tue Jul  7 17:50:23 2026] Bluetooth: hci0: BCM: Using default device address (43:45:c0:00:1f:ac)
+[Tue Jul  7 17:50:23 2026] Bluetooth: MGMT ver 1.23
+[Tue Jul  7 17:50:23 2026] NET: Registered PF_ALG protocol family
+[Tue Jul  7 17:50:23 2026] macb 1f00100000.ethernet eth0: PHY [1f00100000.ethernet-ffffffff:01] driver [Broadcom BCM54213PE] (irq=POLL)
+[Tue Jul  7 17:50:23 2026] macb 1f00100000.ethernet eth0: configuring for phy/rgmii-id link mode
+[Tue Jul  7 17:50:23 2026] macb 1f00100000.ethernet: gem-ptp-timer ptp clock registered.
+[Tue Jul  7 17:50:23 2026] brcmfmac: brcmf_cfg80211_set_power_mgmt: power save enabled
+[Tue Jul  7 17:50:24 2026] Bluetooth: RFCOMM TTY layer initialized
+[Tue Jul  7 17:50:24 2026] Bluetooth: RFCOMM socket layer initialized
+[Tue Jul  7 17:50:24 2026] Bluetooth: RFCOMM ver 1.11
+[Tue Jul  7 17:50:27 2026] macb 1f00100000.ethernet eth0: Link is Up - 1Gbps/Full - flow control off

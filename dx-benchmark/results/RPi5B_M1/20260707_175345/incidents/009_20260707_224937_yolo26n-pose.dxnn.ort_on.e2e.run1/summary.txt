@@ -1,0 +1,5 @@
+incident: 009_20260707_224937_yolo26n-pose.dxnn.ort_on.e2e.run1
+context: yolo26n-pose.dxnn.ort_on.e2e.run1
+timestamp: 20260707_224937
+npu_temp_c: 43.0
+npu_clock_mhz: 1000.0

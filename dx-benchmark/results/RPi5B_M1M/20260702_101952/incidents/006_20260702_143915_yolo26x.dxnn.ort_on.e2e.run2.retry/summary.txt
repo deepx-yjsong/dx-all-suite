@@ -1,0 +1,5 @@
+incident: 006_20260702_143915_yolo26x.dxnn.ort_on.e2e.run2.retry
+context: yolo26x.dxnn.ort_on.e2e.run2.retry
+timestamp: 20260702_143915
+npu_temp_c: 42.0
+npu_clock_mhz: 1000.0

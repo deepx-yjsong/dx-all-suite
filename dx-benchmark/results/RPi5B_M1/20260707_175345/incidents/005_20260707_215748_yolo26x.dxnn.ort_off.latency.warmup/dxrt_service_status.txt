@@ -1,0 +1,19 @@
+● dxrt.service - DX-RT Service
+     Loaded: loaded (/etc/systemd/system/dxrt.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-07-07 17:49:30 KST; 4h 8min ago
+   Main PID: 645 (dxrtd)
+      Tasks: 6 (limit: 9567)
+        CPU: 2min 20.021s
+     CGroup: /system.slice/dxrt.service
+             └─645 /usr/local/bin/dxrtd
+
+Jul 07 21:38:33 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (52000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:34 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (53000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:35 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (54000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:36 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (55000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:37 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (56000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:38 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (57000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:39 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (58000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:40 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (59000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:41 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (60000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:41 raspberrypi dxrtd[645]: [DXRT_SVC][Error] Timeout waiting for running requests after 60000ms, forcing cleanup

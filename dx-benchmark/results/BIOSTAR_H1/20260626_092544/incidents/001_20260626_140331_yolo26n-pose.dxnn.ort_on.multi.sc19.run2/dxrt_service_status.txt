@@ -1,0 +1,20 @@
+● dxrt.service - DX-RT Service
+     Loaded: loaded (/etc/systemd/system/dxrt.service; enabled; vendor preset: enabled)
+     Active: active (running) since Thu 2026-06-25 21:01:17 KST; 17h ago
+   Main PID: 6739 (dxrtd)
+      Tasks: 18 (limit: 37335)
+     Memory: 1.7M
+        CPU: 4min 51.885s
+     CGroup: /system.slice/dxrt.service
+             └─6739 /usr/local/bin/dxrtd
+
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][DxrtService] Initialized Devices count=4
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][DxrtService] Initialized Scheduler
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][DxrtService] Initialized IPC Server
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 1 successfully.
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 2 successfully.
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 3 successfully.
+ 6월 25 21:01:17 deepx-B650MT dxrtd[6739]: [DXRT_SVC][die_check_thread] Started client process status check thread

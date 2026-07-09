@@ -1,0 +1,5 @@
+incident: 004_20260701_210822_yolo26m-seg.dxnn.ort_on.multi.sc2.warmup
+context: yolo26m-seg.dxnn.ort_on.multi.sc2.warmup
+timestamp: 20260701_210822
+npu_temp_c: 48.0
+npu_clock_mhz: 400.0

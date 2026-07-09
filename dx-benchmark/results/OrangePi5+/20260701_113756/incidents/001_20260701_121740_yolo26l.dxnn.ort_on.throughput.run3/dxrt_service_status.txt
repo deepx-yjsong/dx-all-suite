@@ -1,0 +1,20 @@
+● dxrt.service - DX-RT Service
+     Loaded: loaded (/etc/systemd/system/dxrt.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-07-01 11:34:23 KST; 43min ago
+   Main PID: 57701 (dxrtd)
+      Tasks: 6 (limit: 18978)
+     Memory: 840.0K
+        CPU: 21.065s
+     CGroup: /system.slice/dxrt.service
+             └─57701 /usr/local/bin/dxrtd
+
+ 7월 01 11:34:23 orangepi5plus dxrtd[57701]: [DXRT_SVC][Process] 0: Send recovery command
+ 7월 01 11:34:23 orangepi5plus dxrtd[57701]: [DXRT_SVC][DxrtService] Initialized Devices count=1
+ 7월 01 11:34:23 orangepi5plus dxrtd[57701]: [DXRT_SVC][DxrtService] Initialized Scheduler
+ 7월 01 11:34:23 orangepi5plus dxrtd[57701]: [DXRT_SVC][DxrtService] Initialized IPC Server
+ 7월 01 11:34:23 orangepi5plus dxrtd[57701]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+ 7월 01 11:34:23 orangepi5plus dxrtd[57701]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+ 7월 01 11:34:23 orangepi5plus dxrtd[57701]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+ 7월 01 11:34:23 orangepi5plus dxrtd[57701]: [DXRT_SVC][die_check_thread] Started client process status check thread
+ 7월 01 11:35:58 orangepi5plus dxrtd[57701]: [DXRT_SVC][Error] [DXRT_SVC][Error] Invalid process ID received: 0Invalid process ID received: 0
+ 7월 01 11:35:58 orangepi5plus dxrtd[57701]: [DXRT_SVC][Error] Invalid process ID received: 0

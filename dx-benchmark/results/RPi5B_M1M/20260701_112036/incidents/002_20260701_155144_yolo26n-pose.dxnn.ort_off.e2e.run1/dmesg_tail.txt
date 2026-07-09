@@ -1,0 +1,200 @@
+[Tue Jun 30 14:36:04 2026] Bluetooth: HCI UART driver ver 2.3
+[Tue Jun 30 14:36:04 2026] Bluetooth: HCI UART protocol H4 registered
+[Tue Jun 30 14:36:04 2026] Bluetooth: HCI UART protocol Three-wire (H5) registered
+[Tue Jun 30 14:36:04 2026] hci_uart_bcm serial0-0: supply vbat not found, using dummy regulator
+[Tue Jun 30 14:36:04 2026] brcmfmac: F1 signature read @0x18000000=0x15264345
+[Tue Jun 30 14:36:04 2026] hci_uart_bcm serial0-0: supply vddio not found, using dummy regulator
+[Tue Jun 30 14:36:04 2026] Bluetooth: HCI UART protocol Broadcom registered
+[Tue Jun 30 14:36:04 2026] brcmfmac: brcmf_fw_alloc_request: using brcm/brcmfmac43455-sdio for chip BCM4345/6
+[Tue Jun 30 14:36:04 2026] usbcore: registered new interface driver brcmfmac
+[Tue Jun 30 14:36:04 2026] brcmfmac: brcmf_c_process_txcap_blob: no txcap_blob available (err=-2)
+[Tue Jun 30 14:36:04 2026] brcmfmac: brcmf_c_preinit_dcmds: Firmware: BCM4345/6 wl0: Aug 29 2023 01:47:08 version 7.45.265 (28bca26 CY) FWID 01-b677b91b
+[Tue Jun 30 14:36:04 2026] Bluetooth: hci0: BCM: chip id 107
+[Tue Jun 30 14:36:04 2026] Bluetooth: hci0: BCM: features 0x2f
+[Tue Jun 30 14:36:04 2026] Bluetooth: hci0: BCM4345C0
+[Tue Jun 30 14:36:04 2026] Bluetooth: hci0: BCM4345C0 (003.001.025) build 0000
+[Tue Jun 30 14:36:04 2026] Bluetooth: hci0: BCM4345C0 'brcm/BCM4345C0.raspberrypi,5-model-b.hcd' Patch
+[Tue Jun 30 14:36:04 2026] Adding 524272k swap on /var/swap.  Priority:-2 extents:8 across:13893616k SS
+[Tue Jun 30 14:36:04 2026] dxrt0: dxrt_recovery_device: starting recovery
+[Tue Jun 30 14:36:04 2026] [dx_pcie_reset_dma_channels] resetting DMA channels for dev 0
+[Tue Jun 30 14:36:04 2026] [dx_pcie_reset_dma_channels] dev 0 DMA channel reset done
+[Tue Jun 30 14:36:04 2026] dxrt0: dxrt_recovery_device: recovery done (ret=0)
+[Tue Jun 30 14:36:04 2026] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+[Tue Jun 30 14:36:04 2026] Bluetooth: BNEP filters: protocol multicast
+[Tue Jun 30 14:36:04 2026] Bluetooth: BNEP socket layer initialized
+[Tue Jun 30 14:36:05 2026] Bluetooth: hci0: BCM: features 0x2f
+[Tue Jun 30 14:36:05 2026] Bluetooth: hci0: BCM43455 37.4MHz Raspberry Pi 3+-0190
+[Tue Jun 30 14:36:05 2026] Bluetooth: hci0: BCM4345C0 (003.001.025) build 0382
+[Tue Jun 30 14:36:05 2026] Bluetooth: hci0: BCM: Using default device address (43:45:c0:00:1f:ac)
+[Tue Jun 30 14:36:05 2026] Bluetooth: MGMT ver 1.23
+[Tue Jun 30 14:36:05 2026] NET: Registered PF_ALG protocol family
+[Tue Jun 30 14:36:05 2026] macb 1f00100000.ethernet eth0: PHY [1f00100000.ethernet-ffffffff:01] driver [Broadcom BCM54213PE] (irq=POLL)
+[Tue Jun 30 14:36:05 2026] macb 1f00100000.ethernet eth0: configuring for phy/rgmii-id link mode
+[Tue Jun 30 14:36:05 2026] macb 1f00100000.ethernet: gem-ptp-timer ptp clock registered.
+[Tue Jun 30 14:36:05 2026] brcmfmac: brcmf_cfg80211_set_power_mgmt: power save enabled
+[Tue Jun 30 14:36:07 2026] Bluetooth: RFCOMM TTY layer initialized
+[Tue Jun 30 14:36:07 2026] Bluetooth: RFCOMM socket layer initialized
+[Tue Jun 30 14:36:07 2026] Bluetooth: RFCOMM ver 1.11
+[Tue Jun 30 14:36:09 2026] macb 1f00100000.ethernet eth0: Link is Up - 1Gbps/Full - flow control off
+[Tue Jun 30 14:41:51 2026] usb 3-2.2: USB disconnect, device number 4
+[Tue Jun 30 14:41:51 2026] usb 3-2.2.3: USB disconnect, device number 5
+[Tue Jun 30 14:50:59 2026] usb 3-2.2: new high-speed USB device number 6 using xhci-hcd
+[Tue Jun 30 14:50:59 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Tue Jun 30 14:50:59 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Tue Jun 30 14:50:59 2026] usb 3-2.2: Product: USB2.1 Hub
+[Tue Jun 30 14:50:59 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Tue Jun 30 14:50:59 2026] hub 3-2.2:1.0: USB hub found
+[Tue Jun 30 14:50:59 2026] hub 3-2.2:1.0: 4 ports detected
+[Tue Jun 30 14:50:59 2026] usb 3-2.2.3: new full-speed USB device number 7 using xhci-hcd
+[Tue Jun 30 14:50:59 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Tue Jun 30 14:50:59 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Tue Jun 30 14:50:59 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Tue Jun 30 14:50:59 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Tue Jun 30 14:51:00 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.0008/input/input14
+[Tue Jun 30 14:51:00 2026] hid-generic 0003:12C9:1017.0008: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Tue Jun 30 14:51:00 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0009/input/input15
+[Tue Jun 30 14:51:00 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0009/input/input16
+[Tue Jun 30 14:51:00 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0009/input/input17
+[Tue Jun 30 14:51:00 2026] hid-generic 0003:12C9:1017.0009: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Tue Jun 30 14:51:00 2026] hid-generic 0003:12C9:1017.000A: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Tue Jun 30 14:55:23 2026] usb 3-2.2: USB disconnect, device number 6
+[Tue Jun 30 14:55:23 2026] usb 3-2.2.3: USB disconnect, device number 7
+[Tue Jun 30 17:01:55 2026] usb 3-2.2: new high-speed USB device number 8 using xhci-hcd
+[Tue Jun 30 17:01:55 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Tue Jun 30 17:01:55 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Tue Jun 30 17:01:55 2026] usb 3-2.2: Product: USB2.1 Hub
+[Tue Jun 30 17:01:55 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Tue Jun 30 17:01:55 2026] hub 3-2.2:1.0: USB hub found
+[Tue Jun 30 17:01:55 2026] hub 3-2.2:1.0: 4 ports detected
+[Tue Jun 30 17:01:56 2026] usb 3-2.2.3: new full-speed USB device number 9 using xhci-hcd
+[Tue Jun 30 17:01:56 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Tue Jun 30 17:01:56 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Tue Jun 30 17:01:56 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Tue Jun 30 17:01:56 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Tue Jun 30 17:01:56 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.000B/input/input18
+[Tue Jun 30 17:01:56 2026] hid-generic 0003:12C9:1017.000B: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Tue Jun 30 17:01:56 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000C/input/input19
+[Tue Jun 30 17:01:56 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000C/input/input20
+[Tue Jun 30 17:01:56 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000C/input/input21
+[Tue Jun 30 17:01:56 2026] hid-generic 0003:12C9:1017.000C: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Tue Jun 30 17:01:56 2026] hid-generic 0003:12C9:1017.000D: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Tue Jun 30 17:09:57 2026] usb 3-2.2: USB disconnect, device number 8
+[Tue Jun 30 17:09:57 2026] usb 3-2.2.3: USB disconnect, device number 9
+[Wed Jul  1 08:39:25 2026] usb 3-2.2: new high-speed USB device number 10 using xhci-hcd
+[Wed Jul  1 08:39:25 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Wed Jul  1 08:39:25 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 08:39:25 2026] usb 3-2.2: Product: USB2.1 Hub
+[Wed Jul  1 08:39:25 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Wed Jul  1 08:39:25 2026] hub 3-2.2:1.0: USB hub found
+[Wed Jul  1 08:39:25 2026] hub 3-2.2:1.0: 4 ports detected
+[Wed Jul  1 08:39:25 2026] usb 3-2.2.3: new full-speed USB device number 11 using xhci-hcd
+[Wed Jul  1 08:39:25 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Wed Jul  1 08:39:25 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 08:39:25 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Wed Jul  1 08:39:25 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Wed Jul  1 08:39:26 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.000E/input/input22
+[Wed Jul  1 08:39:26 2026] hid-generic 0003:12C9:1017.000E: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Wed Jul  1 08:39:26 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000F/input/input23
+[Wed Jul  1 08:39:26 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000F/input/input24
+[Wed Jul  1 08:39:26 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000F/input/input25
+[Wed Jul  1 08:39:26 2026] hid-generic 0003:12C9:1017.000F: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Wed Jul  1 08:39:26 2026] hid-generic 0003:12C9:1017.0010: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Wed Jul  1 09:32:04 2026] dxrt0: dxrt_update_firmware: done.
+[Wed Jul  1 09:56:42 2026] usb 3-2.2: USB disconnect, device number 10
+[Wed Jul  1 09:56:42 2026] usb 3-2.2.3: USB disconnect, device number 11
+[Wed Jul  1 10:45:13 2026] usb 3-2.2: new high-speed USB device number 12 using xhci-hcd
+[Wed Jul  1 10:45:13 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Wed Jul  1 10:45:13 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 10:45:13 2026] usb 3-2.2: Product: USB2.1 Hub
+[Wed Jul  1 10:45:13 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Wed Jul  1 10:45:13 2026] hub 3-2.2:1.0: USB hub found
+[Wed Jul  1 10:45:13 2026] hub 3-2.2:1.0: 4 ports detected
+[Wed Jul  1 10:45:13 2026] usb 3-2.2.3: new full-speed USB device number 13 using xhci-hcd
+[Wed Jul  1 10:45:13 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Wed Jul  1 10:45:13 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 10:45:13 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Wed Jul  1 10:45:13 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Wed Jul  1 10:45:14 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.0011/input/input26
+[Wed Jul  1 10:45:14 2026] hid-generic 0003:12C9:1017.0011: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Wed Jul  1 10:45:14 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0012/input/input27
+[Wed Jul  1 10:45:14 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0012/input/input28
+[Wed Jul  1 10:45:14 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0012/input/input29
+[Wed Jul  1 10:45:14 2026] hid-generic 0003:12C9:1017.0012: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Wed Jul  1 10:45:14 2026] hid-generic 0003:12C9:1017.0013: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Wed Jul  1 10:46:50 2026] usb 3-2.2: USB disconnect, device number 12
+[Wed Jul  1 10:46:50 2026] usb 3-2.2.3: USB disconnect, device number 13
+[Wed Jul  1 10:50:10 2026] dxrt0: dxrt_recovery_device: starting recovery
+[Wed Jul  1 10:50:10 2026] [dx_pcie_reset_dma_channels] resetting DMA channels for dev 0
+[Wed Jul  1 10:50:10 2026] [dx_pcie_reset_dma_channels] dev 0 DMA channel reset done
+[Wed Jul  1 10:50:10 2026] dxrt0: dxrt_recovery_device: recovery done (ret=0)
+[Wed Jul  1 11:09:56 2026] usb 3-2.2: new high-speed USB device number 14 using xhci-hcd
+[Wed Jul  1 11:09:56 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Wed Jul  1 11:09:56 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 11:09:56 2026] usb 3-2.2: Product: USB2.1 Hub
+[Wed Jul  1 11:09:56 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Wed Jul  1 11:09:56 2026] hub 3-2.2:1.0: USB hub found
+[Wed Jul  1 11:09:56 2026] hub 3-2.2:1.0: 4 ports detected
+[Wed Jul  1 11:09:57 2026] usb 3-2.2.3: new full-speed USB device number 15 using xhci-hcd
+[Wed Jul  1 11:09:57 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Wed Jul  1 11:09:57 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 11:09:57 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Wed Jul  1 11:09:57 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Wed Jul  1 11:09:57 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.0014/input/input30
+[Wed Jul  1 11:09:57 2026] hid-generic 0003:12C9:1017.0014: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Wed Jul  1 11:09:57 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0015/input/input31
+[Wed Jul  1 11:09:57 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0015/input/input32
+[Wed Jul  1 11:09:57 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0015/input/input33
+[Wed Jul  1 11:09:57 2026] hid-generic 0003:12C9:1017.0015: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Wed Jul  1 11:09:57 2026] hid-generic 0003:12C9:1017.0016: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Wed Jul  1 11:11:34 2026] xpdev 0x0000000052cd79ab, cnt:0 dx_dma_device_close.
+[Wed Jul  1 11:11:34 2026] dx_dma_pcie 0001:01:00.0: dw->dx_ver: 3
+[Wed Jul  1 11:11:34 2026] debugfs: Directory '0001:01:00.0' with parent 'dmaengine' already present!
+[Wed Jul  1 11:11:34 2026] dx_dma_pcie 0001:01:00.0: [dx_dma_pcie_probe] Probe Done!!
+[Wed Jul  1 11:11:34 2026] dxrt_driver_cdev_init: 1 devices
+[Wed Jul  1 11:11:34 2026]  [200] created device 0:509:0, 000000009a1b94fb, 0000000000000000
+[Wed Jul  1 11:11:34 2026] dxrt_recovery_device
+[Wed Jul  1 11:12:38 2026] dxrt0: dxrt_update_firmware: done.
+[Wed Jul  1 11:16:39 2026] usb 3-2.2: USB disconnect, device number 14
+[Wed Jul  1 11:16:39 2026] usb 3-2.2.3: USB disconnect, device number 15
+[Wed Jul  1 11:19:25 2026] usb 3-2.2: new high-speed USB device number 16 using xhci-hcd
+[Wed Jul  1 11:19:25 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Wed Jul  1 11:19:25 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 11:19:25 2026] usb 3-2.2: Product: USB2.1 Hub
+[Wed Jul  1 11:19:25 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Wed Jul  1 11:19:25 2026] hub 3-2.2:1.0: USB hub found
+[Wed Jul  1 11:19:25 2026] hub 3-2.2:1.0: 4 ports detected
+[Wed Jul  1 11:19:25 2026] usb 3-2.2.3: new full-speed USB device number 17 using xhci-hcd
+[Wed Jul  1 11:19:25 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Wed Jul  1 11:19:25 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 11:19:25 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Wed Jul  1 11:19:25 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Wed Jul  1 11:19:26 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.0017/input/input34
+[Wed Jul  1 11:19:26 2026] hid-generic 0003:12C9:1017.0017: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Wed Jul  1 11:19:26 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0018/input/input35
+[Wed Jul  1 11:19:26 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0018/input/input36
+[Wed Jul  1 11:19:26 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0018/input/input37
+[Wed Jul  1 11:19:26 2026] hid-generic 0003:12C9:1017.0018: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Wed Jul  1 11:19:26 2026] hid-generic 0003:12C9:1017.0019: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Wed Jul  1 11:21:17 2026] usb 3-2.2: USB disconnect, device number 16
+[Wed Jul  1 11:21:17 2026] usb 3-2.2.3: USB disconnect, device number 17
+[Wed Jul  1 14:39:31 2026] usb 3-2.2: new high-speed USB device number 18 using xhci-hcd
+[Wed Jul  1 14:39:31 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Wed Jul  1 14:39:31 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 14:39:31 2026] usb 3-2.2: Product: USB2.1 Hub
+[Wed Jul  1 14:39:31 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Wed Jul  1 14:39:31 2026] hub 3-2.2:1.0: USB hub found
+[Wed Jul  1 14:39:31 2026] hub 3-2.2:1.0: 4 ports detected
+[Wed Jul  1 14:39:31 2026] usb 3-2.2.3: new full-speed USB device number 19 using xhci-hcd
+[Wed Jul  1 14:39:31 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Wed Jul  1 14:39:31 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Wed Jul  1 14:39:31 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Wed Jul  1 14:39:31 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Wed Jul  1 14:39:32 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.001A/input/input38
+[Wed Jul  1 14:39:32 2026] hid-generic 0003:12C9:1017.001A: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Wed Jul  1 14:39:32 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.001B/input/input39
+[Wed Jul  1 14:39:32 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.001B/input/input40
+[Wed Jul  1 14:39:32 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.001B/input/input41
+[Wed Jul  1 14:39:32 2026] hid-generic 0003:12C9:1017.001B: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Wed Jul  1 14:39:32 2026] hid-generic 0003:12C9:1017.001C: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Wed Jul  1 14:39:40 2026] usb 3-2.2: USB disconnect, device number 18
+[Wed Jul  1 14:39:40 2026] usb 3-2.2.3: USB disconnect, device number 19

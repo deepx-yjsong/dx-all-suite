@@ -1,0 +1,200 @@
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a970d
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a8def
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a3adb
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb890cdf7
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a8d6d
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb897d1bd
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb890cce7
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb8935669
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb897d179
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb890cd2d
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb8933381
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb897d155
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a79ef
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb8920587
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a3a8f
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: SER catches error: 0x1002
+[수  7월  1 09:43:16 2026] rtw89_8852be 0002:21:00.0: c2h class 1 func 3 not support
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW status = 0x82001100
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW BADADDR = 0x55
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW EPC/RA = 0x0
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW MISC = 0xb898828b
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_HALT_C2H = 0x1000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_SER_DBG_INFO = 0xf700003d
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a0ed
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a03b
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a00d
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a021
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a00b
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a033
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a01f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a0df
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a023
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a03f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a023
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a105
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a021
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a01f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a01f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: --->
+                             err=0x1000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_SER_DBG_INFO =0xf700003d
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_DMAC_ERR_ISR=0x00000040
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_DMAC_ERR_IMR=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_WDE_ERR_FLAG_CFG=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_PLE_ERR_FLAG_CFG=0x83190000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_WDE_ERR_IMR=0xffffffff
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_WDE_ERR_ISR=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_PLE_ERR_IMR=0xffffffdf
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_PLE_ERR_FLAG_ISR=0x02000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_WD_CPUQ_OP_0=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_WD_CPUQ_OP_1=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_WD_CPUQ_OP_2=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_WD_CPUQ_OP_STATUS=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_PL_CPUQ_OP_0=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_PL_CPUQ_OP_1=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_PL_CPUQ_OP_2=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_PL_CPUQ_OP_STATUS=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_RXDMA_PKT_INFO_0=0x8000812b
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_RXDMA_PKT_INFO_1=0x80008000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_RXDMA_PKT_INFO_2=0x8000812e
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_CMAC_ERR_ISR [0]=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_CMAC_FUNC_EN [0]=0xf000003f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_CK_EN [0]=0xffffffff
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_CMAC_ERR_IMR [0]=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_RPQ_RXBD_IDX =0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_DBG_ERR_FLAG=0x00000000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_LBC_WATCHDOG=0x00000081
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: <---
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: SER catches error: 0x1000
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW status = 0x82001100
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW BADADDR = 0x55
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW EPC/RA = 0x0
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW MISC = 0xb898828b
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_HALT_C2H = 0x1001
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_SER_DBG_INFO = 0xf700003d
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898b455
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a03f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a0f3
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a107
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a027
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a02f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a0ef
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a00f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a0df
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a0f1
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a0e7
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a0e9
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a00b
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a009
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb898a1ff
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: SER catches error: 0x1001
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW status = 0x82008100
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW BADADDR = 0x55
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW EPC/RA = 0x0
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: FW MISC = 0xb898828b
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_HALT_C2H = 0x1002
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: R_AX_SER_DBG_INFO = 0xf700003d
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89376e9
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a3ab7
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a79dd
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89360ff
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb8935ddb
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89acb2d
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb8935e2d
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb8935ec3
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a3aa1
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb890cce7
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a8d9b
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb8935df3
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb8935f0f
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89a9075
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: [ERR]fw PC = 0xb89360c5
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: SER catches error: 0x1002
+[수  7월  1 09:43:21 2026] rtw89_8852be 0002:21:00.0: c2h class 1 func 3 not support
+[수  7월  1 11:25:45 2026] usb 3-1.2: new high-speed USB device number 52 using ehci-platform
+[수  7월  1 11:25:45 2026] usb 3-1.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.63
+[수  7월  1 11:25:45 2026] usb 3-1.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[수  7월  1 11:25:45 2026] usb 3-1.2: Product: USB2.1 Hub
+[수  7월  1 11:25:45 2026] usb 3-1.2: Manufacturer: GenesysLogic
+[수  7월  1 11:25:45 2026] hub 3-1.2:1.0: USB hub found
+[수  7월  1 11:25:45 2026] hub 3-1.2:1.0: 4 ports detected
+[수  7월  1 11:25:46 2026] usb 3-1.2.3: new full-speed USB device number 53 using ehci-platform
+[수  7월  1 11:25:46 2026] usb 3-1.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[수  7월  1 11:25:46 2026] usb 3-1.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[수  7월  1 11:25:46 2026] usb 3-1.2.3: Product: USB Gaming Mouse
+[수  7월  1 11:25:46 2026] usb 3-1.2.3: Manufacturer: SOAI
+[수  7월  1 11:25:46 2026] input: SOAI USB Gaming Mouse as /devices/platform/fc800000.usb/usb3/3-1/3-1.2/3-1.2.3/3-1.2.3:1.0/0003:12C9:1017.004D/input/input111
+[수  7월  1 11:25:46 2026] hid-generic 0003:12C9:1017.004D: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-fc800000.usb-1.2.3/input0
+[수  7월  1 11:25:46 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/fc800000.usb/usb3/3-1/3-1.2/3-1.2.3/3-1.2.3:1.1/0003:12C9:1017.004E/input/input112
+[수  7월  1 11:25:46 2026] input: SOAI USB Gaming Mouse as /devices/platform/fc800000.usb/usb3/3-1/3-1.2/3-1.2.3/3-1.2.3:1.1/0003:12C9:1017.004E/input/input113
+[수  7월  1 11:25:46 2026] input: SOAI USB Gaming Mouse as /devices/platform/fc800000.usb/usb3/3-1/3-1.2/3-1.2.3/3-1.2.3:1.1/0003:12C9:1017.004E/input/input114
+[수  7월  1 11:25:46 2026] hid-generic 0003:12C9:1017.004E: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-fc800000.usb-1.2.3/input1
+[수  7월  1 11:25:46 2026] hid-generic 0003:12C9:1017.004F: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-fc800000.usb-1.2.3/input2
+[수  7월  1 11:25:46 2026] [drm:vop2_plane_atomic_check] *ERROR* Esmart0-win0 is invisible(src: pos[0, 0] rect[64 x 64] dst: pos[2916, 1632] rect[64 x 64]
+[수  7월  1 11:25:46 2026] rockchip-vop2 fdd90000.vop: [drm:vop2_crtc_atomic_disable] Crtc atomic disable vp0
+[수  7월  1 11:25:47 2026] rockchip-vop2 fdd90000.vop: [drm:vop2_crtc_atomic_enable] Update mode to 3840x2160p30, type: 11(if:800, flag:0x0) for vp0 dclk: 297000000
+[수  7월  1 11:25:47 2026] rockchip-hdptx-phy-hdmi fed60000.hdmiphy: hdptx_ropll_cmn_config bus_width:2d5190 rate:2970000
+[수  7월  1 11:25:47 2026] rockchip-hdptx-phy-hdmi fed60000.hdmiphy: hdptx phy pll locked!
+[수  7월  1 11:25:47 2026] rockchip-vop2 fdd90000.vop: [drm:vop2_crtc_atomic_enable] dclk_out0 div: 0 dclk_core0 div: 2
+[수  7월  1 11:25:47 2026] rockchip-vop2 fdd90000.vop: [drm:vop2_crtc_atomic_enable] set dclk_vop0 to 297000000, get 297000000
+[수  7월  1 11:25:47 2026] dwhdmi-rockchip fde80000.hdmi: final tmdsclk = 297000000
+[수  7월  1 11:25:47 2026] dwhdmi-rockchip fde80000.hdmi: don't use dsc mode
+[수  7월  1 11:25:47 2026] dwhdmi-rockchip fde80000.hdmi: dw hdmi qp use tmds mode
+[수  7월  1 11:25:47 2026] rockchip-hdptx-phy-hdmi fed60000.hdmiphy: bus_width:0x2d5190,bit_rate:2970000
+[수  7월  1 11:25:47 2026] rockchip-hdptx-phy-hdmi fed60000.hdmiphy: hdptx phy lane locked!
+[수  7월  1 11:30:57 2026] usb 3-1.2: USB disconnect, device number 52
+[수  7월  1 11:30:57 2026] usb 3-1.2.3: USB disconnect, device number 53
+[수  7월  1 11:32:32 2026] usb 3-1.2: new high-speed USB device number 54 using ehci-platform
+[수  7월  1 11:32:32 2026] usb 3-1.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.63
+[수  7월  1 11:32:32 2026] usb 3-1.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[수  7월  1 11:32:32 2026] usb 3-1.2: Product: USB2.1 Hub
+[수  7월  1 11:32:32 2026] usb 3-1.2: Manufacturer: GenesysLogic
+[수  7월  1 11:32:32 2026] hub 3-1.2:1.0: USB hub found
+[수  7월  1 11:32:32 2026] hub 3-1.2:1.0: 4 ports detected
+[수  7월  1 11:32:32 2026] usb 3-1.2.3: new full-speed USB device number 55 using ehci-platform
+[수  7월  1 11:32:32 2026] usb 3-1.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[수  7월  1 11:32:32 2026] usb 3-1.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[수  7월  1 11:32:32 2026] usb 3-1.2.3: Product: USB Gaming Mouse
+[수  7월  1 11:32:32 2026] usb 3-1.2.3: Manufacturer: SOAI
+[수  7월  1 11:32:32 2026] input: SOAI USB Gaming Mouse as /devices/platform/fc800000.usb/usb3/3-1/3-1.2/3-1.2.3/3-1.2.3:1.0/0003:12C9:1017.0050/input/input115
+[수  7월  1 11:32:32 2026] hid-generic 0003:12C9:1017.0050: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-fc800000.usb-1.2.3/input0
+[수  7월  1 11:32:32 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/fc800000.usb/usb3/3-1/3-1.2/3-1.2.3/3-1.2.3:1.1/0003:12C9:1017.0051/input/input116
+[수  7월  1 11:32:32 2026] input: SOAI USB Gaming Mouse as /devices/platform/fc800000.usb/usb3/3-1/3-1.2/3-1.2.3/3-1.2.3:1.1/0003:12C9:1017.0051/input/input117
+[수  7월  1 11:32:32 2026] input: SOAI USB Gaming Mouse as /devices/platform/fc800000.usb/usb3/3-1/3-1.2/3-1.2.3/3-1.2.3:1.1/0003:12C9:1017.0051/input/input118
+[수  7월  1 11:32:32 2026] hid-generic 0003:12C9:1017.0051: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-fc800000.usb-1.2.3/input1
+[수  7월  1 11:32:32 2026] hid-generic 0003:12C9:1017.0052: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-fc800000.usb-1.2.3/input2
+[수  7월  1 11:32:33 2026] rockchip-vop2 fdd90000.vop: [drm:vop2_crtc_atomic_disable] Crtc atomic disable vp0
+[수  7월  1 11:32:33 2026] rockchip-vop2 fdd90000.vop: [drm:vop2_crtc_atomic_enable] Update mode to 3840x2160p30, type: 11(if:800, flag:0x0) for vp0 dclk: 297000000
+[수  7월  1 11:32:33 2026] rockchip-hdptx-phy-hdmi fed60000.hdmiphy: hdptx_ropll_cmn_config bus_width:2d5190 rate:2970000
+[수  7월  1 11:32:33 2026] rockchip-hdptx-phy-hdmi fed60000.hdmiphy: hdptx phy pll locked!
+[수  7월  1 11:32:33 2026] rockchip-vop2 fdd90000.vop: [drm:vop2_crtc_atomic_enable] dclk_out0 div: 0 dclk_core0 div: 2
+[수  7월  1 11:32:33 2026] rockchip-vop2 fdd90000.vop: [drm:vop2_crtc_atomic_enable] set dclk_vop0 to 297000000, get 297000000
+[수  7월  1 11:32:33 2026] dwhdmi-rockchip fde80000.hdmi: final tmdsclk = 297000000
+[수  7월  1 11:32:33 2026] dwhdmi-rockchip fde80000.hdmi: don't use dsc mode
+[수  7월  1 11:32:33 2026] dwhdmi-rockchip fde80000.hdmi: dw hdmi qp use tmds mode
+[수  7월  1 11:32:33 2026] rockchip-hdptx-phy-hdmi fed60000.hdmiphy: bus_width:0x2d5190,bit_rate:2970000
+[수  7월  1 11:32:33 2026] rockchip-hdptx-phy-hdmi fed60000.hdmiphy: hdptx phy lane locked!
+[수  7월  1 11:33:09 2026] dxrt0: dxrt_recovery_device: starting recovery
+[수  7월  1 11:33:09 2026] [dx_pcie_reset_dma_channels] resetting DMA channels for dev 0
+[수  7월  1 11:33:09 2026] [dx_pcie_reset_dma_channels] dev 0 DMA channel reset done
+[수  7월  1 11:33:09 2026] dxrt0: dxrt_recovery_device: recovery done (ret=0)
+[수  7월  1 11:34:27 2026] xpdev 0x00000000c0a27f1e, cnt:0 dx_dma_device_close.
+[수  7월  1 11:34:28 2026] dx_dma_pcie 0000:01:00.0: dw->dx_ver: 3
+[수  7월  1 11:34:28 2026] dx_dma_pcie 0000:01:00.0: With only a single interrupt handler, the device performance might be slower compared to a multi-interrupt environment
+[수  7월  1 11:34:28 2026] debugfs: Directory '0000:01:00.0' with parent 'dmaengine' already present!
+[수  7월  1 11:34:28 2026] SWIRQ[dx-dma_0] checking handlers in vector table...
+[수  7월  1 11:34:28 2026] SWIRQ[dx-dma_0] handler[0] = 00000000830c8b9e (npu0_d), bit=0x1, enable=0x1
+[수  7월  1 11:34:28 2026] SWIRQ[dx-dma_0] handler[1] = 00000000830c8b9e (npu1_d), bit=0x2, enable=0x3
+[수  7월  1 11:34:28 2026] SWIRQ[dx-dma_0] handler[2] = 00000000830c8b9e (npu2_d), bit=0x4, enable=0x7
+[수  7월  1 11:34:28 2026] SWIRQ[dx-dma_0] handler[3] = 0000000070e89ac8 (events), bit=0x8, enable=0xf
+[수  7월  1 11:34:28 2026] SWIRQ[dx-dma_0] handler[4] = NULL, stopping enumeration
+[수  7월  1 11:34:28 2026] SWIRQ[dx-dma_0] active events=4 mask=0xf
+[수  7월  1 11:34:28 2026] SWIRQ[dx-dma_0] initialized successfully, enable=0xf
+[수  7월  1 11:34:28 2026] dx_dma_pcie 0000:01:00.0: [dx_dma_pcie_probe] Probe Done!!
+[수  7월  1 11:34:28 2026] dxrt_driver_cdev_init: 1 devices
+[수  7월  1 11:34:28 2026]  [200] created device 0:511:0, 0000000049705a5d, 0000000000000000
+[수  7월  1 11:34:28 2026] dxrt_recovery_device
+[수  7월  1 11:35:02 2026] dxrt0: dxrt_update_firmware: done.
+[수  7월  1 11:38:22 2026] usb 3-1.2: USB disconnect, device number 54
+[수  7월  1 11:38:22 2026] usb 3-1.2.3: USB disconnect, device number 55

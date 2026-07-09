@@ -1,0 +1,87 @@
+Jul 07 17:49:30.160353 raspberrypi systemd[1]: Started dxrt.service - DX-RT Service.
+Jul 07 17:49:30.606143 raspberrypi dxrtd[645]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+Jul 07 17:49:30.606143 raspberrypi dxrtd[645]: [DXRT_SVC][Process] 0: Send recovery command
+Jul 07 17:49:30.619467 raspberrypi dxrtd[645]: [DXRT_SVC][DxrtService] Initialized Devices count=1
+Jul 07 17:49:30.619467 raspberrypi dxrtd[645]: [DXRT_SVC][DxrtService] Initialized Scheduler
+Jul 07 17:49:30.619515 raspberrypi dxrtd[645]: [DXRT_SVC][DxrtService] Initialized IPC Server
+Jul 07 17:49:30.619515 raspberrypi dxrtd[645]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+Jul 07 17:49:30.619515 raspberrypi dxrtd[645]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+Jul 07 17:49:30.673371 raspberrypi dxrtd[645]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+Jul 07 17:49:30.673443 raspberrypi dxrtd[645]: [DXRT_SVC][die_check_thread] Started client process status check thread
+Jul 07 21:37:41.556415 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Waiting for 6 running requests to complete for PID 9039, Device 0, Task 0 (max wait: 60000ms)
+Jul 07 21:37:42.557573 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (1000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:43.558708 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (2000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:44.560025 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (3000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:45.565761 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (4000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:46.566864 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (5000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:47.567956 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (6000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:48.569062 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (7000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:49.570148 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (8000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:50.571292 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (9000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:51.572436 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (10000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:52.573592 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (11000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:53.574721 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (12000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:54.575880 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (13000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:55.577020 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (14000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:56.578162 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (15000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:57.579303 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (16000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:58.580452 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (17000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:37:59.581587 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (18000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:00.582739 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (19000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:01.583881 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (20000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:02.585004 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (21000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:03.586142 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (22000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:04.587294 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (23000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:05.588422 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (24000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:06.589597 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (25000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:07.590746 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (26000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:08.591880 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (27000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:09.593011 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (28000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:10.594169 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (29000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:11.595302 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (30000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:12.596452 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (31000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:13.597579 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (32000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:14.598745 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (33000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:15.599903 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (34000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:16.601103 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (35000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:17.602269 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (36000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:18.603462 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (37000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:19.604610 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (38000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:20.605790 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (39000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:21.606962 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (40000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:22.608183 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (41000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:23.609320 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (42000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:24.610512 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (43000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:25.611672 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (44000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:26.612845 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (45000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:27.613997 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (46000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:28.615156 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (47000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:29.616286 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (48000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:30.617452 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (49000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:31.618590 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (50000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:32.619791 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (51000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:33.620953 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (52000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:34.622150 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (53000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:35.623319 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (54000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:36.625654 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (55000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:37.626827 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (56000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:38.628035 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (57000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:39.629196 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (58000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:40.630428 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (59000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:41.631631 raspberrypi dxrtd[645]: [DXRT_SVC][TaskAbnormalDeInit] Still waiting... 6 requests remaining (60000ms elapsed) - Request IDs: [0, 1, 2, 3, 4, 5]
+Jul 07 21:38:41.631631 raspberrypi dxrtd[645]: [DXRT_SVC][Error] Timeout waiting for running requests after 60000ms, forcing cleanup
+Jul 07 21:57:48.233963 raspberrypi systemd[1]: Stopping dxrt.service - DX-RT Service...
+Jul 07 21:57:48.234888 raspberrypi systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+Jul 07 21:57:48.235068 raspberrypi systemd[1]: dxrt.service: Failed with result 'exit-code'.
+Jul 07 21:57:48.235336 raspberrypi systemd[1]: Stopped dxrt.service - DX-RT Service.
+Jul 07 21:57:48.235383 raspberrypi systemd[1]: dxrt.service: Consumed 2min 20.022s CPU time.
+Jul 07 21:57:48.252273 raspberrypi systemd[1]: Started dxrt.service - DX-RT Service.
+Jul 07 21:57:48.258680 raspberrypi dxrtd[9185]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+Jul 07 21:57:48.258680 raspberrypi dxrtd[9185]: [DXRT_SVC][Process] 0: Send recovery command
+Jul 07 21:57:48.270572 raspberrypi dxrtd[9185]: [DXRT_SVC][DxrtService] Initialized Devices count=1
+Jul 07 21:57:48.270572 raspberrypi dxrtd[9185]: [DXRT_SVC][DxrtService] Initialized Scheduler
+Jul 07 21:57:48.270572 raspberrypi dxrtd[9185]: [DXRT_SVC][DxrtService] Initialized IPC Server
+Jul 07 21:57:48.270572 raspberrypi dxrtd[9185]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+Jul 07 21:57:48.270572 raspberrypi dxrtd[9185]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+Jul 07 21:57:48.314074 raspberrypi dxrtd[9185]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+Jul 07 21:57:48.314074 raspberrypi dxrtd[9185]: [DXRT_SVC][die_check_thread] Started client process status check thread

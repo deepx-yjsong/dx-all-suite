@@ -1,0 +1,5 @@
+incident: 009_20260707_115205_yolo26n-obb.dxnn.ort_on.multi.sc3.run1
+context: yolo26n-obb.dxnn.ort_on.multi.sc3.run1
+timestamp: 20260707_115205
+npu_temp_c: 44.0
+npu_clock_mhz: 1000.0

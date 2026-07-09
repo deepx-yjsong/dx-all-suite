@@ -1,0 +1,10 @@
+Jul 02 09:52:13.620183 raspberrypi systemd[1]: Started dxrt.service - DX-RT Service.
+Jul 02 09:52:14.051197 raspberrypi dxrtd[639]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+Jul 02 09:52:14.051197 raspberrypi dxrtd[639]: [DXRT_SVC][Process] 0: Send recovery command
+Jul 02 09:52:14.074404 raspberrypi dxrtd[639]: [DXRT_SVC][DxrtService] Initialized Devices count=1
+Jul 02 09:52:14.074404 raspberrypi dxrtd[639]: [DXRT_SVC][DxrtService] Initialized Scheduler
+Jul 02 09:52:14.074479 raspberrypi dxrtd[639]: [DXRT_SVC][DxrtService] Initialized IPC Server
+Jul 02 09:52:14.074479 raspberrypi dxrtd[639]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+Jul 02 09:52:14.074479 raspberrypi dxrtd[639]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+Jul 02 09:52:14.129259 raspberrypi dxrtd[639]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+Jul 02 09:52:14.129341 raspberrypi dxrtd[639]: [DXRT_SVC][die_check_thread] Started client process status check thread

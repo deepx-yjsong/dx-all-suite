@@ -1,0 +1,5 @@
+incident: 008_20260707_223607_yolo26n-pose.dxnn.ort_on.latency.warmup
+context: yolo26n-pose.dxnn.ort_on.latency.warmup
+timestamp: 20260707_223607
+npu_temp_c: 42.0
+npu_clock_mhz: 1000.0

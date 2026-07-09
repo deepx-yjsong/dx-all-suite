@@ -1,0 +1,223 @@
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           2  0.0  0.0      0     0 ?        S    Jun30   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [pool_workqueue_release]
+root           4  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-kvfree_rcu_reclaim]
+root           5  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-rcu_gp]
+root           6  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-sync_wq]
+root           7  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-slub_flushwq]
+root           8  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-netns]
+root          13  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-mm_percpu_wq]
+root          14  0.0  0.0      0     0 ?        I    Jun30   0:00  \_ [rcu_tasks_kthread]
+root          15  0.0  0.0      0     0 ?        I    Jun30   0:00  \_ [rcu_tasks_rude_kthread]
+root          16  0.0  0.0      0     0 ?        I    Jun30   0:00  \_ [rcu_tasks_trace_kthread]
+root          17  0.0  0.0      0     0 ?        S    Jun30   0:03  \_ [ksoftirqd/0]
+root          18  0.0  0.0      0     0 ?        I    Jun30   0:28  \_ [rcu_preempt]
+root          19  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [rcu_exp_par_gp_kthread_worker/0]
+root          20  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [rcu_exp_gp_kthread_worker]
+root          21  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [migration/0]
+root          22  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [cpuhp/0]
+root          23  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [cpuhp/1]
+root          24  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [migration/1]
+root          25  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [ksoftirqd/1]
+root          28  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [cpuhp/2]
+root          29  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [migration/2]
+root          30  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [ksoftirqd/2]
+root          33  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [cpuhp/3]
+root          34  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [migration/3]
+root          35  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [ksoftirqd/3]
+root          42  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kdevtmpfs]
+root          43  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-inet_frag_wq]
+root          44  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kauditd]
+root          45  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [khungtaskd]
+root          46  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [oom_reaper]
+root          48  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-writeback]
+root          49  0.0  0.0      0     0 ?        S    Jun30   0:02  \_ [kcompactd0]
+root          50  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [kcompactd1]
+root          51  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [kcompactd2]
+root          52  0.0  0.0      0     0 ?        S    Jun30   0:02  \_ [kcompactd3]
+root          53  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [kcompactd4]
+root          54  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [kcompactd5]
+root          55  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [kcompactd6]
+root          56  0.0  0.0      0     0 ?        S    Jun30   0:01  \_ [kcompactd7]
+root          57  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-kintegrityd]
+root          58  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-kblockd]
+root          59  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-blkcg_punt_bio]
+root          62  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [watchdogd]
+root          63  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-quota_events_unbound]
+root          65  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/1:1H-kblockd]
+root          66  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-rpciod]
+root          67  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-xprtiod]
+root          70  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kswapd0]
+root          71  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kswapd1]
+root          72  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kswapd2]
+root          73  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kswapd3]
+root          74  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kswapd4]
+root          75  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kswapd5]
+root          76  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kswapd6]
+root          77  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [kswapd7]
+root          78  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-nfsiod]
+root          79  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-kthrotld]
+root          83  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [hwrng]
+root          84  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-iscsi_conn_cleanup]
+root          85  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-nvme-wq]
+root          86  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-nvme-reset-wq]
+root          87  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-nvme-delete-wq]
+root          88  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-DWC Notification WorkQ]
+root          89  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-uas]
+root          90  0.0  0.0      0     0 ?        I<   Jun30   0:01  \_ [kworker/0:1H-mmc_complete]
+root          91  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/u21:0-hci0]
+root          92  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/u22:0]
+root          93  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/u23:0]
+root          94  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/u24:0]
+root          95  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/u25:0]
+root          96  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/38-aerdrv]
+root          97  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/39-aerdrv]
+root          98  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-sdhci]
+root          99  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/162-mmc0]
+root         101  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-sdhci]
+root         103  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/163-mmc1]
+root         109  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-mmc_complete]
+root         155  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/3:1H-kblockd]
+root         193  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [spi10]
+root         220  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-v3d_bin]
+root         221  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-v3d_render]
+root         222  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-v3d_tfu]
+root         223  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-v3d_csd]
+root         224  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-v3d_cache_clean]
+root         225  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-v3d_cpu]
+root         230  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/173-vc4 hdmi hpd connected]
+root         231  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/174-vc4 hdmi hpd disconnected]
+root         232  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [cec-vc4-hdmi-0]
+root         233  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/175-vc4 hdmi cec rx]
+root         234  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/176-vc4 hdmi cec tx]
+root         235  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/177-vc4 hdmi hpd connected]
+root         236  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/178-vc4 hdmi hpd disconnected]
+root         237  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [cec-vc4-hdmi-1]
+root         238  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/179-vc4 hdmi cec rx]
+root         239  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/180-vc4 hdmi cec tx]
+root         240  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [card1-crtc0]
+root         241  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [card1-crtc1]
+root         242  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [card1-crtc2]
+root         243  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [card1-crtc3]
+root         271  0.0  0.0      0     0 ?        S    Jun30   0:03  \_ [jbd2/mmcblk0p2-8]
+root         272  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-ext4-rsv-conversion]
+root         291  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-mld]
+root         292  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-ipv6_addrconf]
+root         502  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [irq/191-1000800000.codec]
+root         526  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-cfg80211]
+root         545  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/R-brcmf_wq/mmc1:0001:1]
+root         550  0.0  0.0      0     0 ?        S    Jun30   0:00  \_ [brcmf_wdog/mmc1:0001:1]
+root         617  0.0  0.0      0     0 ?        I<   Jun30   0:01  \_ [kworker/u21:1-brcmf_wq/mmc1:0001:1]
+root         983  0.0  0.0      0     0 ?        S<   Jun30   0:00  \_ [krfcommd]
+root        9712  0.0  0.0      0     0 ?        I    Jun30   0:00  \_ [kworker/u17:1-events_unbound]
+root       24723  0.0  0.0      0     0 ?        I    02:44   0:00  \_ [kworker/u19:0-ext4-rsv-conversion]
+root       30088  0.0  0.0      0     0 ?        I    07:11   0:00  \_ [kworker/u19:3-kvfree_rcu_reclaim]
+root       33891  0.0  0.0      0     0 ?        I<   10:45   0:00  \_ [kworker/2:0H-kblockd]
+root       36323  0.0  0.0      0     0 ?        I    11:11   0:00  \_ [kworker/u17:0-kvfree_rcu_reclaim]
+root       44749  0.0  0.0      0     0 ?        I    13:43   0:00  \_ [kworker/u18:2-events_unbound]
+root       46373  0.0  0.0      0     0 ?        I    14:38   0:00  \_ [kworker/u17:3-kvfree_rcu_reclaim]
+root       50485  0.0  0.0      0     0 ?        I    16:38   0:00  \_ [kworker/u20:0-events_unbound]
+root       50552  0.0  0.0      0     0 ?        I    16:40   0:00  \_ [kworker/u19:1-flush-179:0]
+root       51585  0.0  0.0      0     0 ?        I    17:10   0:00  \_ [kworker/u20:1-ext4-rsv-conversion]
+root       52891  0.0  0.0      0     0 ?        I    17:54   0:00  \_ [kworker/u20:2-kvfree_rcu_reclaim]
+root       57833  0.0  0.0      0     0 ?        I    20:58   0:00  \_ [kworker/u18:1-kvfree_rcu_reclaim]
+root       58117  0.0  0.0      0     0 ?        I    21:18   0:00  \_ [kworker/u18:0-events_unbound]
+root       58237  0.0  0.0      0     0 ?        I<   21:25   0:00  \_ [kworker/0:0H]
+root       59147  0.0  0.0      0     0 ?        I<   22:06   0:00  \_ [kworker/1:2H]
+root       59553  0.0  0.0      0     0 ?        I<   22:26   0:00  \_ [kworker/2:1H]
+root       60017  0.0  0.0      0     0 ?        I<   23:02   0:00  \_ [kworker/3:0H]
+root       60087  0.0  0.0      0     0 ?        I    23:11   0:00  \_ [kworker/2:1-mm_percpu_wq]
+root       60234  0.0  0.0      0     0 ?        I    23:20   0:00  \_ [kworker/0:1-events_freezable]
+root       60235  0.0  0.0      0     0 ?        I    23:20   0:00  \_ [kworker/u16:1-v3d_bin]
+root       60245  0.0  0.0      0     0 ?        I    23:22   0:00  \_ [kworker/1:1-events]
+root       60438  0.0  0.0      0     0 ?        I    23:29   0:00  \_ [kworker/2:0-events]
+root       60575  0.0  0.0      0     0 ?        I    23:32   0:00  \_ [kworker/3:2-events_power_efficient]
+root       60578  0.0  0.0      0     0 ?        I    23:33   0:00  \_ [kworker/0:0-mld]
+root       60618  0.0  0.0      0     0 ?        I    23:33   0:00  \_ [kworker/1:0-events_freezable]
+root       60668  0.0  0.0      0     0 ?        I    23:37   0:00  \_ [kworker/u16:2-v3d_render]
+root       60669  0.0  0.0      0     0 ?        I    23:39   0:00  \_ [kworker/3:0-events]
+root       60670  0.0  0.0      0     0 ?        I    23:40   0:00  \_ [kworker/1:2]
+root       60672  0.0  0.0      0     0 ?        D    23:43   0:00  \_ [kworker/0:2+events]
+root       60674  0.0  0.0      0     0 ?        I    23:43   0:00  \_ [kworker/u16:0-ipv6_addrconf]
+root       60675  0.0  0.0      0     0 ?        I    23:44   0:00  \_ [kworker/2:2-mm_percpu_wq]
+root           1  0.0  0.1 169216 12576 ?        Ss   Jun30   0:01 /sbin/init splash
+root         330  0.0  0.1  25840  9616 ?        Ss   Jun30   0:00 /lib/systemd/systemd-journald
+root         360  0.0  0.0  27728  7360 ?        Ss   Jun30   0:00 /lib/systemd/systemd-udevd
+systemd+     619  0.0  0.0  91072  7552 ?        Ssl  Jun30   0:00 /lib/systemd/systemd-timesyncd
+root         631  0.0  0.0 238064  7616 ?        Ssl  Jun30   0:01 /usr/libexec/accounts-daemon
+avahi        634  0.1  0.0   7776  3920 ?        Ss   Jun30   3:48 avahi-daemon: running [raspberrypi-2.local]
+avahi        672  0.0  0.0   7360  1776 ?        S    Jun30   0:00  \_ avahi-daemon: chroot helper
+root         635  0.0  0.0  13648  6240 ?        Ss   Jun30   0:00 /usr/libexec/bluetooth/bluetoothd
+root         636  0.0  0.0   6880  2752 ?        Ss   Jun30   0:00 /usr/sbin/cron -f
+message+     637  0.0  0.0  10112  5312 ?        Ss   Jun30   0:06 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+polkitd      642  0.0  0.1 311344  9840 ?        Ssl  Jun30   0:00 /usr/lib/polkit-1/polkitd --no-debug
+root         650  0.0  0.1  50800  8304 ?        Ss   Jun30   0:00 /lib/systemd/systemd-logind
+nobody       651  0.0  0.0   5968  2848 ?        Ss   Jun30   0:01 /usr/sbin/thd --triggers /etc/triggerhappy/triggers.d/ --socket /run/thd.socket --user nobody --deviceglob /dev/input/event*
+root         654  0.0  0.1 396768 13760 ?        Ssl  Jun30   0:00 /usr/libexec/udisks2/udisksd
+root         771  0.0  0.2 263664 20672 ?        Ssl  Jun30   0:11 /usr/sbin/NetworkManager --no-daemon
+root         779  0.0  0.1  17712 11200 ?        Ss   Jun30   0:04 /sbin/wpa_supplicant -u -s -O DIR=/run/wpa_supplicant GROUP=netdev
+root         795  0.0  0.1 250640 13584 ?        Ssl  Jun30   0:00 /usr/sbin/ModemManager
+root         815  0.0  0.0 233888  7168 ?        Ssl  Jun30   0:00 /usr/sbin/lightdm
+root         846  0.0  0.0 162688  7920 ?        Sl   Jun30   0:00  \_ lightdm --session-child 11 14
+deepx        871  0.0  1.4 705776 118800 ?       Ssl  Jun30   0:19      \_ /usr/bin/labwc -m
+deepx        936  0.0  0.0   7520  2080 ?        Ss   Jun30   0:00          \_ /usr/bin/ssh-agent /usr/bin/labwc-pi
+root         824  0.0  0.1  16768  9280 ?        Ss   Jun30   0:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+root       44660  0.0  0.1  20016 11136 ?        Ss   13:43   0:00  \_ sshd: deepx [priv]
+deepx      44666  0.0  0.1  20992  8400 ?        S    13:43   0:05      \_ sshd: deepx@notty
+deepx      44667  0.0  0.0   2416  1520 ?        Ss   13:43   0:00          \_ sh
+deepx      44685  0.0  0.2  42576 18944 ?        Sl   13:43   0:14              \_ /home/deepx/.vscode-server/code-7e7950df89d055b5a378379db9ee14290772148a command-shell --cli-data-dir /home/deepx/.vscode-server/cli --parent-process-id 44667 --on-host=127.0.0.1 --on-port
+deepx      44716  0.0  0.0   2416  1472 ?        S    13:43   0:00              |   \_ sh /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/bin/code-server --connection-token=remotessh --accept-server-license-terms --agent-host-bridge-port=41937 --agent-host-bridge-host=127.0.0.1 --agent-host-bridge-connection-token=0c3346d6-c8aa-4c5a-ab90-44f02475b7ef --start-server --enable-remote-auto-shutdown --socket-path=/tmp/code-6844c7b1-4a9b-4ba1-bd2a-493510543116
+deepx      44720  0.0  1.4 1488304 116336 ?      Sl   13:43   0:16              |       \_ /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/server-main.js --connection-token=remotessh --accept-server-license-terms --agent-host-bridge-port=41937 --agent-host-bridge-host=127.0.0.1 --agent-host-bridge-connection-token=0c3346d6-c8aa-4c5a-ab90-44f02475b7ef --start-server --enable-remote-auto-shutdown --socket-path=/tmp/code-6844c7b1-4a9b-4ba1-bd2a-493510543116
+deepx      44750  0.1  5.4 27333520 448720 ?     Sl   13:43   0:57              |           \_ /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node --dns-result-order=ipv4first /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/bootstrap-fork --type=extensionHost --transformURIs --useHostProxy=false
+deepx      44833  0.0  0.9 1228432 74816 ?       Sl   13:43   0:02              |           |   \_ /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/extensions/markdown-language-features/dist/serverWorkerMain --node-ipc --clientProcessId=44750
+deepx      44970  0.0  0.8 1228880 73184 ?       Sl   13:46   0:02              |           |   \_ /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/extensions/json-language-features/server/dist/node/jsonServerMain --node-ipc --clientProcessId=44750
+deepx      44757  0.0  0.7 1392192 60272 ?       Sl   13:43   0:05              |           \_ /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/bootstrap-fork --type=fileWatcher
+deepx      44773  0.1  0.8 1286912 72688 ?       Sl   13:43   0:36              |           \_ /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/bootstrap-fork --type=ptyHost --logsPath /home/deepx/.vscode-server/data/logs/20260701T134352
+deepx      44871  0.0  0.0   8416  5136 pts/3    Ss+  13:44   0:00              |               \_ /bin/bash --init-file /home/deepx/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
+deepx      60673  0.0  0.0   5312  1600 ?        S    23:43   0:00              \_ sleep 180
+root         844  0.0  0.0   7984  4032 tty1     Ss   Jun30   0:00 /bin/login -f
+deepx       1312  0.0  0.0   8224  4960 tty1     S+   Jun30   0:00  \_ -bash
+root         847  0.0  0.0   5360  2208 ?        Ss+  Jun30   0:00 /sbin/agetty -o -p -- \u --keep-baud 115200,57600,38400,9600 - vt220
+deepx        852  0.0  0.1  20384 11200 ?        Ss   Jun30   0:00 /lib/systemd/systemd --user
+deepx        853  0.0  0.0 171024  6048 ?        S    Jun30   0:00  \_ (sd-pam)
+deepx        868  0.0  0.1 111744 15056 ?        S<sl Jun30   0:00  \_ /usr/bin/pipewire
+deepx        869  0.0  0.0  87680  5872 ?        Ssl  Jun30   0:00  \_ /usr/bin/pipewire -c filter-chain.conf
+deepx        870  0.0  0.4 465680 33536 ?        S<sl Jun30   0:00  \_ /usr/bin/wireplumber
+deepx        872  0.0  0.1 103072  9504 ?        S<sl Jun30   0:00  \_ /usr/bin/pipewire-pulse
+deepx        883  0.0  0.0   8784  4464 ?        Ss   Jun30   0:00  \_ /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+deepx       1092  0.0  0.0 238720  7888 ?        Ssl  Jun30   0:00  \_ /usr/libexec/gvfsd
+deepx       1145  0.0  0.1 313008  9056 ?        Sl   Jun30   0:00  |   \_ /usr/libexec/gvfsd-trash --spawner :1.17 /org/gtk/gvfs/exec_spaw/0
+deepx       1101  0.0  0.0 387760  6800 ?        Sl   Jun30   0:00  \_ /usr/libexec/gvfsd-fuse /run/user/1000/gvfs -f
+deepx       1123  0.0  0.1 353968 13168 ?        Ssl  Jun30   0:00  \_ /usr/libexec/gvfs-udisks2-volume-monitor
+deepx       1128  0.0  0.0 313648  8176 ?        Ssl  Jun30   0:03  \_ /usr/libexec/gvfs-afc-volume-monitor
+deepx       1133  0.0  0.0 234304  6560 ?        Ssl  Jun30   0:00  \_ /usr/libexec/gvfs-mtp-volume-monitor
+deepx       1137  0.0  0.0 234432  6352 ?        Ssl  Jun30   0:00  \_ /usr/libexec/gvfs-goa-volume-monitor
+deepx       1141  0.0  0.0 235776  7072 ?        Ssl  Jun30   0:00  \_ /usr/libexec/gvfs-gphoto2-volume-monitor
+deepx       2124  0.0  0.0 160944  6400 ?        Ssl  Jun30   0:00  \_ /usr/libexec/gvfsd-metadata
+deepx      33458  0.0  0.0 157088  5760 ?        Ssl  09:28   0:00  \_ /usr/libexec/dconf-service
+deepx      33682  0.0  0.1 240944  8608 ?        Sl   09:33   0:00  \_ /usr/bin/gnome-keyring-daemon --start --foreground --components=secrets
+deepx      33685  0.0  0.1 388848 10704 ?        SLsl 09:33   0:00  \_ /usr/bin/gnome-keyring-daemon --foreground --components=pkcs11,secrets --control-directory=/run/user/1000/keyring
+rtkit        888  0.0  0.0  22944  3120 ?        SNsl Jun30   0:00 /usr/libexec/rtkit-daemon
+deepx       1003  0.0  0.0   2416  1344 ?        S    Jun30   0:00 /bin/sh /usr/bin/lwrespawn /usr/bin/pcmanfm --desktop --profile LXDE-pi
+deepx       1051  0.0  1.1 666944 94560 ?        Sl   Jun30   0:16  \_ /usr/bin/pcmanfm --desktop --profile LXDE-pi
+deepx      33443  0.0  0.6 621552 53072 ?        Sl   09:28   0:07      \_ mousepad file:///home/deepx/sijo_feat_windows_env/dx_stream/apps/benchmark/results/RPi5B_M1/20260629_111340_sixfab/environment.json
+deepx       1004  0.0  0.0   2416  1376 ?        S    Jun30   0:00 /bin/sh /usr/bin/lwrespawn /usr/bin/wf-panel-pi
+deepx       1063  0.0  0.8 958272 69312 ?        Sl   Jun30   0:31  \_ /usr/bin/wf-panel-pi
+deepx       1005  0.0  0.0   2640  1552 ?        S    Jun30   0:00 /usr/bin/kanshi
+deepx       1015  0.0  0.0 235056  6320 ?        Sl   Jun30   0:00 /usr/libexec/geoclue-2.0/demos/agent
+deepx       1020  0.0  0.2 341024 21536 ?        Sl   Jun30   0:00 /usr/libexec/polkit-mate-authentication-agent-1
+deepx       1035  0.0  0.0  17104  6432 ?        S    Jun30   0:00 systemd-inhibit --what=handle-power-key gtk-nop
+deepx       1066  0.0  0.2 340640 20640 ?        Sl   Jun30   0:00  \_ gtk-nop
+deepx       1154  0.0  0.0 157856  6128 ?        Sl   Jun30   0:00 /usr/lib/menu-cache/menu-cached /run/user/1000/menu-cached-:0
+deepx       1467  0.0  0.1  39472 15840 ?        Ssl  Jun30   0:10 /home/deepx/.vscode-server/code-7e7950df89d055b5a378379db9ee14290772148a --cli-data-dir /home/deepx/.vscode-server/cli agent host
+root       20885  0.0  0.1  31136  9216 ?        Ss   00:00   0:00 /usr/sbin/cupsd -l
+root       20905  0.0  0.1 180192 13888 ?        Ssl  00:00   0:00 /usr/sbin/cups-browsed
+root       33683  0.0  0.0 235024  7264 ?        Ssl  09:33   0:00 /usr/libexec/upowerd
+deepx      33897  0.0  0.6 629904 52512 ?        Sl   10:45   0:16 lxterminal
+deepx      35650  0.0  0.0   8352  5152 pts/1    Ss   11:10   0:00  \_ bash
+deepx      39652  0.0  0.3  33024 24976 pts/1    S+   11:20   0:14  |   \_ python3 -m dx_stream.apps.benchmark run --product-name RPi5B
+deepx      60620  0.0  0.0   5392  1984 ?        Ss   23:35   0:00  |       \_ script -q -f -c stty rows 50 cols 200 2>/dev/null; exec dxtop /tmp/tmpq5bbo50p.dxtop.log
+deepx      60621  0.1  0.0  22224  7088 pts/2    Ss+  23:35   0:00  |       |   \_ dxtop
+deepx      60684  0.0  0.0  11488  4816 pts/1    R+   23:45   0:00  |       \_ ps auxf
+deepx      36904  0.0  0.0   8224  4912 pts/0    Ss+  11:15   0:00  \_ bash
+root       36525  0.8  0.0 390176  6832 ?        Ssl  11:11   6:04 /usr/local/bin/dxrtd

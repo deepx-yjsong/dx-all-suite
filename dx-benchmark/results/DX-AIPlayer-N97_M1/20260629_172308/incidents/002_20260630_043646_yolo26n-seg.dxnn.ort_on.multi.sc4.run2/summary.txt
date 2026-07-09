@@ -1,0 +1,5 @@
+incident: 002_20260630_043646_yolo26n-seg.dxnn.ort_on.multi.sc4.run2
+context: yolo26n-seg.dxnn.ort_on.multi.sc4.run2
+timestamp: 20260630_043646
+npu_temp_c: 57.0
+npu_clock_mhz: 1000.0

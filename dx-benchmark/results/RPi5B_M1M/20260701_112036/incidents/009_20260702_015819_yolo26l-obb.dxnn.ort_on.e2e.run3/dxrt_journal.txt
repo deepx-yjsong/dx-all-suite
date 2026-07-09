@@ -1,0 +1,39 @@
+Jun 30 14:36:04.604199 raspberrypi systemd[1]: Started dxrt.service - DX-RT Service.
+Jun 30 14:36:05.012111 raspberrypi dxrtd[639]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+Jun 30 14:36:05.012111 raspberrypi dxrtd[639]: [DXRT_SVC][Process] 0: Send recovery command
+Jun 30 14:36:05.041902 raspberrypi dxrtd[639]: [DXRT_SVC][DxrtService] Initialized Devices count=1
+Jun 30 14:36:05.041902 raspberrypi dxrtd[639]: [DXRT_SVC][DxrtService] Initialized Scheduler
+Jun 30 14:36:05.041987 raspberrypi dxrtd[639]: [DXRT_SVC][DxrtService] Initialized IPC Server
+Jun 30 14:36:05.042025 raspberrypi dxrtd[639]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+Jun 30 14:36:05.042081 raspberrypi dxrtd[639]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+Jun 30 14:36:05.093319 raspberrypi dxrtd[639]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+Jun 30 14:36:05.093319 raspberrypi dxrtd[639]: [DXRT_SVC][die_check_thread] Started client process status check thread
+Jul 01 10:50:10.515593 raspberrypi systemd[1]: Stopping dxrt.service - DX-RT Service...
+Jul 01 10:50:10.518677 raspberrypi systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+Jul 01 10:50:10.518981 raspberrypi systemd[1]: dxrt.service: Failed with result 'exit-code'.
+Jul 01 10:50:10.519485 raspberrypi systemd[1]: Stopped dxrt.service - DX-RT Service.
+Jul 01 10:50:10.522312 raspberrypi systemd[1]: dxrt.service: Consumed 8min 29.693s CPU time.
+Jul 01 10:50:10.539817 raspberrypi systemd[1]: Started dxrt.service - DX-RT Service.
+Jul 01 10:50:10.547583 raspberrypi dxrtd[35576]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+Jul 01 10:50:10.547583 raspberrypi dxrtd[35576]: [DXRT_SVC][Process] 0: Send recovery command
+Jul 01 10:50:10.573776 raspberrypi dxrtd[35576]: [DXRT_SVC][DxrtService] Initialized Devices count=1
+Jul 01 10:50:10.573776 raspberrypi dxrtd[35576]: [DXRT_SVC][DxrtService] Initialized Scheduler
+Jul 01 10:50:10.573945 raspberrypi dxrtd[35576]: [DXRT_SVC][DxrtService] Initialized IPC Server
+Jul 01 10:50:10.573945 raspberrypi dxrtd[35576]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+Jul 01 10:50:10.573945 raspberrypi dxrtd[35576]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+Jul 01 10:50:10.621771 raspberrypi dxrtd[35576]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+Jul 01 10:50:10.621850 raspberrypi dxrtd[35576]: [DXRT_SVC][die_check_thread] Started client process status check thread
+Jul 01 11:11:34.516732 raspberrypi systemd[1]: Stopping dxrt.service - DX-RT Service...
+Jul 01 11:11:34.525004 raspberrypi systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+Jul 01 11:11:34.525117 raspberrypi systemd[1]: dxrt.service: Failed with result 'exit-code'.
+Jul 01 11:11:34.525472 raspberrypi systemd[1]: Stopped dxrt.service - DX-RT Service.
+Jul 01 11:11:34.944362 raspberrypi systemd[1]: Started dxrt.service - DX-RT Service.
+Jul 01 11:11:34.952629 raspberrypi dxrtd[36525]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+Jul 01 11:11:34.952629 raspberrypi dxrtd[36525]: [DXRT_SVC][Process] 0: Send recovery command
+Jul 01 11:11:34.972241 raspberrypi dxrtd[36525]: [DXRT_SVC][DxrtService] Initialized Devices count=1
+Jul 01 11:11:34.972241 raspberrypi dxrtd[36525]: [DXRT_SVC][DxrtService] Initialized Scheduler
+Jul 01 11:11:34.972344 raspberrypi dxrtd[36525]: [DXRT_SVC][DxrtService] Initialized IPC Server
+Jul 01 11:11:34.972344 raspberrypi dxrtd[36525]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+Jul 01 11:11:34.972344 raspberrypi dxrtd[36525]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+Jul 01 11:11:35.020250 raspberrypi dxrtd[36525]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+Jul 01 11:11:35.020301 raspberrypi dxrtd[36525]: [DXRT_SVC][die_check_thread] Started client process status check thread

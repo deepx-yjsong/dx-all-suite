@@ -1,0 +1,100 @@
+ 6월 25 21:00:50.363088 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:00:50.365766 deepx-B650MT dxrtd[5635]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:00:50.365766 deepx-B650MT dxrtd[5635]: [DXRT][Error] Device not found.
+ 6월 25 21:00:50.365933 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:00:50.365970 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:00:52.604056 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 246.
+ 6월 25 21:00:52.604186 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:00:52.623080 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:00:52.625572 deepx-B650MT dxrtd[5636]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:00:52.625572 deepx-B650MT dxrtd[5636]: [DXRT][Error] Device not found.
+ 6월 25 21:00:52.625810 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:00:52.625884 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:00:54.854058 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 247.
+ 6월 25 21:00:54.854187 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:00:54.871006 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:00:54.873474 deepx-B650MT dxrtd[5637]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:00:54.873474 deepx-B650MT dxrtd[5637]: [DXRT][Error] Device not found.
+ 6월 25 21:00:54.873624 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:00:54.873663 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:00:57.104074 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 248.
+ 6월 25 21:00:57.104212 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:00:57.115057 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:00:57.117736 deepx-B650MT dxrtd[5638]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:00:57.117736 deepx-B650MT dxrtd[5638]: [DXRT][Error] Device not found.
+ 6월 25 21:00:57.117897 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:00:57.117935 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:00:59.354005 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 249.
+ 6월 25 21:00:59.354113 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:00:59.367091 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:00:59.369029 deepx-B650MT dxrtd[5648]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:00:59.369029 deepx-B650MT dxrtd[5648]: [DXRT][Error] Device not found.
+ 6월 25 21:00:59.369222 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:00:59.369291 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:01:01.604063 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 250.
+ 6월 25 21:01:01.604201 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:01:01.614044 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:01:01.616514 deepx-B650MT dxrtd[5665]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:01:01.616514 deepx-B650MT dxrtd[5665]: [DXRT][Error] Device not found.
+ 6월 25 21:01:01.616667 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:01:01.616712 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:01:03.854017 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 251.
+ 6월 25 21:01:03.854126 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:01:03.867008 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:01:03.869801 deepx-B650MT dxrtd[5771]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:01:03.869801 deepx-B650MT dxrtd[5771]: [DXRT][Error] Device not found.
+ 6월 25 21:01:03.869958 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:01:03.869994 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:01:06.104057 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 252.
+ 6월 25 21:01:06.104191 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:01:06.117091 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:01:06.119637 deepx-B650MT dxrtd[5787]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:01:06.119637 deepx-B650MT dxrtd[5787]: [DXRT][Error] Device not found.
+ 6월 25 21:01:06.119857 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:01:06.119930 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:01:08.354029 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 253.
+ 6월 25 21:01:08.354159 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:01:08.363094 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:01:08.365570 deepx-B650MT dxrtd[5788]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:01:08.365570 deepx-B650MT dxrtd[5788]: [DXRT][Error] Device not found.
+ 6월 25 21:01:08.365795 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:01:08.365865 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:01:10.604060 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 254.
+ 6월 25 21:01:10.604146 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:01:10.614090 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:01:10.616888 deepx-B650MT dxrtd[6220]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:01:10.616888 deepx-B650MT dxrtd[6220]: [DXRT][Error] Device not found.
+ 6월 25 21:01:10.617072 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:01:10.617145 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:01:12.854081 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 255.
+ 6월 25 21:01:12.854213 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:01:12.860101 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:01:12.862755 deepx-B650MT dxrtd[6332]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:01:12.862755 deepx-B650MT dxrtd[6332]: [DXRT][Error] Device not found.
+ 6월 25 21:01:12.862953 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:01:12.863026 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:01:15.104022 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 256.
+ 6월 25 21:01:15.104133 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:01:15.121073 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:01:15.123741 deepx-B650MT dxrtd[6415]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:01:15.123741 deepx-B650MT dxrtd[6415]: [DXRT][Error] Device not found.
+ 6월 25 21:01:15.123923 deepx-B650MT systemd[1]: dxrt.service: Main process exited, code=exited, status=1/FAILURE
+ 6월 25 21:01:15.123997 deepx-B650MT systemd[1]: dxrt.service: Failed with result 'exit-code'.
+ 6월 25 21:01:17.239657 deepx-B650MT systemd[1]: dxrt.service: Scheduled restart job, restart counter is at 257.
+ 6월 25 21:01:17.239791 deepx-B650MT systemd[1]: Stopped DX-RT Service.
+ 6월 25 21:01:17.256005 deepx-B650MT systemd[1]: Started DX-RT Service.
+ 6월 25 21:01:17.264962 deepx-B650MT dxrtd[6739]: [DXRT_SVC][dxrt_service_main] Uses Default FIFO Scheduler
+ 6월 25 21:01:17.264962 deepx-B650MT dxrtd[6739]: [DXRT_SVC][Process] 0: Send recovery command
+ 6월 25 21:01:17.283883 deepx-B650MT dxrtd[6739]: [DXRT_SVC][Process] 1: Send recovery command
+ 6월 25 21:01:17.303386 deepx-B650MT dxrtd[6739]: [DXRT_SVC][Process] 2: Send recovery command
+ 6월 25 21:01:17.322882 deepx-B650MT dxrtd[6739]: [DXRT_SVC][Process] 3: Send recovery command
+ 6월 25 21:01:17.342427 deepx-B650MT dxrtd[6739]: [DXRT_SVC][DxrtService] Initialized Devices count=4
+ 6월 25 21:01:17.342427 deepx-B650MT dxrtd[6739]: [DXRT_SVC][DxrtService] Initialized Scheduler
+ 6월 25 21:01:17.342427 deepx-B650MT dxrtd[6739]: [DXRT_SVC][DxrtService] Initialized IPC Server
+ 6월 25 21:01:17.342427 deepx-B650MT dxrtd[6739]: [DXRT_SVC][ClearResidualIPCMessages] Clearing residual IPC messages from previous sessions...
+ 6월 25 21:01:17.342427 deepx-B650MT dxrtd[6739]: [DXRT_SVC][DxrtService] Loading PPCPU Firmware for devices, Size: 3616 bytes
+ 6월 25 21:01:17.390937 deepx-B650MT dxrtd[6739]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 0 successfully.
+ 6월 25 21:01:17.438962 deepx-B650MT dxrtd[6739]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 1 successfully.
+ 6월 25 21:01:17.486956 deepx-B650MT dxrtd[6739]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 2 successfully.
+ 6월 25 21:01:17.534954 deepx-B650MT dxrtd[6739]: [DXRT_SVC][LoadPPCPUFirmware] PPCPU firmware loaded to device 3 successfully.
+ 6월 25 21:01:17.535007 deepx-B650MT dxrtd[6739]: [DXRT_SVC][die_check_thread] Started client process status check thread

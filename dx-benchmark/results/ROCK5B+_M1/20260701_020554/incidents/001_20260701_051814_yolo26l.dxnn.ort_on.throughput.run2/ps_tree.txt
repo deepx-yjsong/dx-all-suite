@@ -1,0 +1,263 @@
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           2  0.0  0.0      0     0 ?        S    Jun29   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [rcu_gp]
+root           4  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [rcu_par_gp]
+root           5  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [slub_flushwq]
+root           6  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [netns]
+root          10  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [mm_percpu_wq]
+root          11  0.0  0.0      0     0 ?        I    Jun29   0:00  \_ [rcu_tasks_rude_kthread]
+root          12  0.0  0.0      0     0 ?        I    Jun29   0:00  \_ [rcu_tasks_trace_kthread]
+root          13  0.0  0.0      0     0 ?        S    Jun29   0:02  \_ [ksoftirqd/0]
+root          14  0.1  0.0      0     0 ?        I    Jun29   3:17  \_ [rcu_sched]
+root          15  0.0  0.0      0     0 ?        S    Jun29   0:01  \_ [migration/0]
+root          16  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cpuhp/0]
+root          17  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cpuhp/1]
+root          18  0.0  0.0      0     0 ?        S    Jun29   0:01  \_ [migration/1]
+root          19  0.0  0.0      0     0 ?        S    Jun29   0:01  \_ [ksoftirqd/1]
+root          22  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cpuhp/2]
+root          23  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [migration/2]
+root          24  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [ksoftirqd/2]
+root          27  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cpuhp/3]
+root          28  0.0  0.0      0     0 ?        S    Jun29   0:01  \_ [migration/3]
+root          29  0.0  0.0      0     0 ?        S    Jun29   0:13  \_ [ksoftirqd/3]
+root          32  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cpuhp/4]
+root          33  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [migration/4]
+root          34  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [ksoftirqd/4]
+root          37  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cpuhp/5]
+root          38  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [migration/5]
+root          39  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [ksoftirqd/5]
+root          42  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cpuhp/6]
+root          43  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [migration/6]
+root          44  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [ksoftirqd/6]
+root          47  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cpuhp/7]
+root          48  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [migration/7]
+root          49  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [ksoftirqd/7]
+root          52  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [kdevtmpfs]
+root          53  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [inet_frag_wq]
+root          56  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [kauditd]
+root          57  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [oom_reaper]
+root          59  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [writeback]
+root          60  0.0  0.0      0     0 ?        S    Jun29   0:12  \_ [kcompactd0]
+root          61  0.0  0.0      0     0 ?        SN   Jun29   0:00  \_ [ksmd]
+root          62  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [kblockd]
+root          63  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [blkcg_punt_bio]
+root          64  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [kconsole]
+root          65  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [tpm_dev_wq]
+root          66  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [edac-poller]
+root          67  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [devfreq_wq]
+root          68  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [watchdogd]
+root          71  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [kworker/6:1H-kblockd]
+root          72  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [rpciod]
+root          73  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [xprtiod]
+root          74  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [cfg80211]
+root          75  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/22-rockchip_thermal]
+root          76  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [kswapd0]
+root          77  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [nfsiod]
+root          78  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [xfsalloc]
+root          80  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [xfs_mru_cache]
+root          86  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [kthrotld]
+root          90  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/24-rockchip_usb2phy]
+root          91  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/25-rockchip_usb2phy]
+root          92  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/26-rockchip_usb2phy]
+root          93  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/27-rockchip_usb2phy]
+root          97  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work0]
+root          98  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work1]
+root          99  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work2]
+root         100  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work3]
+root         101  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work4]
+root         102  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work5]
+root         103  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work6]
+root         104  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work7]
+root         105  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work8]
+root         106  0.1  0.0      0     0 ?        S    Jun29   3:41  \_ [queue_work9]
+root         107  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work10]
+root         108  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [queue_work11]
+root         109  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [rk_pcie_hot_rst]
+root         110  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [rk_pcie_hot_rst]
+root         117  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [hwrng]
+root         118  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/60-fde50000.dp]
+root         119  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [hpd_queue]
+root         120  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/61-dw-hdmi-qp-hpd]
+root         121  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/62-fde80000.hdmi]
+root         122  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/64-fde80000.hdmi]
+root         123  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [hpd_queue]
+root         124  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/66-dw-hdmi-qp-hpd]
+root         125  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/67-fdea0000.hdmi]
+root         126  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/69-fdea0000.hdmi]
+root         127  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [card0-crtc0]
+root         128  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [card0-crtc1]
+root         129  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [card0-crtc2]
+root         130  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [card0-crtc3]
+root         131  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [hdcp_queue]
+root         132  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [hdcp_queue]
+root         133  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [nvme-wq]
+root         134  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [nvme-reset-wq]
+root         135  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [nvme-delete-wq]
+root         136  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [spi2]
+root         137  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/72-rk806]
+root         145  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [goodix_wq]
+root         147  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [4-0022]
+root         148  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [4-0022]
+root         149  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [4-0022]
+root         156  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/98-hym8563]
+root         157  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/113-rk_hdmirx-dma]
+root         158  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cfinteractive]
+root         159  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [cryptodev_queue]
+root         162  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [mld]
+root         163  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [ipv6_addrconf]
+root         164  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [kstrp]
+root         165  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [ceph-msgr]
+root         167  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [kworker/u17:0-hci0]
+root         226  0.6  0.0      0     0 ?        S    Jun29  15:04  \_ [irq/44-rga3_core0]
+root         227  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/45-rga3_core1]
+root         228  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/132-rga2]
+root         232  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [rk_pcie_hot_rst]
+root         233  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/135-fdb50400.vdpu]
+root         234  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/136-fdb50000.vepu]
+root         235  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/137-fdba0000.jpege-core]
+root         236  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/138-fdba4000.jpege-core]
+root         237  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/139-fdba8000.jpege-core]
+root         238  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/140-fdbac000.jpege-core]
+root         239  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/51-fdbb0000.iep]
+root         240  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/141-fdb90000.jpegd]
+root         241  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/144-fdbd0000.rkvenc-core]
+root         242  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/145-fdbe0000.rkvenc-core]
+root         243  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/146-fdc70000.av1d]
+root         244  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [rknpu_power_off]
+root         314  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/191-panthor-gpu]
+root         315  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/192-panthor-mmu]
+root         316  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cec-dw_hdmi_qp]
+root         317  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/63-dw-hdmi-qp-cec]
+root         318  0.0  0.0      0     0 ?        S    Jun29   0:17  \_ [irq/193-panthor-job]
+root         319  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [panthor-csf-sch]
+root         320  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [sdhci]
+root         321  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/194-mmc0]
+root         322  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [cec-dw_hdmi_qp]
+root         323  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/68-dw-hdmi-qp-cec]
+root         325  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [mmc_complete]
+root         349  0.0  0.0      0     0 ?        S    Jun29   0:04  \_ [jbd2/mmcblk0p3-8]
+root         350  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [ext4-rsv-conver]
+root         576  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [btfwwork]
+root         578  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/200-headset_detect]
+root         880  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [kworker/u17:2-hci0]
+root         959  0.0  0.0      0     0 ?        S    Jun29   0:00  \_ [irq/201-rtw89pci]
+root        1393  0.0  0.0      0     0 ?        S<   Jun29   0:00  \_ [krfcommd]
+root        6142  0.0  0.0      0     0 ?        I<   Jun29   0:00  \_ [kworker/1:0H-kblockd]
+root       26778  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/5:2H-kblockd]
+root       30269  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/2:2H-kblockd]
+root       31243  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/4:1H-kblockd]
+root       34819  0.0  0.0      0     0 ?        I<   Jun30   0:00  \_ [kworker/5:1H]
+root       41468  0.0  0.0      0     0 ?        I    02:04   0:03  \_ [kworker/u16:13-panthor-csf-sched]
+root       41494  0.0  0.0      0     0 ?        I<   02:04   0:00  \_ [kworker/7:1H-kblockd]
+root       41948  0.0  0.0      0     0 ?        I<   02:11   0:00  \_ [kworker/3:1H-kblockd]
+root       43897  0.0  0.0      0     0 ?        I<   03:14   0:00  \_ [kworker/3:2H]
+root       44291  0.0  0.0      0     0 ?        I    03:34   0:01  \_ [kworker/u16:4-panthor-csf-sched]
+root       44434  0.0  0.0      0     0 ?        I    03:38   0:02  \_ [kworker/u16:5-events_freezable_power_]
+root       44962  0.0  0.0      0     0 ?        I<   03:54   0:00  \_ [kworker/4:0H]
+root       45258  0.0  0.0      0     0 ?        I    04:08   0:00  \_ [kworker/4:2-mm_percpu_wq]
+root       45693  0.0  0.0      0     0 ?        I    04:24   0:00  \_ [kworker/3:0-events]
+root       45743  0.0  0.0      0     0 ?        I<   04:24   0:00  \_ [kworker/7:2H]
+root       45836  0.0  0.0      0     0 ?        I    04:35   0:00  \_ [kworker/u16:1-events_freezable_power_]
+root       45938  0.0  0.0      0     0 ?        I<   04:38   0:00  \_ [kworker/6:2H]
+root       45972  0.0  0.0      0     0 ?        I<   04:38   0:00  \_ [kworker/2:1H]
+root       46199  0.0  0.0      0     0 ?        I<   04:39   0:00  \_ [kworker/0:1H]
+root       46590  0.0  0.0      0     0 ?        I<   04:43   0:00  \_ [kworker/1:1H]
+root       46903  0.0  0.0      0     0 ?        I<   04:53   0:00  \_ [kworker/0:2H-kblockd]
+root       46905  0.0  0.0      0     0 ?        I    04:55   0:00  \_ [kworker/u16:0-panthor-csf-sched]
+root       46960  0.0  0.0      0     0 ?        I    04:58   0:00  \_ [kworker/4:1-pm]
+root       46965  0.0  0.0      0     0 ?        I    04:58   0:00  \_ [kworker/0:0-mm_percpu_wq]
+root       46966  0.0  0.0      0     0 ?        I    04:58   0:00  \_ [kworker/7:2-events]
+root       46974  0.0  0.0      0     0 ?        I    04:59   0:00  \_ [kworker/6:0-events]
+root       46990  0.0  0.0      0     0 ?        I    05:01   0:00  \_ [kworker/1:0-pm]
+root       47005  0.0  0.0      0     0 ?        I    05:04   0:00  \_ [kworker/3:2-pm]
+root       47008  0.0  0.0      0     0 ?        I    05:04   0:00  \_ [kworker/2:2-pm]
+root       47011  0.0  0.0      0     0 ?        I    05:04   0:00  \_ [kworker/5:2-pm]
+root       47039  0.0  0.0      0     0 ?        I    05:06   0:00  \_ [kworker/7:1-events]
+root       47088  0.0  0.0      0     0 ?        I    05:07   0:00  \_ [kworker/6:1-pm]
+root       47089  0.0  0.0      0     0 ?        I    05:08   0:00  \_ [kworker/1:2-events]
+root       47110  0.0  0.0      0     0 ?        I    05:09   0:00  \_ [kworker/2:0-events]
+root       47111  0.0  0.0      0     0 ?        I    05:09   0:00  \_ [kworker/0:2-pm]
+root       47114  0.0  0.0      0     0 ?        I    05:13   0:00  \_ [kworker/5:1-events]
+root       47115  0.0  0.0      0     0 ?        I    05:14   0:00  \_ [kworker/4:0-events]
+root       47116  0.0  0.0      0     0 ?        I    05:14   0:00  \_ [kworker/1:1-pm]
+root       47117  0.0  0.0      0     0 ?        I    05:15   0:00  \_ [kworker/2:1-pm]
+root       47118  0.0  0.0      0     0 ?        I    05:15   0:00  \_ [kworker/3:1-pm]
+root       47119  0.0  0.0      0     0 ?        I    05:15   0:00  \_ [kworker/6:2-events]
+root       47121  0.0  0.0      0     0 ?        I    05:15   0:00  \_ [kworker/0:1-events]
+root       47122  0.0  0.0      0     0 ?        I    05:16   0:00  \_ [kworker/u16:2-events_freezable_power_]
+root       47130  0.0  0.0      0     0 ?        I<   05:18   0:00  \_ [kworker/4:2H]
+root           1  0.0  0.1 168644 11832 ?        Ss   Jun29   0:04 /sbin/init splash
+root         414  0.0  0.3  58816 24580 ?        Ss   Jun29   0:05 /lib/systemd/systemd-journald
+root         435  0.0  0.0  25952  6868 ?        Ss   Jun29   0:01 /lib/systemd/systemd-udevd
+root         729  0.0  0.0   8104  4680 ?        Ss   Jun29   0:06 /usr/sbin/haveged --Foreground --verbose=1
+systemd+     732  0.0  0.0  90448  6808 ?        Ssl  Jun29   0:01 /lib/systemd/systemd-timesyncd
+root         944  0.0  0.0 237836  7144 ?        Ssl  Jun29   0:00 /usr/libexec/accounts-daemon
+avahi        973  0.7  0.0   7620  3360 ?        Ss   Jun29  18:11 avahi-daemon: running [rock-5b-plus-2.local]
+avahi       1082  0.0  0.0   7180   312 ?        S    Jun29   0:00  \_ avahi-daemon: chroot helper
+root         974  0.0  0.0  13396  5796 ?        Ss   Jun29   0:00 /usr/libexec/bluetooth/bluetoothd
+message+     976  0.0  0.0  10080  5456 ?        Ss   Jun29   0:02 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+root         984  0.8  0.0 284876  1696 ?        Ssl  Jun29  21:11 /usr/bin/rknn_server
+root         995  0.0  0.1  50144  8156 ?        Ss   Jun29   0:01 /lib/systemd/systemd-logind
+root         996  0.0  0.1 391252 11248 ?        Ssl  Jun29   0:00 /usr/libexec/udisks2/udisksd
+root         998  0.0  0.0 234640  6364 ?        Ssl  Jun29   0:00 /usr/libexec/upowerd
+root        1263  0.0  0.2 262432 19284 ?        Ssl  Jun29   0:11 /usr/sbin/NetworkManager --no-daemon
+root        1275  0.0  0.0  16320  5620 ?        Ss   Jun29   0:01 /sbin/wpa_supplicant -u -s -O DIR=/run/wpa_supplicant GROUP=netdev
+polkitd     1285  0.0  0.1 311420  9812 ?        Ssl  Jun29   0:01 /usr/lib/polkit-1/polkitd --no-debug
+root        1330  0.0  0.1  30716  8408 ?        Ss   Jun29   0:00 /usr/sbin/cupsd -l
+root        1350  0.0  0.1  16348  8924 ?        Ss   Jun29   0:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+root       46200  0.0  0.1  19804 10088 ?        Ss   04:39   0:00  \_ sshd: rock [priv]
+rock       46213  0.3  0.1  21856  8680 ?        S    04:39   0:07      \_ sshd: rock@notty
+rock       46219  0.0  0.0   2320  1512 ?        Ss   04:39   0:00          \_ sh
+rock       46237  0.5  0.2  50200 18588 ?        Sl   04:39   0:11              \_ /home/rock/.vscode-server/code-7e7950df89d055b5a378379db9ee14290772148a command-shell --cli-data-dir /home/rock/.vscode-server/cli --parent-process-id 46219 --on-host=127.0.0.1 --on-port
+rock       47120  0.0  0.0   5200   784 ?        S    05:15   0:00              \_ sleep 180
+dnsmasq     1357  0.0  0.0  14832   532 ?        S    Jun29   0:00 /usr/sbin/dnsmasq -x /run/dnsmasq/dnsmasq.pid -u dnsmasq -7 /etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new --local-service
+root        1362  0.0  0.1 239660  8484 ?        Ssl  Jun29   0:00 /usr/sbin/gdm3
+root        1644  0.0  0.1 167556  8300 ?        Sl   Jun29   0:00  \_ gdm-session-worker [pam/gdm-password]
+rock        1680  0.0  0.0 163444  6272 tty2     Ssl+ Jun29   0:00      \_ /usr/libexec/gdm-x-session --register-session --run-script /usr/bin/startplasma-x11
+root        1686  0.2  1.8 441648 152552 tty2    Sl+  Jun29   6:52          \_ /usr/lib/xorg/Xorg vt2 -displayfd 3 -auth /run/user/1001/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+rock        1700  0.0  0.4 204936 38672 tty2     Sl+  Jun29   0:00          \_ /usr/bin/startplasma-x11
+rock        1727  0.0  0.0   7264   740 ?        Ss   Jun29   0:01              \_ /usr/bin/ssh-agent /usr/bin/startplasma-x11
+root        1368  0.0  0.0   5244   748 ttyFIQ0  Ss+  Jun29   0:00 /sbin/agetty -o -p -- \u --keep-baud 115200,57600,38400,9600 - linux
+rock        1660  0.0  0.1  19876 10720 ?        Ss   Jun29   0:01 /lib/systemd/systemd --user
+rock        1661  0.0  0.0 170644  3276 ?        S    Jun29   0:00  \_ (sd-pam)
+rock        1667  0.0  0.1  47544 12816 ?        Ssl  Jun29   0:00  \_ /usr/bin/pipewire
+rock        1668  0.0  0.1 112544 15784 ?        Ssl  Jun29   0:02  \_ /usr/bin/wireplumber
+rock        1669  0.0  0.1  29816  9568 ?        Ssl  Jun29   0:00  \_ /usr/bin/pipewire-pulse
+rock        1674  0.0  0.0   8828  4328 ?        Ss   Jun29   0:00  \_ /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+rock        1750  0.0  0.0 238364  7256 ?        Ssl  Jun29   0:00  \_ /usr/libexec/gvfsd
+rock        1758  0.0  0.0 456080  6252 ?        Sl   Jun29   0:00  \_ /usr/libexec/gvfsd-fuse /run/user/1001/gvfs -f
+rock        1772  0.0  0.7 956516 63836 ?        Ssl  Jun29   0:42  \_ /usr/bin/kded5
+rock        1773  0.0  0.7 308684 60648 ?        Ssl  Jun29   0:01  \_ /usr/bin/ksmserver
+rock       42005  0.3  2.1 1364020 172480 ?      Sl   02:12   0:38  |   \_ /lib/aarch64-linux-gnu/libexec/kscreenlocker_greet --graceTime 5000 --ksldfd 27
+rock        1774  0.1  1.9 990504 157808 ?       Ssl  Jun29   3:26  \_ /usr/bin/kwin_x11 --replace
+rock        1781  0.0  0.3 238112 26612 ?        Ssl  Jun29   0:03  \_ /usr/bin/kglobalaccel5
+rock        1799  1.2  4.1 1648516 337160 ?      Ssl  Jun29  31:18  \_ /usr/bin/plasmashell --no-respawn
+rock       41566  0.1  1.7 1354892 141176 ?      Sl   02:05   0:12  |   \_ /usr/bin/dolphin
+rock        1812  0.0  0.4 554556 36432 ?        Ssl  Jun29   0:00  \_ /usr/lib/aarch64-linux-gnu/libexec/kactivitymanagerd
+rock        1813  0.0  0.2 235856 21948 ?        Ssl  Jun29   0:00  \_ /usr/bin/gmenudbusmenuproxy
+rock        1814  0.0  0.5 442836 45540 ?        Ssl  Jun29   0:00  \_ /usr/lib/aarch64-linux-gnu/libexec/polkit-kde-authentication-agent-1
+rock        1815  0.0  0.5 504728 45204 ?        Ssl  Jun29   0:11  \_ /usr/lib/aarch64-linux-gnu/libexec/org_kde_powerdevil
+rock        1816  0.0  0.2 234616 21116 ?        Ssl  Jun29   0:00  \_ /usr/bin/xembedsniproxy
+rock        1824  0.0  0.0  48664  7080 ?        Ss   Jun29   0:00  \_ /usr/libexec/bluetooth/obexd
+rock        1832  0.0  0.2 227316 20500 ?        Ssl  Jun29   0:00  \_ /usr/lib/aarch64-linux-gnu/libexec/kf5/kscreen_backend_launcher
+rock        1899  0.0  0.6 370876 50968 ?        Ssl  Jun29   0:29  \_ /usr/lib/aarch64-linux-gnu/libexec/kdeconnectd
+rock        1906  0.0  0.5 297080 44420 ?        Ssl  Jun29   0:00  \_ /usr/bin/kaccess
+rock        1910  0.0  0.5 368564 46952 ?        Ssl  Jun29   0:30  \_ /usr/lib/aarch64-linux-gnu/libexec/DiscoverNotifier
+rock        1929  0.0  0.0 156800  4104 ?        Ssl  Jun29   0:00  \_ /usr/libexec/dconf-service
+rock       41479  0.0  1.5 851960 122076 ?       Sl   02:04   0:07  \_ /usr/bin/konsole
+rock       41487  0.0  0.0   8112  4900 pts/0    Ss   02:04   0:00  |   \_ /bin/bash
+rock       41621  0.0  0.2  30916 23332 pts/0    S+   02:05   0:10  |       \_ python3 -m dx_stream.apps.benchmark run --product-name ROCK5B+
+rock       47133  500  0.0  11280  4388 pts/0    R+   05:18   0:00  |           \_ ps auxf
+rock       41520  0.2  1.4 849488 118772 ?       Sl   02:04   0:31  \_ /usr/bin/konsole
+rock       41532  0.0  0.0   8112  4664 pts/1    Ss   02:04   0:00      \_ /bin/bash
+rock       41650  0.5  0.0  21772  5796 pts/1    S+   02:05   1:06          \_ dxtop
+root       38671  1.1  0.0 390044  6060 ?        Ssl  01:58   2:18 /usr/local/bin/dxrtd
+root       44968  0.0  0.5 407900 43220 ?        Ssl  03:55   0:01 /usr/libexec/fwupd/fwupd
+rock       46067  0.0  0.1  47224 14896 ?        Ssl  04:39   0:00 /home/rock/.vscode-server/code-7e7950df89d055b5a378379db9ee14290772148a --cli-data-dir /home/rock/.vscode-server/cli agent host
+rock       46090  0.0  0.0   2320   800 ?        S    04:39   0:00 sh /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/bin/code-server --connection-token=remotessh --accept-server-license-terms --agent-host-bridge-port=40477 --agent-host-bridge-host=127.0.0.1 --agent-host-bridge-connection-token=05f73619-48b3-4d72-a01d-fb24094b7617 --start-server --enable-remote-auto-shutdown --socket-path=/tmp/code-ad23c1f7-1851-49e7-a5a0-1f17f6c4a2b8
+rock       46094  0.3  1.9 1536196 159468 ?      Sl   04:39   0:09  \_ /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/server-main.js --connection-token=remotessh --accept-server-license-terms --agent-host-bridge-port=40477 --agent-host-bridge-host=127.0.0.1 --agent-host-bridge-connection-token=05f73619-48b3-4d72-a01d-fb24094b7617 --start-server --enable-remote-auto-shutdown --socket-path=/tmp/code-ad23c1f7-1851-49e7-a5a0-1f17f6c4a2b8
+rock       46137  0.0  0.8 1483008 70692 ?       Sl   04:39   0:01      \_ /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/bootstrap-fork --type=ptyHost --logsPath /home/rock/.vscode-server/data/logs/20260701T043922
+rock       46280  2.2  6.0 27629972 491904 ?     Sl   04:39   0:51      \_ /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node --dns-result-order=ipv4first /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/bootstrap-fork --type=extensionHost --transformURIs --useHostProxy=false
+rock       46373  0.4  0.9 1231284 79552 ?       Sl   04:39   0:09      |   \_ /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/extensions/markdown-language-features/dist/serverWorkerMain --node-ipc --clientProcessId=46280
+rock       46470  0.0  0.8 1228260 70828 ?       Sl   04:41   0:00      |   \_ /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/extensions/json-language-features/server/dist/node/jsonServerMain --node-ipc --clientProcessId=46280
+rock       46299  0.0  0.7 1391588 57624 ?       Sl   04:39   0:01      \_ /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/node /home/rock/.vscode-server/cli/servers/Stable-7e7950df89d055b5a378379db9ee14290772148a/server/out/bootstrap-fork --type=fileWatcher

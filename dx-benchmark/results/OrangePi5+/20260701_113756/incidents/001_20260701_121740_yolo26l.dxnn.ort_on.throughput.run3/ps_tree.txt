@@ -1,0 +1,266 @@
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           2  0.0  0.0      0     0 ?        S     6월29   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [rcu_gp]
+root           4  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [rcu_par_gp]
+root           5  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [slub_flushwq]
+root           6  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [netns]
+root          10  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [mm_percpu_wq]
+root          11  0.0  0.0      0     0 ?        I     6월29   0:00  \_ [rcu_tasks_rude_kthread]
+root          12  0.0  0.0      0     0 ?        I     6월29   0:00  \_ [rcu_tasks_trace_kthread]
+root          13  0.0  0.0      0     0 ?        S     6월29   0:03  \_ [ksoftirqd/0]
+root          14  0.1  0.0      0     0 ?        I     6월29   3:06  \_ [rcu_sched]
+root          15  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [migration/0]
+root          16  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cpuhp/0]
+root          17  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cpuhp/1]
+root          18  0.0  0.0      0     0 ?        S     6월29   0:01  \_ [migration/1]
+root          19  0.0  0.0      0     0 ?        S     6월29   0:01  \_ [ksoftirqd/1]
+root          21  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/1:0H-events_highpri]
+root          22  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cpuhp/2]
+root          23  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [migration/2]
+root          24  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [ksoftirqd/2]
+root          27  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cpuhp/3]
+root          28  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [migration/3]
+root          29  0.0  0.0      0     0 ?        S     6월29   0:12  \_ [ksoftirqd/3]
+root          31  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/3:0H-kblockd]
+root          32  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cpuhp/4]
+root          33  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [migration/4]
+root          34  0.0  0.0      0     0 ?        S     6월29   0:04  \_ [ksoftirqd/4]
+root          36  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/4:0H-events_highpri]
+root          37  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cpuhp/5]
+root          38  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [migration/5]
+root          39  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [ksoftirqd/5]
+root          41  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/5:0H-events_highpri]
+root          42  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cpuhp/6]
+root          43  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [migration/6]
+root          44  0.0  0.0      0     0 ?        S     6월29   0:02  \_ [ksoftirqd/6]
+root          47  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cpuhp/7]
+root          48  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [migration/7]
+root          49  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [ksoftirqd/7]
+root          52  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [kdevtmpfs]
+root          53  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [inet_frag_wq]
+root          56  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [kauditd]
+root          57  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [oom_reaper]
+root          59  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [writeback]
+root          60  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kblockd]
+root          61  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [blkcg_punt_bio]
+root          62  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [kconsole]
+root          63  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [tpm_dev_wq]
+root          64  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [edac-poller]
+root          65  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [devfreq_wq]
+root          66  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [watchdogd]
+root          69  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/4:1H-kblockd]
+root          70  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [rpciod]
+root          71  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [xprtiod]
+root          72  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [cfg80211]
+root          73  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/22-rockchip_thermal]
+root          75  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [kswapd0]
+root          76  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [nfsiod]
+root          77  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kthrotld]
+root          81  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/24-rockchip_usb2phy]
+root          82  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/25-rockchip_usb2phy]
+root          84  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/26-rockchip_usb2phy]
+root          85  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/27-rockchip_usb2phy]
+root          90  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [rk_pcie_hot_rst]
+root          91  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [rk_pcie_hot_rst]
+root          92  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work0]
+root          93  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work1]
+root          94  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work2]
+root          95  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work3]
+root          96  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work4]
+root          97  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work5]
+root          98  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work6]
+root          99  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work7]
+root         100  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work8]
+root         101  0.0  0.0      0     0 ?        S     6월29   2:46  \_ [queue_work9]
+root         102  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work10]
+root         103  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [queue_work11]
+root         104  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [rk_pcie_hot_rst]
+root         105  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [hwrng]
+root         106  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/63-fde50000.dp]
+root         107  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [hpd_queue]
+root         108  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/64-dw-hdmi-qp-hpd]
+root         109  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/65-fde80000.hdmi]
+root         110  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/67-fde80000.hdmi]
+root         111  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [hpd_queue]
+root         112  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/69-dw-hdmi-qp-hpd]
+root         113  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/70-fdea0000.hdmi]
+root         114  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/72-fdea0000.hdmi]
+root         115  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [card0-crtc0]
+root         116  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [card0-crtc1]
+root         117  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [card0-crtc2]
+root         118  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [card0-crtc3]
+root         119  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [rk_pcie_hot_rst]
+root         120  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [hdcp_queue]
+root         121  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [hdcp_queue]
+root         122  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cec-dw_hdmi_qp]
+root         123  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/66-dw-hdmi-qp-cec]
+root         124  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cec-dw_hdmi_qp]
+root         125  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/71-dw-hdmi-qp-cec]
+root         126  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [nvme-wq]
+root         127  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [nvme-reset-wq]
+root         128  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [nvme-delete-wq]
+root         129  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [spi2]
+root         130  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/77-rk806]
+root         134  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [libertastf]
+root         138  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [uas]
+root         140  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [6-0022]
+root         141  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [6-0022]
+root         142  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [6-0022]
+root         143  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/135-hym8563]
+root         146  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [cfinteractive]
+root         152  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [cryptodev_queue]
+root         154  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [sdhci]
+root         156  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/156-mmc0]
+root         160  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/162-headset_detect]
+root         161  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [mld]
+root         162  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/1:1H-kblockd]
+root         163  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [ipv6_addrconf]
+root         164  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kstrp]
+root         230  0.4  0.0      0     0 ?        S     6월29  12:42  \_ [irq/45-rga3_core0]
+root         231  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/46-rga3_core1]
+root         232  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/163-rga2]
+root         234  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/164-fdb50400.vdpu]
+root         235  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/165-fdb50000.vepu]
+root         236  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/166-fdba0000.jpege-core]
+root         237  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/167-fdba4000.jpege-core]
+root         238  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/168-fdba8000.jpege-core]
+root         239  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/169-fdbac000.jpege-core]
+root         240  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/52-fdbb0000.iep]
+root         241  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/170-fdb90000.jpegd]
+root         242  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/173-fdbd0000.rkvenc-core]
+root         243  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [irq/174-fdbe0000.rkvenc-core]
+root         244  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [gpu_power_off_w]
+root         245  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [free_pages_work]
+root         246  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [mmc_complete]
+root         249  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [rknpu_power_off]
+root         281  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/6:1H-kblockd]
+root         295  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/7:1H-kblockd]
+root         296  0.0  0.0      0     0 ?        I<    6월29   0:01  \_ [kworker/0:1H-kblockd]
+root         297  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/2:1H-kblockd]
+root         335  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/0:2H]
+root         350  0.0  0.0      0     0 ?        S     6월29   0:00  \_ [jbd2/mmcblk0p2-8]
+root         351  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [ext4-rsv-conver]
+root         432  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/3:2H-kblockd]
+root         433  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/7:2H]
+root         607  2.5  0.0      0     0 ?        S     6월29  72:25  \_ [irq/186-rtw89_pci]
+root         770  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [ext4-rsv-conver]
+root        1256  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/2:2H]
+root        1568  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/5:2H-kblockd]
+root        1723  0.0  0.0      0     0 ?        S     6월29   1:22  \_ [mali-gpuq-kthread]
+root        2064  0.0  0.0      0     0 ?        S<    6월29   0:00  \_ [krfcommd]
+root        2096  0.0  0.0      0     0 ?        I<    6월29   0:00  \_ [kworker/6:2H]
+root       54484  0.0  0.0      0     0 ?        I    10:20   0:03  \_ [kworker/u16:3-devfreq_wq]
+root       54697  0.0  0.0      0     0 ?        I    11:08   0:03  \_ [kworker/5:0-events]
+root       54754  0.0  0.0      0     0 ?        I    11:20   0:02  \_ [kworker/u16:0-phy0]
+root       54971  0.1  0.0      0     0 ?        I    11:27   0:04  \_ [kworker/6:3-events]
+root       58437  0.0  0.0      0     0 ?        I    11:45   0:01  \_ [kworker/u16:1-phy0]
+root       58518  0.0  0.0      0     0 ?        I    11:47   0:00  \_ [kworker/2:2-pm]
+root       58594  0.0  0.0      0     0 ?        I    11:49   0:00  \_ [kworker/1:0-events]
+root       58734  0.1  0.0      0     0 ?        I    11:53   0:01  \_ [kworker/4:5-pm]
+root       58754  0.0  0.0      0     0 ?        I    11:53   0:01  \_ [kworker/7:4-pm]
+root       58787  0.0  0.0      0     0 ?        I<   11:55   0:00  \_ [kworker/u17:0-kbase_pm_poweroff_wait]
+root       58954  0.0  0.0      0     0 ?        I    11:59   0:00  \_ [kworker/u16:4-devfreq_workq]
+root       59002  0.0  0.0      0     0 ?        I    12:00   0:00  \_ [kworker/2:3-pm]
+root       59003  0.0  0.0      0     0 ?        I    12:00   0:00  \_ [kworker/1:2-pm]
+root       59035  0.0  0.0      0     0 ?        I    12:01   0:00  \_ [kworker/3:1-pm]
+root       59074  0.0  0.0      0     0 ?        I    12:01   0:00  \_ [kworker/0:1-pm]
+root       59133  0.0  0.0      0     0 ?        I    12:02   0:00  \_ [kworker/5:3-events]
+root       59201  0.0  0.0      0     0 ?        I    12:04   0:00  \_ [kworker/6:0-pm]
+root       59208  0.0  0.0      0     0 ?        I    12:05   0:00  \_ [kworker/4:3-events_freezable]
+root       59209  0.0  0.0      0     0 ?        I    12:05   0:00  \_ [kworker/7:3-events]
+root       59264  0.0  0.0      0     0 ?        I    12:06   0:00  \_ [kworker/3:2-events]
+root       59265  0.0  0.0      0     0 ?        I    12:06   0:00  \_ [kworker/0:3-events]
+root       59286  0.0  0.0      0     0 ?        I<   12:07   0:00  \_ [kworker/u17:1-mali_kbase_csf_sync_upd]
+root       59315  0.0  0.0      0     0 ?        I    12:11   0:00  \_ [kworker/7:0-pm]
+root       59316  0.0  0.0      0     0 ?        I    12:11   0:00  \_ [kworker/5:2-pm]
+root       59317  0.0  0.0      0     0 ?        I    12:12   0:00  \_ [kworker/3:0-pm]
+root       59318  0.0  0.0      0     0 ?        I    12:12   0:00  \_ [kworker/6:2-pm]
+root       59319  0.0  0.0      0     0 ?        I    12:12   0:00  \_ [kworker/0:0-pm]
+root       59320  0.0  0.0      0     0 ?        I    12:13   0:00  \_ [kworker/2:0-events]
+root       59324  0.0  0.0      0     0 ?        I    12:15   0:00  \_ [kworker/u16:2-devfreq_wq]
+root       59333  0.0  0.0      0     0 ?        I    12:15   0:00  \_ [kworker/1:1-events]
+root       59334  0.0  0.0      0     0 ?        I    12:15   0:00  \_ [kworker/4:0-events]
+root       59335  0.0  0.0      0     0 ?        I    12:15   0:00  \_ [kworker/3:3-pm]
+root       59336  0.0  0.0      0     0 ?        I<   12:16   0:00  \_ [kworker/u17:2-mali_kbase_csf_sync_upd]
+root       59348  0.0  0.0      0     0 ?        I    12:17   0:00  \_ [kworker/6:1]
+root       59349  0.0  0.0      0     0 ?        I    12:17   0:00  \_ [kworker/5:1]
+root       59350  0.0  0.0      0     0 ?        I    12:17   0:00  \_ [kworker/7:1]
+root           1  0.0  0.0 168984 12092 ?        Ss    6월29   0:12 /sbin/init splash
+root         439  0.0  0.0  26728  7604 ?        Ss    6월29   0:02 /lib/systemd/systemd-udevd
+root         618  0.3  0.0 647228  9668 ?        S<sl  6월29  10:09 /bin/brltty --no-daemon
+root         800  0.0  0.0   2320   188 ?        S     6월29   0:00 /bin/sh -e /usr/bin/usbdevice start
+root         802  0.0  0.0   9536     4 ?        Sl    6월29   0:00  \_ /usr/bin/adbd
+root         850  0.0  0.0  49992  9092 ?        Ss    6월29   0:10 /lib/systemd/systemd-journald
+root         859  0.0  0.0   8104  4548 ?        Ss    6월29   0:06 /usr/sbin/haveged --Foreground --verbose=1
+_rpc         866  0.0  0.0   8504  2256 ?        Ss    6월29   0:00 /sbin/rpcbind -f -w
+root         956  0.0  0.0  13452  5948 ?        Ss    6월29   0:32 /usr/libexec/bluetooth/bluetoothd
+root         957  0.0  0.0   8004  2604 ?        Ss    6월29   0:01 /usr/sbin/cron -f
+message+     960  0.0  0.0   9212  4636 ?        Ss    6월29   0:59 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+root         968  0.0  0.0 222188  3500 ?        Ssl   6월29   0:01 /usr/sbin/rsyslogd -n -iNONE
+root         975  0.0  0.0  50324  7996 ?        Ss    6월29   0:01 /lib/systemd/systemd-logind
+root         976  0.0  0.0 391612 11420 ?        Ssl   6월29   0:00 /usr/libexec/udisks2/udisksd
+root        1087  0.0  0.1 263972 19376 ?        Ssl   6월29   0:59 /usr/sbin/NetworkManager --no-daemon
+root        1089  0.0  0.0  17224 11000 ?        Ss    6월29   0:03 /sbin/wpa_supplicant -u -s -O DIR=/run/wpa_supplicant GROUP=netdev
+polkitd     1145  0.0  0.0 315152  9216 ?        Ssl   6월29   0:00 /usr/lib/polkit-1/polkitd --no-debug
+root        1260  0.0  0.0  31964  8300 ?        Ss    6월29   0:00 /usr/sbin/cupsd -l
+root        1265  0.0  0.0   6440  1672 ?        Ss    6월29   0:00 /usr/lib/ipsec/starter --daemon charon --nofork
+root        1342  0.0  0.0 1193880 4468 ?        Ssl   6월29   0:00  \_ /usr/lib/ipsec/charon
+root        1268  0.0  0.1 120400 23252 ?        Ssl   6월29   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root        1276  0.0  0.0 307540  6772 ?        Ssl   6월29   0:00 /usr/sbin/lightdm
+root        1685  1.4  3.7 8879400 617564 tty7   Ssl+  6월29  42:06  \_ /usr/lib/xorg/Xorg :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch
+root        1765  0.0  0.0 162396  7220 ?        Sl    6월29   0:00  \_ lightdm --session-child 15 18
+orangepi    1794  0.0  0.4 470228 76624 ?        Ssl   6월29   0:02      \_ xfce4-session
+orangepi    2013  0.0  0.0   7268   740 ?        Ss    6월29   0:01          \_ /usr/bin/ssh-agent /usr/bin/im-launch startxfce4
+orangepi    2402  0.1  0.3 510656 49936 ?        Sl    6월29   3:22          \_ xfwm4
+orangepi    2473  0.0  0.1 233972 25348 ?        Sl    6월29   0:06          \_ xfsettingsd
+orangepi   57953  0.5  0.4 639080 72412 ?        Sl   11:36   0:13          |   \_ /usr/bin/python3 /usr/bin/terminator
+orangepi   57998  0.0  0.0   9540  5020 pts/0    Ss   11:36   0:00          |       \_ /bin/bash
+orangepi   58104  0.1  0.1  29068 20032 pts/0    S+   11:37   0:03          |       |   \_ python3 -m dx_stream.apps.benchmark run --product-name OrangePi5+
+orangepi   59359  300  0.0  12720  4536 pts/0    R+   12:17   0:00          |       |       \_ ps auxf
+orangepi   58041  0.0  0.0   9408  4756 pts/1    Ss   11:36   0:00          |       \_ /bin/bash
+orangepi   58047  0.5  0.0  21836  5752 pts/1    S+   11:36   0:13          |           \_ dxtop
+orangepi    2481  0.0  0.2 578676 44820 ?        Sl    6월29   0:32          \_ xfce4-panel
+orangepi    2493  0.0  0.1 526904 31852 ?        Sl    6월29   0:08          |   \_ /usr/lib/aarch64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/aarch64-linux-gnu/xfce4/panel/plugins/libsystray.so 6 20971532 systray 상태 표시줄 플러그인 상태 알림 항목(프로그램 표시)과 구형 시스템 트레이 항목을 나타냅니다
+orangepi    2494  0.0  0.1 353916 26464 ?        Sl    6월29   0:01          |   \_ /usr/lib/aarch64-linux-gnu/xfce4/panel/wrapper-2.0 /usr/lib/aarch64-linux-gnu/xfce4/panel/plugins/libactions.so 2 20971533 actions 동작 단추 로그아웃, 잠금 또는 다른 시스템 동작을 수행합니다
+orangepi    2485  0.0  0.3 522412 51408 ?        Sl    6월29   0:28          \_ Thunar --daemon
+orangepi    2490  0.0  1.4 933304 240608 ?       Sl    6월29   0:47          \_ xfdesktop
+orangepi    2508  0.0  0.1 719332 32592 ?        Sl    6월29   0:00          \_ pasystray
+orangepi    2510  0.0  0.1 192500 17920 ?        Sl    6월29   0:01          \_ xfce4-power-manager
+orangepi    2515  0.0  0.1 190904 16888 ?        Sl    6월29   0:00          \_ /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1
+orangepi    2516  0.0  0.0   5188  2896 ?        S     6월29   0:06          \_ xscreensaver -no-splash
+orangepi    2561  0.0  0.0   7940  1912 ?        S     6월29   0:00          |   \_ xscreensaver-systemd
+orangepi    2520  0.0  0.2 538808 36288 ?        Sl    6월29   1:00          \_ nm-applet
+orangepi    2532  0.0  0.2  65712 34440 ?        S     6월29   0:01          \_ /usr/bin/python3 /usr/share/system-config-printer/applet.py
+orangepi    2535  0.0  0.2 574780 41056 ?        Sl    6월29   0:04          \_ /usr/lib/aarch64-linux-gnu/xfce4/notifyd/xfce4-notifyd
+orangepi    2539  0.0  0.3 451436 49688 ?        Sl    6월29   0:02          \_ /usr/bin/python3 /usr/bin/blueman-applet
+root        1279  0.1  0.2 2160772 41660 ?       Ssl   6월29   5:30 /usr/bin/containerd
+_chrony     1282  0.0  0.0  19384  2944 ?        S     6월29   0:00 /usr/sbin/chronyd -F 1
+_chrony     1351  0.0  0.0  11192  3104 ?        S     6월29   0:00  \_ /usr/sbin/chronyd -F 1
+root        1286  0.0  0.0  16340  7972 ?        Ss    6월29   0:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+dnsmasq     1290  0.0  0.0  16144   536 ?        S     6월29   0:00 /usr/sbin/dnsmasq -x /run/dnsmasq/dnsmasq.pid -u dnsmasq -r /run/dnsmasq/resolv.conf -7 /etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new --local-service
+root        1560  0.0  0.0   2316   100 ?        Ss    6월29   0:00 /usr/sbin/xl2tpd
+orangepi    1771  0.0  0.0  19728 10456 ?        Ss    6월29   0:00 /lib/systemd/systemd --user
+orangepi    1772  0.0  0.0 170556  3560 ?        S     6월29   0:00  \_ (sd-pam)
+orangepi    1789  0.0  0.1 602812 23128 ?        Ssl   6월29   0:00  \_ /usr/bin/pulseaudio --daemonize=no --log-target=journal
+orangepi    1814  0.0  0.0   9124  4648 ?        Ss    6월29   0:07  \_ /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+orangepi    2053  0.0  0.0 239712  7392 ?        Ssl   6월29   0:00  \_ /usr/libexec/gvfsd
+orangepi    3510  0.0  0.0 313980  7704 ?        Sl    6월29   0:00  |   \_ /usr/libexec/gvfsd-trash --spawner :1.8 /org/gtk/gvfs/exec_spaw/0
+orangepi    2070  0.0  0.0 236304  7140 ?        Sl    6월29   0:01  \_ /usr/libexec/ibus-portal
+orangepi    2393  0.0  0.0  82480  1508 ?        SLs   6월29   0:00  \_ /usr/bin/gpg-agent --supervised
+orangepi    2544  0.0  0.0 354728 10540 ?        Ssl   6월29   0:00  \_ /usr/libexec/gvfs-udisks2-volume-monitor
+orangepi    2664  0.0  0.0  48728  6968 ?        Ss    6월29   0:00  \_ /usr/libexec/bluetooth/obexd
+orangepi    3507  0.0  0.0 161968  5860 ?        Ssl   6월29   0:00  \_ /usr/libexec/gvfsd-metadata
+orangepi    2035  0.0  0.0 311668  8124 ?        Ssl   6월29   1:40 /usr/bin/ibus-daemon --daemonize --xim
+orangepi    2063  0.0  0.0 236460  6640 ?        Sl    6월29   0:00  \_ /usr/libexec/ibus-dconf
+orangepi    2065  0.0  0.5 631520 92216 ?        Sl    6월29   0:05  \_ /usr/libexec/ibus-ui-gtk3
+orangepi    2066  0.0  0.4 473764 80380 ?        Sl    6월29   0:04  \_ /usr/libexec/ibus-extension-gtk3
+orangepi    2403  0.0  0.0 237396  7440 ?        Sl    6월29   0:03  \_ /usr/libexec/ibus-engine-hangul --ibus
+orangepi    2068  0.0  0.4 394284 75276 ?        Sl    6월29   2:01 /usr/libexec/ibus-x11 --kill-daemon
+root        2476  0.0  0.0 236100  6724 ?        Ssl   6월29   0:00 /usr/libexec/upowerd
+orangepi    2665  0.1  0.2 286240 36164 ?        Sl    6월29   3:46 /usr/bin/python3 /usr/bin/blueman-tray
+orangepi    2697  0.1  0.3 110864 50868 ?        Ss    6월29   3:38 /usr/bin/x11vnc -auth guess -display :0.0 -forever -noxdamage -rfbport 5984 -shared -geometry 1920x1080 -nopw
+root        2831  0.0  0.0  11876  3156 ttyFIQ0  Ss    6월29   0:00 /bin/login -f
+orangepi    3087  0.0  0.0   9404  4804 ttyFIQ0  S+    6월29   0:00  \_ -bash
+root        2832  0.0  0.0   7556  2680 tty1     Ss    6월29   0:00 /bin/login -f
+orangepi    3091  0.0  0.0   9408  4804 tty1     S+    6월29   0:00  \_ -bash
+root       57701  0.8  0.0 390108  6064 ?        Ssl  11:34   0:21 /usr/local/bin/dxrtd

@@ -1,0 +1,5 @@
+incident: 002_20260626_143621_yolo26n-pose.dxnn.ort_off.multi.sc18.run1
+context: yolo26n-pose.dxnn.ort_off.multi.sc18.run1
+timestamp: 20260626_143621
+npu_temp_c: 46.0
+npu_clock_mhz: 1000.0
