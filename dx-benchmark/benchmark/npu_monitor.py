@@ -14,6 +14,9 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
+# ANSI escape + bracket-only sequences left by the `script` PTY around dxtop output.
+_ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\[\??[0-9;]*[A-Za-z]")
+
 
 @dataclass
 class NpuStats:
@@ -81,8 +84,7 @@ def parse_npu_log_temp_clock(raw: str) -> dict:
     Values are float or None when no data found.
     """
     # Strip ANSI escape codes and bracket-only sequences left by `script` PTY
-    ansi_re = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\[\??[0-9;]*[A-Za-z]")
-    clean = ansi_re.sub("", raw)
+    clean = _ANSI_RE.sub("", raw)
     # Remove remaining control characters (except newline/tab)
     clean = re.sub(r"[\x00-\x08\x0e-\x1f\x7f]", "", clean)
     clean = re.sub(r"\s+", " ", clean)
@@ -231,8 +233,7 @@ class NpuMonitor:
             return NpuStats.empty(self.core_ids)
 
         # Strip ANSI escape sequences before parsing
-        ansi_re = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\[\??[0-9;]*[A-Za-z]")
-        clean = ansi_re.sub("", raw)
+        clean = _ANSI_RE.sub("", raw)
         # Merge into a single stream of tokens by collapsing whitespace
         clean = re.sub(r"\s+", " ", clean)
 
