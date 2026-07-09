@@ -242,7 +242,7 @@ class BenchmarkConfig:
     thermal_cooldown_target_delta_c: float = 10.0  # target Δ from idle temp for cooldown
     thermal_cooldown_abs_cap_c: float = 55.0  # hard cap for cooldown target temperature
     thermal_hot_start_block_c: float = 60.0  # abort benchmark start above this temperature
-    thermal_cooldown_max_sec: float = 300.0   # max cooldown wait seconds
+    thermal_cooldown_max_sec: float = 1000.0   # max cooldown wait seconds
     thermal_idle_temp_c: Optional[float] = None  # measured at start; None = auto-detect
 
     # ── Output ────────────────────────────────────────────────────────
