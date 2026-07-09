@@ -1,0 +1,6 @@
+# dx-benchmark — ignore generated/large artifacts; per-run raw results ARE tracked
+# downloaded models/videos (large binaries)
+dx-benchmark/benchmark/assets/
+dx-benchmark/venv/
+# generated aggregate — rebuild with `run.sh dashboard`
+dx-benchmark/results/dashboard/
