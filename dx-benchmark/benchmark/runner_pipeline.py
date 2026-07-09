@@ -153,8 +153,10 @@ def _detect_decoder(log: str) -> str:
     return "unknown"
 
 
+@functools.lru_cache(maxsize=None)
 def _is_video_decoder(element: str) -> bool:
-    """Check if a GStreamer element is a video decoder."""
+    """Check if a GStreamer element is a video decoder (memoized: gst-inspect is
+    deterministic per element, so repeated candidates cost one subprocess each)."""
     if not shutil.which("gst-inspect-1.0"):
         return False
     try:
