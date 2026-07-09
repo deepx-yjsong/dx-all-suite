@@ -61,6 +61,7 @@ def _build_environment_summary(env_id: str, run_id: str, fingerprint: dict) -> d
 
     return {
         "env_id": env_id,
+        "dx_all_suite_version": fingerprint.get("dx_all_suite_version"),
         "hw_id": _result_hw_id(fingerprint),
         "latest_run_id": run_id,
         "product_name": fingerprint.get("product_name"),
@@ -294,6 +295,7 @@ def _build_snapshot(hw_id: str, run_id: str, fingerprint: dict,
     software = fingerprint.get("software", {})
     return {
         "run_id": run_id,
+        "dx_all_suite_version": fingerprint.get("dx_all_suite_version"),
         "hw_id": hw_id,
         "env_id": hw_id,
         "timestamp": fingerprint.get("timestamp"),
