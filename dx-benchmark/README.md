@@ -15,7 +15,7 @@ Produces reproducible performance measurements across any Host PC + NPU combinat
 - **Environment Fingerprinting**: Automatic capture of measurement context for reproducibility
 - **Markdown Report Generation**: Result tables + ORT comparison + channel capacity summary
 - **Static Dashboard**: HTML dashboard for comparing results across multiple environments
-- **Version Trend Tracking**: Line charts comparing performance changes across SDK versions for the same HW_ID
+- **Version Trend Tracking**: Line charts comparing performance changes across dx-all-suite releases for the same HW_ID
 - **Resume / Retry-Failed**: Continue from interrupted runs or rerun only failed conditions
 
 ## Supported Tasks
@@ -138,11 +138,11 @@ Pure HTML/CSS/JS with no external CDN — works fully offline.
 | E2E FPS Overview | E2E FPS comparison chart by Task/ORT (grouped bars by model size). Max Ch badge displayed above E2E FPS. |
 | Full Metrics | Cross-environment comparison of NPU Latency, Throughput, E2E FPS per Task/Size/ORT. Latency shown as dashed line on secondary Y-axis. |
 | Detailed Data | Full numeric table with Environment/Task/ORT filters. Run ID dropdown for specific run selection. |
-| Version Trend | SDK version performance trend line charts from nested result history. Metrics dropdown: Latency/Throughput/E2E FPS/Max Channel. |
+| Version Trend | dx-all-suite version performance trend line charts from nested result history. Metrics dropdown: Latency/Throughput/E2E FPS/Max Channel. |
 
 ### 7. Version Trend Tracking
 
-Compare benchmark results before and after SDK updates using the same HW_ID.
+Compare benchmark results before and after dx-all-suite releases using the same HW_ID.
 
 **Workflow:**
 
@@ -150,7 +150,7 @@ Compare benchmark results before and after SDK updates using the same HW_ID.
 # (1) Run benchmark on each environment
 ./run.sh run
 
-# (2) Update SDK, run again on the same HW
+# (2) Bump dx-all-suite version (release.ver or --dx-all-suite-version), run again on the same HW
 ./run.sh run
 
 # (3) Generate dashboard from nested results root → check Version Trend tab
@@ -188,10 +188,34 @@ results/
 
 - Environment / Task / ORT / Metrics filters for condition selection
 - Metrics dropdown: Latency, Throughput, E2E FPS, Max Channel
-- X-axis: snapshot date, Y-axis: selected metric
+- X-axis: dx-all-suite version (latest run per version; run date shown as secondary label), Y-axis: selected metric
 - Per-size (N/S/M/L/X) line charts
 - Automatic label de-overlap, selected column highlight (white halo + black text)
 - Click a point to view the snapshot's environment details (Host PC / NPU / Tools)
+
+### dx-all-suite version tracking
+
+The dashboard's **Version Trend** tab compares results across dx-all-suite
+releases. The version is captured per run, resolved in this order:
+
+- `--dx-all-suite-version v2.4.0` passed to `run` (explicit — always wins), **or**
+- run in-suite: auto-read from the suite-root `release.ver` (walked up from the
+  package dir), **or**
+- on an interactive terminal with neither available: you are prompted for it, **or**
+- otherwise (headless / unattended): a `[WARN]` is printed and the run is recorded
+  with version `unknown` (it groups under an `unknown` bucket in the trend).
+
+**Unattended runs:** always pass `--dx-all-suite-version` explicitly for headless
+or long-running unattended jobs — otherwise, on a TTY with no `release.ver`, the
+run pauses at the interactive prompt.
+
+**Back-data (runs measured before this feature):** gather the run directories under
+`results/<hw_id>/<run_id>/` and add a single top-level string key to each
+`environment.json` — note this is the snake_case JSON key, not the CLI flag:
+
+    "dx_all_suite_version": "v2.3.0"
+
+Runs left unstamped group under `unknown`.
 
 ## CLI Options
 
