@@ -34,36 +34,15 @@ Produces reproducible performance measurements across any Host PC + NPU combinat
 ## Directory Structure
 
 ```
-benchmark/
-├── __init__.py                # Package init
-├── __main__.py                # CLI entry point
-├── config.py                  # Configuration, paths, task definitions
-├── env_fingerprint.py         # Environment info collection (model metadata included)
-├── model_catalog.py           # .dxnn model discovery and classification
-├── runner_model.py            # Model-level benchmarks (throughput/latency)
-├── runner_pipeline.py         # E2E Pipeline / Multi-Stream benchmarks
-├── npu_monitor.py             # NPU utilization/temperature/clock monitoring (dxtop/dxrt-cli)
-├── npu_stats_util.py          # NPU stats merge utilities
-├── reporter.py                # CSV/JSON/Markdown report generation
-├── aggregator.py              # Multi-result aggregation → dataset.json
-├── result_layout.py           # HW_ID and nested result layout helpers
-├── dashboard_builder.py       # Static HTML dashboard generation
-├── model_list.json            # Benchmark target model list (auto-download reference)
-├── setup_benchmark_env.sh     # One-time environment setup (sudoers, etc.)
-├── setup_benchmark_models.sh  # Benchmark model download
-├── setup_benchmark_videos.sh  # Benchmark video download
-├── ANALYSIS_KOR.md            # Benchmark analysis report (Korean)
-├── ANALYSIS_EN.md             # Benchmark analysis report (English)
-├── README.md                  # README
-
-├── assets/
-│   ├── models/                # .dxnn model files
-│   └── videos/                # Benchmark input videos
-└── tests/
-    ├── test_aggregator.py
-    ├── test_asset_setup.py
-    ├── test_result_layout.py
-    └── test_thermal_cooldown.py
+dx-benchmark/
+├── run.sh          # launcher
+├── setup.sh        # env + models + videos setup
+├── README.md
+├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md
+├── benchmark/      # python package (python3 -m benchmark)
+│   ├── __main__.py, config.py, model_list.json, ...
+│   └── assets/{models,videos}/   # downloaded (gitignored)
+└── results/        # per-run raw data (tracked); results/dashboard/ (gitignored)
 ```
 
 ## Usage
@@ -71,65 +50,66 @@ benchmark/
 ### 1. Environment Check
 
 ```bash
-cd /path/to/dx_stream
-python3 -m dx_stream.apps.benchmark preflight
+cd /path/to/dx-benchmark
+./run.sh preflight
+# raw equivalent (from dx-benchmark/): python3 -m benchmark preflight
 ```
 
 ### 2. Dry-Run (Preview Matrix)
 
 ```bash
-python3 -m dx_stream.apps.benchmark dry-run
-python3 -m dx_stream.apps.benchmark dry-run --sizes n,s --task object_detection
+./run.sh dry-run
+./run.sh dry-run --sizes n,s --task object_detection
 ```
 
 ### 3. Run Benchmarks
 
 ```bash
 # Full suite (model + e2e + multi-stream)
-python3 -m dx_stream.apps.benchmark run
+./run.sh run
 
 # Run by family
-python3 -m dx_stream.apps.benchmark run --family model
-python3 -m dx_stream.apps.benchmark run --family e2e
-python3 -m dx_stream.apps.benchmark run --family multi
+./run.sh run --family model
+./run.sh run --family e2e
+./run.sh run --family multi
 
 # Limit sizes / time
-python3 -m dx_stream.apps.benchmark run --sizes n,s --family model --model-time 30
+./run.sh run --sizes n,s --family model --model-time 30
 
 # Resume interrupted run
-python3 -m dx_stream.apps.benchmark run --resume results/BIOSTAR_H1/20260421_201621
+./run.sh run --resume results/BIOSTAR_H1/20260421_201621
 
 # Retry failed conditions only
-python3 -m dx_stream.apps.benchmark run --resume results/BIOSTAR_H1/20260421_201621 --retry-failed
+./run.sh run --resume results/BIOSTAR_H1/20260421_201621 --retry-failed
 ```
 
 ### 4. Regenerate Report
 
 ```bash
 # Specify a {hw_id}/{run_id} result directory path
-python3 -m dx_stream.apps.benchmark report dx_stream/apps/benchmark/results/BIOSTAR_H1/20260421_201621
+./run.sh report results/BIOSTAR_H1/20260421_201621
 ```
 
 ### 5. Aggregate Results
 
 ```bash
 # Aggregate multiple environment/run results into a single dataset.json
-python3 -m dx_stream.apps.benchmark aggregate dx_stream/apps/benchmark/results
-python3 -m dx_stream.apps.benchmark aggregate dx_stream/apps/benchmark/results --output /tmp/dataset.json
+./run.sh aggregate results
+./run.sh aggregate results --output /tmp/dataset.json
 ```
 
 ### 6. Build Dashboard
 
 ```bash
 # Aggregate + generate dashboard
-python3 -m dx_stream.apps.benchmark dashboard dx_stream/apps/benchmark/results
+./run.sh dashboard results
 # → generates index.html, app.js, styles.css, dataset.json under results/dashboard/
 
 # Custom output directory
-python3 -m dx_stream.apps.benchmark dashboard dx_stream/apps/benchmark/results --output /tmp/dashboard
+./run.sh dashboard results --output /tmp/dashboard
 
 # Local preview
-cd dx_stream/apps/benchmark/results/dashboard && python3 -m http.server 8899
+cd results/dashboard && python3 -m http.server 8899
 ```
 
 Pure HTML/CSS/JS with no external CDN — works fully offline.
@@ -151,13 +131,13 @@ Compare benchmark results before and after SDK updates using the same HW_ID.
 
 ```bash
 # (1) Run benchmark on each environment
-python3 -m dx_stream.apps.benchmark run
+./run.sh run
 
 # (2) Update SDK, run again on the same HW
-python3 -m dx_stream.apps.benchmark run
+./run.sh run
 
 # (3) Generate dashboard from nested results root → check Version Trend tab
-python3 -m dx_stream.apps.benchmark dashboard dx_stream/apps/benchmark/results
+./run.sh dashboard results
 ```
 
 Results always follow the `results/{hw_id}/{run_id}/` structure. HW_ID is automatically computed from the `environment.json` fingerprint during `run`.
@@ -210,7 +190,7 @@ results/
 | `--runs` | — | Override all repetition counts to the same value. Defaults: latency=1, throughput=3, e2e=3 |
 | `--fps-threshold` | 30 | Per-channel minimum FPS threshold for multi-stream |
 | `--video` | Auto per task | Override input video path (applied to all tasks) |
-| `--output` | `dx_stream/apps/benchmark/results/` | Output root directory. Actual output: `<output>/<hw_id>/<run_id>/` |
+| `--output` | `results/` | Output root directory. Actual output: `<output>/<hw_id>/<run_id>/` |
 | `--resume` | — | Resume from an existing result directory |
 | `--retry-failed` | — | With `--resume`, rerun only entries not in `ok`/`partial` status |
 | `--product-name` | — | Product name. Used in HW_ID instead of hostname (e.g., `DX-AIPlayer-N97`) |
@@ -354,7 +334,7 @@ Automatically triggered when SIGKILL was required:
 2. `sudo -n systemctl restart dxrt.service` — restart NPU runtime daemon (3s settle)
 3. Same procedure for run_model timeout (`pkill -9 run_model` + service restart)
 
-> Passwordless sudo required: run `setup_benchmark_env.sh` or manually add the
+> Passwordless sudo required: run `./setup.sh env` or manually add the
 > following rules to `/etc/sudoers.d/benchmark-dxrt`:
 > ```
 > user ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart dxrt.service
