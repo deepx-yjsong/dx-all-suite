@@ -235,6 +235,7 @@ Runs left unstamped group under `unknown`.
 | `--resume` | — | Resume from an existing result directory |
 | `--retry-failed` | — | With `--resume`, rerun only entries not in `ok`/`partial` status |
 | `--product-name` | — | Product name. Used in HW_ID instead of hostname (e.g., `DX-AIPlayer-N97`) |
+| `--dx-all-suite-version VER` | Auto (`release.ver`) | dx-all-suite release version for the Version Trend axis (e.g. `v2.4.0`). Default: auto-read from suite-root `release.ver` |
 
 ### Subcommands
 

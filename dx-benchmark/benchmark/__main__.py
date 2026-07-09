@@ -166,7 +166,13 @@ def cmd_run(args: argparse.Namespace) -> int:
     if cfg.product_name:
         fp["product_name"] = cfg.product_name
 
-    suite_ver = resolve_dx_all_suite_version(cfg.dx_all_suite_version)
+    out_dir = _resolve_output_dir(cfg, resume_dir, fp, run_id)
+    existing_fp = _load_json_object(out_dir / "environment.json") if resume_dir else {}
+
+    suite_ver = cfg.dx_all_suite_version
+    if suite_ver is None and resume_dir:
+        suite_ver = existing_fp.get("dx_all_suite_version")
+    suite_ver = resolve_dx_all_suite_version(suite_ver)
     if suite_ver is None:
         if sys.stdin.isatty():
             try:
@@ -181,8 +187,6 @@ def cmd_run(args: argparse.Namespace) -> int:
                   "'unknown' in the Version Trend tab.")
     fp["dx_all_suite_version"] = suite_ver
 
-    out_dir = _resolve_output_dir(cfg, resume_dir, fp, run_id)
-    existing_fp = _load_json_object(out_dir / "environment.json") if resume_dir else {}
     prior_timing = existing_fp.get("timing", {}) if existing_fp else {}
     overall_start_iso = prior_timing.get("start") or session_start_iso
     overall_start_time = _parse_local_timestamp(overall_start_iso) or session_start_time
