@@ -574,14 +574,42 @@ function createTrendChart(canvas,onClick){
   return chart;
 }
 function resizeTrendChart(){if(state.trendChart)state.trendChart._resize();}
+function _suiteVer(snap){return snap.dx_all_suite_version||'unknown';}
+function _cmpSuiteVer(a,b){
+  if(a===b)return 0;
+  if(a==='unknown')return 1; if(b==='unknown')return -1;
+  var pa=String(a).replace(/^v/i,'').split('.').map(Number);
+  var pb=String(b).replace(/^v/i,'').split('.').map(Number);
+  var m=Math.max(pa.length,pb.length);
+  for(var i=0;i<m;i++){var x=pa[i]||0,y=pb[i]||0;if(x!==y)return x-y;}
+  return String(a).localeCompare(String(b));
+}
 function getTrendData(hwId,task,useOrt,metricKey){
-  var metric=_trendMetricByKey(metricKey);var snaps=(state.dataset.snapshots||[]).filter(function(s){return s.hw_id===hwId;});snaps.sort(function(a,b){return(a.run_id||'').localeCompare(b.run_id||'');});if(!snaps.length)return[];var lines=SIZE_KEYS.map(function(sz){return{size:sz,points:[]};});
-  snaps.forEach(function(snap){var ts=snap.timestamp?snap.timestamp.substring(0,10):(snap.run_id||'').replace(/(\d{4})(\d{2})(\d{2}).*/,'$1-$2-$3');var sw=snap.sw_versions||{};var swLabel='dxs '+(sw.dx_stream||'?');SIZE_KEYS.forEach(function(sz,si){var value=_snapshotMetricValue(snap,task,useOrt,metric,sz);lines[si].points.push({value:value!=null?Number(value):null,dateLabel:ts,swLabel:swLabel,run_id:snap.run_id,snap:snap});});});
+  var metric=_trendMetricByKey(metricKey);
+  var snaps=(state.dataset.snapshots||[]).filter(function(s){return s.hw_id===hwId;});
+  if(!snaps.length)return[];
+  /* latest run per suite version (run_id sorts chronologically → last wins) */
+  var byVer={};
+  snaps.forEach(function(snap){
+    var v=_suiteVer(snap);
+    if(!byVer[v]||(snap.run_id||'')>(byVer[v].run_id||''))byVer[v]=snap;
+  });
+  var versions=Object.keys(byVer).sort(_cmpSuiteVer);
+  var lines=SIZE_KEYS.map(function(sz){return{size:sz,points:[]};});
+  versions.forEach(function(v){
+    var snap=byVer[v];
+    var ts=snap.timestamp?snap.timestamp.substring(0,10):'';
+    SIZE_KEYS.forEach(function(sz,si){
+      var value=_snapshotMetricValue(snap,task,useOrt,metric,sz);
+      /* dateLabel = version (primary x-axis label), swLabel = run date (secondary line) */
+      lines[si].points.push({value:value!=null?Number(value):null,dateLabel:v,swLabel:ts,run_id:snap.run_id,snap:snap});
+    });
+  });
   return lines;
 }
 function hideTrendEnvDetail(){var panel=document.getElementById('trendEnvDetail');if(panel)panel.style.display='none';var metaPanel=document.getElementById('trendModelMetaPanel');if(metaPanel)metaPanel.style.display='none';}
 function renderTrendEnvDetail(snap,options){
-  options=options||{};var panel=document.getElementById('trendEnvDetail');if(!panel)return;var env=snap&&snap.environment;if(!env){panel.style.display='none';document.getElementById('trendModelMetaPanel').style.display='none';return;}panel.style.display='';var metric=_trendMetricByKey(state.trendMetric);var dateStr=snap.timestamp?snap.timestamp.substring(0,10):snap.run_id;document.getElementById('trendEnvDetailTitle').textContent=(metric.metricLabel||'Metric')+' \u00b7 '+(env.hostname||'Environment')+' ('+(env.npu_sku||'?')+') \u00b7 '+dateStr+' \u00b7 '+snap.run_id;renderHostInfo(document.getElementById('trendEnvHostInfo'),env);renderNpuInfo(document.getElementById('trendEnvNpuInfo'),env);renderToolsInfo(document.getElementById('trendEnvToolsInfo'),env);
+  options=options||{};var panel=document.getElementById('trendEnvDetail');if(!panel)return;var env=snap&&snap.environment;if(!env){panel.style.display='none';document.getElementById('trendModelMetaPanel').style.display='none';return;}panel.style.display='';var metric=_trendMetricByKey(state.trendMetric);var dateStr=snap.timestamp?snap.timestamp.substring(0,10):snap.run_id;var verStr=snap.dx_all_suite_version||'unknown';document.getElementById('trendEnvDetailTitle').textContent=(metric.metricLabel||'Metric')+' \u00b7 '+(env.hostname||'Environment')+' ('+(env.npu_sku||'?')+') \u00b7 DX-AS '+verStr+' \u00b7 '+dateStr+' \u00b7 '+snap.run_id;renderHostInfo(document.getElementById('trendEnvHostInfo'),env);renderNpuInfo(document.getElementById('trendEnvNpuInfo'),env);renderToolsInfo(document.getElementById('trendEnvToolsInfo'),env);
   var metaPanel=document.getElementById('trendModelMetaPanel');metaPanel.style.display='';document.getElementById('trendModelMetaTitle').textContent='Benchmarked Models \u2013 '+TASK_MAP[state.trendTask].label+' \u00b7 '+snap.run_id;renderModelMetaForTask(document.getElementById('trendModelMetaSection'),env,state.trendTask);
   if(options.scroll!==false)panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
