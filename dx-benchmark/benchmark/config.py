@@ -10,14 +10,39 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-# ── Project root (dx_stream repo) ──────────────────────────────────────────
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
+# ── Path resolution (suite-relative) ───────────────────────────────────────
+# APP_DIR = the benchmark package dir; SUITE_ROOT = dx-all-suite root, found by
+# walking up until the dx-runtime/ and dx-compiler/ submodule siblings appear.
+APP_DIR = Path(__file__).resolve().parent
+
+
+def _find_suite_root(start: Path) -> Path:
+    """Walk up from `start` until a dir containing both dx-runtime/ and
+    dx-compiler/ is found (the dx-all-suite root). Raise if not found."""
+    d = start
+    while d != d.parent:
+        if (d / "dx-runtime").is_dir() and (d / "dx-compiler").is_dir():
+            return d
+        d = d.parent
+    raise RuntimeError(
+        "Cannot locate dx-all-suite root (expected dx-runtime/ and "
+        "dx-compiler/ siblings) starting from %s" % start
+    )
+
+
+SUITE_ROOT = _find_suite_root(APP_DIR)
+# Backwards-compat alias (imported by __main__/runner_model/runner_pipeline).
+ROOT_DIR = SUITE_ROOT
 
 # ── Default paths ──────────────────────────────────────────────────────────
-MODEL_DIR = ROOT_DIR / "dx_stream" / "apps" / "benchmark" / "assets" / "models"
-VIDEO_DIR = ROOT_DIR / "dx_stream" / "apps" / "benchmark" / "assets" / "videos"
-CONFIG_DIR = ROOT_DIR / "dx_stream" / "configs"
+MODEL_DIR = APP_DIR / "assets" / "models"
+VIDEO_DIR = APP_DIR / "assets" / "videos"
+# dx_stream pipeline configs live in the runtime submodule (cross-submodule ref
+# via SUITE_ROOT — never a hardcoded ../.. path).
+CONFIG_DIR = SUITE_ROOT / "dx-runtime" / "dx_stream" / "dx_stream" / "configs"
 POSTPROCESS_LIB_DIR = Path("/usr/local/share/gstdxstream/lib")
+# Self-describing model manifest (single source of truth for download + catalog).
+MODEL_LIST_JSON = APP_DIR / "model_list.json"
 
 PROTOCOL_VERSION = "v2"
 THERMAL_MODE_QUICK = "quick"
