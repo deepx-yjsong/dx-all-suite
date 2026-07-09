@@ -24,8 +24,6 @@ POSTPROCESS_LIB_DIR = Path("/usr/local/share/gstdxstream/lib")
 MODEL_LIST_JSON = APP_DIR / "model_list.json"
 
 PROTOCOL_VERSION = "v2"
-THERMAL_MODE_QUICK = "quick"
-THERMAL_MODE_STEADY = "steady"
 MULTI_STREAM_SEARCH_MODE = "single-stream-estimate-linear-boundary"
 STABLE_CAPACITY_RULE = "status_ok_and_all_runs_success_and_avg_per_channel_fps_ge_threshold"
 
@@ -215,9 +213,7 @@ class BenchmarkConfig:
     npu_warmup_sec: float = 1.0
     npu_drain_sec: float = 0.5
 
-    # ── Thermal steady-state ──────────────────────────────────────────
-    thermal_mode: str = "steady"
-
+    # ── Thermal steady-state (always enforced) ────────────────────────
     thermal_cooldown_target_delta_c: float = 10.0  # target Δ from idle temp for cooldown
     thermal_cooldown_abs_cap_c: float = 55.0  # hard cap for cooldown target temperature
     thermal_hot_start_block_c: float = 60.0  # abort benchmark start above this temperature
@@ -250,7 +246,7 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
     """Return the fixed measurement protocol metadata for the current run."""
     return {
         "version": PROTOCOL_VERSION,
-        "thermal_mode": cfg.thermal_mode,
+        "thermal_mode": "steady",
         "model_time_sec": cfg.model_time_sec,
         "model_latency_loops": cfg.model_latency_loops,
         "model_warmup_runs": cfg.model_warmup,

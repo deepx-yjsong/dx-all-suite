@@ -659,12 +659,7 @@ def wait_until_cool(cfg: BenchmarkConfig) -> float:
     """Wait for NPU temperature to drop below min(T_idle + delta, abs_cap).
 
     Returns the final temperature (°C), or -1 if temp reading is unavailable.
-    **Does nothing when thermal_mode != 'steady'.**
     """
-    if cfg.thermal_mode != "steady":
-        temp = read_npu_temp_c()
-        return temp if temp is not None else -1.0
-
     idle_temp = cfg.thermal_idle_temp_c
     if idle_temp is None:
         # Use a conservative fixed target when idle temp is unknown

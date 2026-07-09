@@ -174,7 +174,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     timing_history = _load_timing_history(existing_fp)
 
     # Auto-detect NPU idle temperature for thermal steady-state
-    if cfg.thermal_mode == "steady" and cfg.thermal_idle_temp_c is None:
+    if cfg.thermal_idle_temp_c is None:
         from .npu_monitor import read_npu_temp_c
         idle_temp = read_npu_temp_c()
         if idle_temp is not None:
@@ -287,8 +287,8 @@ def cmd_run(args: argparse.Namespace) -> int:
 
             print(f"\n── [{m_idx}/{total_models}] {m.name}  ORT={ort_s}  ({m.task}) ──", flush=True)
 
-            # ① Cooldown — steady mode, model-level runs present
-            if run_model_level and cfg.thermal_mode == "steady":
+            # ① Cooldown — steady-state, model-level runs present
+            if run_model_level:
                 try:
                     temp = wait_until_cool(cfg)
                 except RuntimeError as error:
