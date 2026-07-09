@@ -10,34 +10,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-# ── Path resolution (suite-relative) ───────────────────────────────────────
-# APP_DIR = the benchmark package dir; SUITE_ROOT = dx-all-suite root, found by
-# walking up until the dx-runtime/ and dx-compiler/ submodule siblings appear.
+# ── Path resolution (package-relative) ─────────────────────────────────────
+# The benchmark is standalone at runtime: it drives INSTALLED artifacts
+# (gst dxstream plugin, run_model, postprocess .so libs) and keeps its own data
+# under the package dir. No dx-all-suite source layout is required.
 APP_DIR = Path(__file__).resolve().parent
-
-
-def _find_suite_root(start: Path) -> Path:
-    """Walk up from `start` until a dir containing both dx-runtime/ and
-    dx-compiler/ is found (the dx-all-suite root). Raise if not found."""
-    d = start
-    while d != d.parent:
-        if (d / "dx-runtime").is_dir() and (d / "dx-compiler").is_dir():
-            return d
-        d = d.parent
-    raise RuntimeError(
-        "Cannot locate dx-all-suite root (expected dx-runtime/ and "
-        "dx-compiler/ siblings) starting from %s" % start
-    )
-
-
-SUITE_ROOT = _find_suite_root(APP_DIR)
 
 # ── Default paths ──────────────────────────────────────────────────────────
 MODEL_DIR = APP_DIR / "assets" / "models"
 VIDEO_DIR = APP_DIR / "assets" / "videos"
-# dx_stream pipeline configs live in the runtime submodule (cross-submodule ref
-# via SUITE_ROOT — never a hardcoded ../.. path).
-CONFIG_DIR = SUITE_ROOT / "dx-runtime" / "dx_stream" / "dx_stream" / "configs"
+# Installed dx_stream postprocess libraries (deployed by the DEEPX runtime).
 POSTPROCESS_LIB_DIR = Path("/usr/local/share/gstdxstream/lib")
 # Self-describing model manifest (single source of truth for download + catalog).
 MODEL_LIST_JSON = APP_DIR / "model_list.json"
