@@ -36,7 +36,8 @@ Produces reproducible performance measurements across any Host PC + NPU combinat
 ```
 dx-benchmark/
 ├── run.sh          # launcher
-├── setup.sh        # env + models + videos setup
+├── setup.sh        # data setup: download models + videos (no sudo)
+├── setup_env.sh    # one-time host provisioning (sudo): dxrt sudoers + journal
 ├── README.md
 ├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md
 ├── benchmark/      # python package (python3 -m benchmark)
@@ -334,7 +335,7 @@ Automatically triggered when SIGKILL was required:
 2. `sudo -n systemctl restart dxrt.service` — restart NPU runtime daemon (3s settle)
 3. Same procedure for run_model timeout (`pkill -9 run_model` + service restart)
 
-> Passwordless sudo required: run `./setup.sh env` or manually add the
+> Passwordless sudo required: run `sudo ./setup_env.sh` or manually add the
 > following rules to `/etc/sudoers.d/benchmark-dxrt`:
 > ```
 > user ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart dxrt.service
