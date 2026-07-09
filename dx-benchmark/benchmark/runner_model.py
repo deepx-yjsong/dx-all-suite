@@ -31,7 +31,12 @@ def _stdev(values: list[float]) -> Optional[float]:
 
 
 def _cleanup_run_model(incident_context: str = "") -> None:
-    """Kill any lingering run_model processes and recover NPU after timeout."""
+    """Kill any lingering run_model processes and recover NPU after timeout.
+
+    Uses a host-wide `pkill -f run_model` on purpose: a benchmark run assumes it
+    is the ONLY NPU workload on the machine (any concurrent load would invalidate
+    the measurement), so there is no other run_model to protect.
+    """
     try:
         subprocess.run(
             ["pkill", "-9", "-f", "run_model"],
