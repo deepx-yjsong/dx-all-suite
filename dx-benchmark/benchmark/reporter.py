@@ -987,7 +987,7 @@ def _add_capacity_summary(lines: list[str], results: list[dict]) -> None:
         for model, cap_data in capacity.items()
     )
     if has_plus:
-        lines.append("> **+** 표시: 마지막 측정 스트림에서도 기준 FPS를 만족함. "
-                     "스위프가 FPS 임계값 미달전에 중단된 경우로, "
-                     "실제 최대 처리 가능 스트림 수는 더 클 수 있음.")
+        lines.append("> **+**: the last tested stream count still met the FPS threshold. "
+                     "The sweep stopped before crossing the threshold, so the true maximum "
+                     "sustainable stream count may be higher.")
         lines.append("")

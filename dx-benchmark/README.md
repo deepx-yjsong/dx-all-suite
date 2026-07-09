@@ -46,6 +46,22 @@ dx-benchmark/
 └── results/        # per-run raw data (tracked); results/dashboard/ (gitignored)
 ```
 
+## Prerequisites
+
+- **OS**: Linux (x86_64 or arm64) with a DEEPX NPU (DX-M1 / DX-H1).
+- **DEEPX runtime installed** — the benchmark drives already-installed artifacts, not source:
+  - `run_model`, `gst-launch-1.0`, `gst-inspect-1.0`, `dxrt-cli` on `PATH`
+  - dx_stream GStreamer plugin (`libgstdxstream.so`) and postprocess libraries under
+    `/usr/local/share/gstdxstream/lib/`
+  - Install via the suite: `dx-runtime/install.sh --all` (see the dx-all-suite README).
+- **`jq`** — required by `setup.sh` for model downloads (`sudo apt-get install -y jq`).
+- **`ffprobe`** (ffmpeg) — used for E2E frame counting.
+- **Network access** to `https://sdk.deepx.ai` to download benchmark models/videos.
+- Run `./run.sh preflight` first — it verifies the tools above and prints an environment fingerprint.
+
+Then download data once: `./setup.sh` (models + videos; no sudo). For crash-recovery
+provisioning (passwordless dxrt restart + journal access), run `sudo ./setup_env.sh`.
+
 ## Usage
 
 ### 1. Environment Check
@@ -242,7 +258,7 @@ results/{hw_id}/{run_id}/
 | Thermal mode | steady |
 | Hot-start block | 60°C (benchmark start rejected if exceeded) |
 | Cooldown target | `min(idle + Δ10°C, 55°C)` |
-| Cooldown timeout | 300s (RuntimeError on exceed) |
+| Cooldown timeout | 1000s (RuntimeError on exceed) |
 | NPU warmup | 1.0s |
 | NPU drain | 0.5s |
 | NPU clock monitoring | dxtop Core Clock MHz (during measurement) + dxrt-cli pre/post snapshots |
@@ -279,8 +295,8 @@ This ordering ensures the NPU warms up naturally from cold state.
 - ③ Throughput runs 30s × 3 consecutive runs to sufficiently heat the NPU.
 - ④ By E2E measurement time, NPU temperature has nearly converged (steady state) after ②+③.
 - ⑤ Multi-stream runs immediately after E2E, maintaining thermal equilibrium without additional cooldown.
-- ① Cooldown is only performed when `thermal_mode=steady` and model family is included.
-- If cooldown times out (300s), the run fails with RuntimeError.
+- ① Cooldown is only performed when the model family is included.
+- If cooldown times out (1000s), the run fails with RuntimeError.
 - If both latency and throughput time out, E2E/Multi-Stream phases are automatically skipped for that model.
 
 ## Timeout Recovery and Retry Strategy
