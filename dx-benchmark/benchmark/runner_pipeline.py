@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from .config import (
-    BenchmarkConfig, ROOT_DIR,
+    BenchmarkConfig,
     get_task_preprocess, get_task_inference, get_postprocess_config_path,
 )
 from .model_catalog import ModelEntry

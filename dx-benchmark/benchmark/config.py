@@ -31,8 +31,6 @@ def _find_suite_root(start: Path) -> Path:
 
 
 SUITE_ROOT = _find_suite_root(APP_DIR)
-# Backwards-compat alias (imported by __main__/runner_model/runner_pipeline).
-ROOT_DIR = SUITE_ROOT
 
 # ── Default paths ──────────────────────────────────────────────────────────
 MODEL_DIR = APP_DIR / "assets" / "models"

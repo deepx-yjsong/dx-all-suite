@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from .config import BenchmarkConfig, ROOT_DIR
+from .config import BenchmarkConfig
 from .model_catalog import ModelEntry
 from .npu_monitor import NpuMonitor, NpuStats
 from .npu_stats_util import merge_npu_stats as _merge_npu_stats
