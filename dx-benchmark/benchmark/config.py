@@ -262,7 +262,9 @@ class BenchmarkConfig:
     def get_output_dir(self) -> Path:
         if self.output_dir:
             return Path(self.output_dir)
-        return Path(__file__).resolve().parent / "results"
+        # Results live at the dx-benchmark root (sibling of the package), so the
+        # per-run raw data is git-tracked and results/dashboard/ is git-ignored.
+        return APP_DIR.parent / "results"
 
 
 def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
