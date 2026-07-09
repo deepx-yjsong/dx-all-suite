@@ -23,6 +23,31 @@ def _run(cmd: list[str], default: str = "unknown") -> str:
         return default
 
 
+def _read_release_ver(start: Path) -> str | None:
+    """Walk up from *start* until a ``release.ver`` file is found; return its
+    stripped contents, or None if none exists up to the filesystem root."""
+    p = Path(start).resolve()
+    for d in [p, *p.parents]:
+        f = d / "release.ver"
+        if f.is_file():
+            v = f.read_text().strip()
+            if v:
+                return v
+    return None
+
+
+def resolve_dx_all_suite_version(explicit: str | None, start: Path | None = None) -> str | None:
+    """Resolve the dx-all-suite version: explicit flag wins, else walk up from
+    *start* (default: package dir) for ``release.ver``, else None."""
+    explicit = (explicit or "").strip()
+    if explicit:
+        return explicit
+    if start is None:
+        from .config import APP_DIR
+        start = APP_DIR
+    return _read_release_ver(start)
+
+
 def _tool_version(name: str) -> dict[str, Any]:
     """Return {'path': ..., 'version': ...} for a CLI tool."""
     path = shutil.which(name)
