@@ -1043,16 +1043,6 @@ def estimate_start_stream(single_stream_fps: float, fps_threshold: float) -> int
     return max(1, int(single_stream_fps // fps_threshold))
 
 
-def get_existing_capacity(existing_results: list[dict], fps_threshold: float) -> int:
-    """Return the best stable capacity from existing multi-stream results."""
-    passing_streams = [
-        int(result.get("stream_count", 0) or 0)
-        for result in existing_results
-        if is_capacity_pass(result, fps_threshold)
-    ]
-    return max(passing_streams, default=0)
-
-
 def get_boundary_search_start(
     existing_results: list[dict],
     fps_threshold: float,

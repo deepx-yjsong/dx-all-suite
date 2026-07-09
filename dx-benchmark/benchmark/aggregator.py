@@ -24,11 +24,6 @@ def _load_json_list(path: Path) -> list[dict]:
     return json.loads(path.read_text())
 
 
-def make_env_id(fingerprint: dict, fallback: str) -> str:
-    """Kept for backward compatibility with reporter.py; returns hw_id."""
-    return _result_hw_id(fingerprint) or fallback
-
-
 def _extract_gstreamer_version(tools: dict) -> str | None:
     """Extract short GStreamer version from tools fingerprint."""
     raw = (tools.get("gst-launch-1.0") or {}).get("version")
