@@ -95,7 +95,10 @@ def make_hw_id(fingerprint: dict) -> str:
     name = fingerprint.get("product_name") or host.get("hostname", "unknown")
     hw_config = _get_hw_config(npu)
     raw = f"{name}_{hw_config}"
-    raw = re.sub(r"[^A-Za-z0-9_.-]", "_", raw)
+    raw = raw.replace(" ", "_")                    # spaces → underscore
+    # Allow the filesystem- and shell-safe chars common in product names
+    # (e.g. RPi5+, ROCK5B+, DX-AIPlayer-N97); map everything else to "_".
+    raw = re.sub(r"[^A-Za-z0-9._+-]", "_", raw)
     return re.sub(r"_+", "_", raw).strip("_")
 
 
