@@ -197,7 +197,8 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     models = _get_models(cfg)
     if not models:
-        print("[WARN] No models found.")
+        print("[WARN] No models found. Run './setup.sh' (or './setup.sh models') "
+              "to download benchmark models first.")
         return 1
 
     # Collect video info for each task group used by the models
@@ -1074,6 +1075,7 @@ def _build_parser() -> argparse.ArgumentParser:
     defaults = BenchmarkConfig()
 
     parser = argparse.ArgumentParser(
+        prog="python3 -m benchmark",
         description="YOLO26 Benchmark Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -1135,7 +1137,7 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--output", default=None,
                         help="Override output root directory (runs are stored under <output>/<hw_id>/<run_id>)")
     parser.add_argument("--product-name", default=None,
-                        help="Product name to include in report (e.g. DX_AIPlayer-N97)")
+                        help="Product name to include in report (e.g. DX-AIPlayer-N97)")
 
 
 def _add_benchmark_args(parser: argparse.ArgumentParser, defaults: BenchmarkConfig) -> None:

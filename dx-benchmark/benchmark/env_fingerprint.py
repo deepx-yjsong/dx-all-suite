@@ -267,8 +267,7 @@ def get_video_info(video_path: str | Path) -> dict[str, Any]:
              "-show_streams", "-show_format", str(video_path)],
             capture_output=True, text=True, timeout=10,
         )
-        import json as _json
-        data = _json.loads(r.stdout)
+        data = json.loads(r.stdout)
         for s in data.get("streams", []):
             if s.get("codec_type") == "video":
                 info["codec"] = s.get("codec_name", "unknown")

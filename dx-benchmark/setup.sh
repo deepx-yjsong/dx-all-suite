@@ -105,7 +105,7 @@ phase_videos() {
         rm -rf "$EXTRACT_DIR"
     }
 
-    trap cleanup EXIT
+    trap cleanup INT TERM EXIT
 
     echo "[INFO] Missing benchmark videos: ${missing_videos[*]}"
     echo "[INFO] Downloading benchmark videos archive to $OUTPUT_DIR"
