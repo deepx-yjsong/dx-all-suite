@@ -16,7 +16,7 @@ import signal
 import statistics
 import subprocess
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
@@ -55,7 +55,6 @@ class PipelineResult:
     source: Optional[str] = None  # "single_stream" when injected from single-stream result
     status: str = "ok"
     reason: str = ""
-    raw_logs: list = field(default_factory=list)
 
     def as_dict(self) -> dict:
         d = {
@@ -745,7 +744,6 @@ def run_single_stream(
     decoder = "unknown"
     pipeline_caps = None
     npu_stats_accum: list[NpuStats] = []
-    raw_logs = []
     timeout_runs = 0
     parse_fail_runs = 0
     retried_runs: set[int] = set()  # max 1 retry per run index
@@ -756,7 +754,6 @@ def run_single_stream(
         npu.start()
         log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.run{i+1}")
         stats = npu.stop()
-        raw_logs.append(log)
         if save_dir:
             _save_pipeline_log(save_dir, "single", model.name, use_ort, 1, log, run_index=i + 1, npu_log=stats.raw_log)
 
@@ -769,7 +766,6 @@ def run_single_stream(
                 npu.start()
                 log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.run{i+1}.retry")
                 stats = npu.stop()
-                raw_logs.append(log)
                 if save_dir:
                     _save_pipeline_log(save_dir, "single", model.name, use_ort, 1, log, run_index=i + 1, npu_log=stats.raw_log)
                 if "__TIMEOUT__" not in log:
@@ -851,7 +847,6 @@ def run_single_stream(
         pipeline_caps=pipeline_caps,
         status="partial" if timeout_runs or parse_fail_runs else "ok",
         reason=reason,
-        raw_logs=raw_logs,
     )
 
     return result
@@ -900,7 +895,6 @@ def run_multi_stream(
     decoder = "unknown"
     pipeline_caps = None
     npu_stats_accum: list[NpuStats] = []
-    raw_logs = []
     timeout_runs = 0
     parse_fail_runs = 0
     retried_runs: set[int] = set()  # max 1 retry per run index
@@ -911,7 +905,6 @@ def run_multi_stream(
         npu.start()
         log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.run{i+1}")
         stats = npu.stop()
-        raw_logs.append(log)
         if save_dir:
             _save_pipeline_log(save_dir, "multi", model.name, use_ort, stream_count, log, run_index=i + 1, npu_log=stats.raw_log)
 
@@ -924,7 +917,6 @@ def run_multi_stream(
                 npu.start()
                 log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.run{i+1}.retry")
                 stats = npu.stop()
-                raw_logs.append(log)
                 if save_dir:
                     _save_pipeline_log(save_dir, "multi", model.name, use_ort, stream_count, log, run_index=i + 1, npu_log=stats.raw_log)
                 if "__TIMEOUT__" not in log:
@@ -1008,7 +1000,6 @@ def run_multi_stream(
         pipeline_caps=pipeline_caps,
         status="partial" if timeout_runs or parse_fail_runs else "ok",
         reason=reason,
-        raw_logs=raw_logs,
     )
 
     return result

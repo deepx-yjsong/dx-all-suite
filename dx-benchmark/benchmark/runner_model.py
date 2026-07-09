@@ -62,7 +62,6 @@ class ModelResult:
     input_tensor: Optional[dict] = None
     status: str = "ok"
     reason: str = ""
-    raw_log: str = ""
 
     def as_dict(self) -> dict:
         d = {
@@ -272,7 +271,6 @@ def run_throughput(
         input_tensor=input_tensor,
         status="ok",
         reason=f"avg of {len(fps_values)}/{num_runs} runs",
-        raw_log=last_combined,
     )
 
     return result
@@ -326,7 +324,6 @@ def run_latency(
     cpu_0_ms_values = []
     fps_values = []
     cpu_pcts = []
-    last_combined = ""
     npu_stats_accum: list[NpuStats] = []
     last_npu_mem = None
     last_profiler_path = None
@@ -354,7 +351,6 @@ def run_latency(
                     continue
 
                 npu_stats = npu.stop()
-                last_combined = combined
                 npu_stats_accum.append(npu_stats)
 
                 cpu_pct = _parse_cpu_pct(proc.stderr)
@@ -431,7 +427,6 @@ def run_latency(
             cpu_pct=sum(cpu_pcts) / len(cpu_pcts) if cpu_pcts else None,
             npu_stats=npu_dict,
             status=status, reason=reason,
-            raw_log=last_combined,
         )
     finally:
         if work_dir_root is not None and work_dir_root.exists():
