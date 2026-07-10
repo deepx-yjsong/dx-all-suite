@@ -129,3 +129,9 @@ tbody tr:nth-child(even) { background: var(--table-stripe); }
 .env-run.env-missing .env-run-id { font-style: italic; }
 .env-run { align-items: center; }
 .env-run-select { font-size: 12px; padding: 4px 8px; border-radius: 8px; max-width: 60%; }
+
+.chart-header--with-filters { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.chart-header-titles { min-width: 0; }
+.chart-header-filters { display: flex; gap: 12px; flex-wrap: wrap; }
+.chart-header-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.chart-header-filters select { padding: 4px 8px; border-radius: 8px; }

@@ -30,28 +30,29 @@
         <div class="control-heading">Comparison Version</div>
         <div id="fpsRunSelectors" class="run-selector-grid"></div>
       </section>
-      <section class="controls">
-        <label>Task
-          <select id="fpsTaskFilter">
-            <option value="object_detection">OD (Object Detection)</option>
-            <option value="pose_estimation">Pose (Pose Estimation)</option>
-            <option value="segmentation">Seg (Segmentation)</option>
-            <option value="oriented_bbox">OBB (Oriented BBox)</option>
-            <option value="classification">Cls (Classification)</option>
-          </select>
-        </label>
-        <label>ORT
-          <select id="fpsOrtFilter">
-            <option value="on">ON</option>
-            <option value="off">OFF</option>
-          </select>
-        </label>
-      </section>
-
       <section class="panel chart-panel">
-        <div class="chart-header">
-          <h2 id="fpsChartTitle">E2E FPS by Model Size</h2>
-          <p class="chart-subtitle" id="fpsChartSubtitle"></p>
+        <div class="chart-header chart-header--with-filters">
+          <div class="chart-header-titles">
+            <h2 id="fpsChartTitle">End-to-End FPS: Model Size &#215; Environment</h2>
+            <p class="chart-subtitle" id="fpsChartSubtitle">Single Stream &#183; 30 FPS &#183; FHD</p>
+          </div>
+          <div class="chart-header-filters">
+            <label>Task
+              <select id="fpsTaskFilter">
+                <option value="object_detection">OD (Object Detection)</option>
+                <option value="pose_estimation">Pose (Pose Estimation)</option>
+                <option value="segmentation">Seg (Segmentation)</option>
+                <option value="oriented_bbox">OBB (Oriented BBox)</option>
+                <option value="classification">Cls (Classification)</option>
+              </select>
+            </label>
+            <label>ORT
+              <select id="fpsOrtFilter">
+                <option value="on">ON</option>
+                <option value="off">OFF</option>
+              </select>
+            </label>
+          </div>
         </div>
         <div class="chart-container">
           <canvas id="fpsCompareChart"></canvas>
@@ -94,37 +95,38 @@
         <div class="control-heading">Comparison Version</div>
         <div id="overviewRunSelectors" class="run-selector-grid"></div>
       </section>
-      <section class="controls">
-        <label>Task
-          <select id="taskFilter">
-            <option value="object_detection">OD (Object Detection)</option>
-            <option value="pose_estimation">Pose (Pose Estimation)</option>
-            <option value="segmentation">Seg (Segmentation)</option>
-            <option value="oriented_bbox">OBB (Oriented BBox)</option>
-            <option value="classification">Cls (Classification)</option>
-          </select>
-        </label>
-        <label>Size
-          <select id="sizeFilter">
-            <option value="n">N (Nano)</option>
-            <option value="s">S (Small)</option>
-            <option value="m">M (Medium)</option>
-            <option value="l">L (Large)</option>
-            <option value="x">X (Extra-Large)</option>
-          </select>
-        </label>
-        <label>ORT
-          <select id="ortFilter">
-            <option value="on">ON</option>
-            <option value="off">OFF</option>
-          </select>
-        </label>
-      </section>
-
       <section class="panel chart-panel">
-        <div class="chart-header">
-          <h2 id="chartTitle">Environment Performance Comparison</h2>
-          <p class="chart-subtitle" id="chartSubtitle"></p>
+        <div class="chart-header chart-header--with-filters">
+          <div class="chart-header-titles">
+            <h2 id="chartTitle">Model FPS by Environment</h2>
+            <p class="chart-subtitle" id="chartSubtitle"></p>
+          </div>
+          <div class="chart-header-filters">
+            <label>Task
+              <select id="taskFilter">
+                <option value="object_detection">OD (Object Detection)</option>
+                <option value="pose_estimation">Pose (Pose Estimation)</option>
+                <option value="segmentation">Seg (Segmentation)</option>
+                <option value="oriented_bbox">OBB (Oriented BBox)</option>
+                <option value="classification">Cls (Classification)</option>
+              </select>
+            </label>
+            <label>Size
+              <select id="sizeFilter">
+                <option value="n">N (Nano)</option>
+                <option value="s">S (Small)</option>
+                <option value="m">M (Medium)</option>
+                <option value="l">L (Large)</option>
+                <option value="x">X (Extra-Large)</option>
+              </select>
+            </label>
+            <label>ORT
+              <select id="ortFilter">
+                <option value="on">ON</option>
+                <option value="off">OFF</option>
+              </select>
+            </label>
+          </div>
         </div>
         <div class="chart-container">
           <canvas id="mainChart"></canvas>

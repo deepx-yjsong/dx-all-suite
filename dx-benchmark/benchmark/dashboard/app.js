@@ -384,7 +384,7 @@ function getChartData() {
 function refreshChart(preferredEnvId) {
   var data=getChartData();state.chartData=data;
   var model=getModelName(state.task,state.size);
-  document.getElementById('chartSubtitle').textContent=TASK_MAP[state.task].label+'  \u00b7  '+model+'  \u00b7  ORT '+(state.ort?'ON':'OFF');
+  document.getElementById('chartSubtitle').textContent=model;
   if(!data.length){
     state.selectedEnvId=null;
     document.getElementById('envDetail').style.display='none';
@@ -407,7 +407,7 @@ function getFpsCompareData() {
 }
 function refreshFpsCompare(preferredEnvId) {
   var data=getFpsCompareData();state.fpsChartData=data;
-  document.getElementById('fpsChartSubtitle').textContent=TASK_MAP[state.fpsTask].label+'  \u00b7  ORT '+(state.fpsOrt?'ON':'OFF')+'  \u00b7  All Sizes (N / S / M / L / X)';
+  document.getElementById('fpsChartSubtitle').textContent='Single Stream \u00b7 30 FPS \u00b7 FHD';
   if(!data.length){
     state.fpsSelectedEnvId=null;
     document.getElementById('fpsEnvDetail').style.display='none';
