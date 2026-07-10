@@ -148,7 +148,7 @@ async function loadDataset() {
 
 /* ===== Environment Info Renderer ===== */
 function _infoRows(r) { return r.map(function(row) { return '<div class="info-row"><span class="info-key">'+escHtml(row[0])+'</span><span class="info-val">'+escHtml(String(row[1]||'-'))+'</span></div>'; }).join(''); }
-function cleanVer(v) { if (typeof v !== 'string') return v; return v.replace(/^DXRT\s+/i,'').replace(/^v(?=\d)/i,''); }
+function cleanVer(v) { if (typeof v !== 'string') return v; return v.replace(/^DXRT\s+/i,'').replace(/\+.*$/,'').replace(/-dirty$/,'').replace(/-\d+-g[0-9a-f]+$/,'').replace(/^v(?=\d)/i,''); }
 function renderHostInfo(el, env) {
   var rows = [['Hostname',env.hostname],['OS',env.os],['Kernel',env.kernel],['Architecture',env.arch],['CPU',env.cpu],['CPU Cores',env.cpu_count],['RAM',env.ram_gb?env.ram_gb+' GB':'-']];
   el.innerHTML = _infoRows(rows);
@@ -668,14 +668,14 @@ function getTrendData(hwId,task,useOrt,metricKey){
   });
   return lines;
 }
-function hideTrendEnvDetail(){var panel=document.getElementById('trendEnvDetail');if(panel)panel.style.display='none';var metaPanel=document.getElementById('trendModelMetaPanel');if(metaPanel)metaPanel.style.display='none';}
+function hideTrendEnvDetail(){var panel=document.getElementById('trendDetail');if(panel)panel.style.display='none';}
 function renderTrendEnvDetail(snap,options){
-  options=options||{};var panel=document.getElementById('trendEnvDetail');if(!panel)return;var env=snap&&snap.environment;if(!env){panel.style.display='none';document.getElementById('trendModelMetaPanel').style.display='none';return;}panel.style.display='';var metric=_trendMetricByKey(state.trendMetric);var dateStr=snap.timestamp?snap.timestamp.substring(0,10):snap.run_id;var verStr=snap.dx_all_suite_version||'unknown';document.getElementById('trendEnvDetailTitle').textContent=(metric.metricLabel||'Metric')+' \u00b7 '+(env.env_id||env.hostname||'Environment')+' \u00b7 DX-AS '+verStr+' \u00b7 '+dateStr+' \u00b7 '+snap.run_id;renderHostInfo(document.getElementById('trendEnvHostInfo'),env);renderNpuInfo(document.getElementById('trendEnvNpuInfo'),env);renderToolsInfo(document.getElementById('trendEnvToolsInfo'),env);
-  var metaPanel=document.getElementById('trendModelMetaPanel');metaPanel.style.display='';document.getElementById('trendModelMetaTitle').textContent='Benchmarked Models \u2013 '+TASK_MAP[state.trendTask].label+' \u00b7 '+snap.run_id;renderModelMetaForTask(document.getElementById('trendModelMetaSection'),env,state.trendTask);
+  options=options||{};var panel=document.getElementById('trendDetail');if(!panel)return;var env=snap&&snap.environment;if(!env){panel.style.display='none';return;}panel.style.display='';var metric=_trendMetricByKey(state.trendMetric);var dateStr=snap.timestamp?snap.timestamp.substring(0,10):snap.run_id;var verStr=snap.dx_all_suite_version||'unknown';document.getElementById('trendEnvDetailTitle').textContent='Details \u2014 '+(env.env_id||env.hostname||'Environment')+' \u00b7 DX-AS '+verStr+' \u00b7 '+dateStr+' \u00b7 '+snap.run_id;renderHostInfo(document.getElementById('trendEnvHostInfo'),env);renderNpuInfo(document.getElementById('trendEnvNpuInfo'),env);renderToolsInfo(document.getElementById('trendEnvToolsInfo'),env);
+  document.getElementById('trendModelMetaTitle').textContent='Benchmarked Models \u2013 '+TASK_MAP[state.trendTask].label;renderModelMetaForTask(document.getElementById('trendModelMetaSection'),env,state.trendTask);
   if(options.scroll!==false)panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function refreshTrend(){
-  var hwId=state.trendHwId;var task=state.trendTask;var useOrt=state.trendOrt;var metric=_trendMetricByKey(state.trendMetric);var data=getTrendData(hwId,task,useOrt,metric.key);var selectedIdx=_latestTrendPointIndex(data);state.trendData=data;state.trendSelectedIdx=selectedIdx;document.getElementById('trendChartTitle').textContent=metric.title;document.getElementById('trendChartSubtitle').textContent='Metric: '+metric.metricLabel+'  \u00b7  '+(TASK_MAP[task]?TASK_MAP[task].label:task)+'  \u00b7  ORT '+(useOrt?'ON':'OFF')+'  \u00b7  All Sizes (N / S / M / L / X)';if(state.trendChart)state.trendChart.setMetric(metric);if(selectedIdx>=0){handleTrendPointClick(selectedIdx,{scroll:false});}else{hideTrendEnvDetail();if(state.trendChart)state.trendChart.update(data,-1);} 
+  var hwId=state.trendHwId;var task=state.trendTask;var useOrt=state.trendOrt;var metric=_trendMetricByKey(state.trendMetric);var data=getTrendData(hwId,task,useOrt,metric.key);var selectedIdx=_latestTrendPointIndex(data);state.trendData=data;state.trendSelectedIdx=selectedIdx;document.getElementById('trendChartTitle').textContent=metric.title;document.getElementById('trendChartSubtitle').textContent=(TASK_MAP[task]?TASK_MAP[task].label:task)+'  \u00b7  ORT '+(useOrt?'ON':'OFF');if(state.trendChart)state.trendChart.setMetric(metric);if(selectedIdx>=0){handleTrendPointClick(selectedIdx,{scroll:false});}else{hideTrendEnvDetail();if(state.trendChart)state.trendChart.update(data,-1);} 
 }
 function handleTrendPointClick(idx,options){
   options=options||{};state.trendSelectedIdx=idx;var data=state.trendData||[];if(state.trendChart)state.trendChart.update(data,idx);var snap=null;if(data.length&&data[0].points[idx])snap=data[0].points[idx].snap;if(!snap){hideTrendEnvDetail();return;}renderTrendEnvDetail(snap,options);

@@ -16,6 +16,29 @@ from typing import Any
 from .npu_catalog import classify_devices, format_badge, format_sku
 
 
+def _normalize_version(raw: str) -> str:
+    """Normalize a git-describe-style version to a clean semver string.
+
+    Tools may report a build-stamped version such as
+    ``v3.4.0+9ef3f4c-dirty`` (git ``describe`` with commit hash / dirty flag)
+    instead of a clean ``v3.4.0``. Per semver, everything after ``+`` is build
+    metadata and is irrelevant to precedence, so it is dropped; git-describe
+    commit suffixes (``-<n>-g<hash>``) and the ``-dirty`` marker are stripped
+    too. Genuine pre-release tags (``-rc.4``) are preserved. The full,
+    unmodified ``dxrt-cli`` output is still kept in the fingerprint's ``raw``
+    field, so a dirty build remains auditable. Empty / ``unknown`` unchanged.
+    """
+    if not raw:
+        return raw
+    v = raw.strip()
+    if v.lower() == "unknown":
+        return v
+    v = v.split("+", 1)[0]                       # drop semver build metadata
+    v = re.sub(r"-dirty$", "", v)                # drop dirty marker
+    v = re.sub(r"-\d+-g[0-9a-f]+$", "", v)       # drop git-describe '-<n>-g<hash>'
+    return v.strip()
+
+
 def _run(cmd: list[str], default: str = "unknown") -> str:
     """Run a command and return stripped stdout, or *default* on failure."""
     try:
@@ -43,11 +66,12 @@ def resolve_dx_all_suite_version(explicit: str | None, start: Path | None = None
     *start* (default: package dir) for ``release.ver``, else None."""
     explicit = (explicit or "").strip()
     if explicit:
-        return explicit
+        return _normalize_version(explicit)
     if start is None:
         from .config import APP_DIR
         start = APP_DIR
-    return _read_release_ver(start)
+    resolved = _read_release_ver(start)
+    return _normalize_version(resolved) if resolved else resolved
 
 
 def _tool_version(name: str) -> dict[str, Any]:
@@ -181,9 +205,11 @@ def _get_cpu_model() -> str:
 
 def _get_npu_info() -> dict[str, Any]:
     """Parse NPU information from dxrt-cli -s output."""
+    rt_raw = _get_dxrt_version()
+    rt_clean = _normalize_version(rt_raw)
     info: dict[str, Any] = {
         "sku": "unknown",
-        "rt_version": _get_dxrt_version(),
+        "rt_version": rt_clean,
         "driver": "unknown",
         "pcie_driver": "unknown",
         "firmware": "unknown",
@@ -192,6 +218,11 @@ def _get_npu_info() -> dict[str, Any]:
         "pcie": "unknown",
         "cores": [],
     }
+    # Preserve the build-stamped string (e.g. "v3.4.0+9ef3f4c-dirty") only when
+    # normalization actually changed it, so a dirty/non-release runtime stays
+    # visible for auditing without cluttering clean-release fingerprints.
+    if rt_raw != rt_clean:
+        info["rt_version_raw"] = rt_raw
     if not shutil.which("dxrt-cli"):
         return info
 
