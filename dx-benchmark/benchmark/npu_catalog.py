@@ -51,6 +51,9 @@ def classify_devices(devices: list[tuple[str | None, str | None]]) -> list[dict]
     modules: list[dict] = []
     for product in order:
         cpc = per_card[product] or 1
+        # NOTE: floor-division assumes fully-populated cards; a partial card
+        # (e.g. 1-3 of 4 H1 chips reported) folds to count=1, not flagged here.
+        # Cross-run/mixed-hardware anomalies are surfaced by the aggregator guard (Task 4).
         count = max(1, chips[product] // cpc) if cpc > 1 else chips[product]
         modules.append({"product": product, "count": count})
     return modules

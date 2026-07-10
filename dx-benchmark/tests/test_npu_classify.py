@@ -33,6 +33,11 @@ def test_classify_device_h1_chip():
     assert classify_device("H1, Rev 0.0", "LPDDR5x 6000 Mbps, 3.92GiB") == ("H1-Quattro", 4)
 
 
+def test_classify_device_m2_lpddr5x_matches_before_lpddr5():
+    # LPDDR5X on an M.2 board must resolve before the LPDDR5 substring rule.
+    assert classify_device("M.2, Rev 1.0", "LPDDR5x 6000 Mbps, 3.92GiB") == ("H1", 1)
+
+
 def test_classify_device_unknown():
     assert classify_device(None, None) == ("unknown", 1)
 
