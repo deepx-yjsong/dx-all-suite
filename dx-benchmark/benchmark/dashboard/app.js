@@ -52,7 +52,7 @@ var _MODEL_NAME_MAP = {
 function getModelName(task, size) { var m=_MODEL_NAME_MAP[task]||{suf:'',res:'640x640'}; return 'yolo26-' + size + m.suf + '_' + m.res + '.dxnn'; }
 // Worst status across a row's source metrics (non-ok surfaced so partial/failed never hides).
 function _rowStatus(sts){var bad=sts.filter(function(s){return s&&s!=='ok';});if(bad.length){var uniq=[];bad.forEach(function(s){if(uniq.indexOf(s)<0)uniq.push(s);});return uniq.join(', ');}return sts.filter(function(s){return s;}).length?'ok':'-';}
-function envLabel(env) { return (env.env_id || env.hw_id || env.hostname) + '\n(' + (env.npu_product || env.npu_sku || '?') + ')'; }
+function envLabel(env) { return (env.env_id || env.hw_id || env.hostname); }
 function fmt(v, d) { if (v === null || v === undefined) return '-'; var n = Number(v); return Number.isNaN(n) ? '-' : n.toFixed(d === undefined ? 1 : d); }
 function modelSizeChar(name) { var m = String(name||'').match(/yolo26([nslmx])/i); return m ? m[1].toLowerCase() : ''; }
 function formatInputShape(shape) {
@@ -87,7 +87,7 @@ function renderRunSelectors(targetId){
   target.innerHTML=envs.map(function(env){
     var runs=_getRunOptions(env.env_id);if(!runs.length)return '';
     var options=runs.map(function(run){return '<option value="'+escHtml(run.run_id)+'">'+escHtml(run.run_id)+'</option>';}).join('');
-    return '<label><span>'+escHtml(env.env_id || env.hostname)+' ('+escHtml(env.npu_product||env.npu_sku||'?')+')</span><select data-run-env="'+escHtml(env.env_id)+'">'+options+'</select></label>';
+    return '<label><span>'+escHtml(env.env_id || env.hostname)+'</span><select data-run-env="'+escHtml(env.env_id)+'">'+options+'</select></label>';
   }).join('');
   target.querySelectorAll('select[data-run-env]').forEach(function(sel){
     var envId=sel.dataset.runEnv;sel.value=_getSelectedRunId(envId)||sel.value;
@@ -385,7 +385,7 @@ function handleFpsEnvClick(idx,d,options) {
   options=options||{};
   state.fpsSelectedEnvId=d.envId;
   var panel=document.getElementById('fpsEnvDetail');panel.style.display='';
-  document.getElementById('fpsEnvDetailTitle').textContent=(d.env.env_id||d.env.hostname)+' ('+(d.env.npu_product||d.env.npu_sku||'?')+')';
+  document.getElementById('fpsEnvDetailTitle').textContent=(d.env.env_id||d.env.hostname);
   renderHostInfo(document.getElementById('fpsEnvHostInfo'),d.env);
   renderNpuInfo(document.getElementById('fpsEnvNpuInfo'),d.env);
   renderToolsInfo(document.getElementById('fpsEnvToolsInfo'),d.env);
@@ -418,7 +418,7 @@ function initFpsFilters() {
 function renderEnvDetail(env,options) {
   options=options||{};
   var panel=document.getElementById('envDetail');panel.style.display='';
-  document.getElementById('envDetailTitle').textContent=(env.env_id||env.hostname)+' ('+(env.npu_product||env.npu_sku||'?')+')';
+  document.getElementById('envDetailTitle').textContent=(env.env_id||env.hostname);
   renderHostInfo(document.getElementById('envHostInfo'),env);
   renderNpuInfo(document.getElementById('envNpuInfo'),env);
   renderToolsInfo(document.getElementById('envToolsInfo'),env);
@@ -465,7 +465,7 @@ function initOverviewFilters() {
 function initDetailTab() {
   var sel=document.getElementById('detailEnvFilter');
   var runSel=document.getElementById('detailRunFilter');
-  sel.innerHTML=(state.dataset.environments||[]).map(function(e){return '<option value="'+e.env_id+'">'+escHtml((e.env_id||e.hostname)+' ('+(e.npu_product||e.npu_sku||'?')+')')+'</option>';}).join('');
+  sel.innerHTML=(state.dataset.environments||[]).map(function(e){return '<option value="'+e.env_id+'">'+escHtml(e.env_id||e.hostname)+'</option>';}).join('');
   if(state.dataset.environments.length){state.detailEnvId=state.dataset.environments[0].env_id;sel.value=state.detailEnvId;}
   syncDetailRunFilter();
   sel.addEventListener('change',function(){state.detailEnvId=this.value;syncDetailRunFilter();renderDetailTables();});
@@ -628,7 +628,7 @@ function getTrendData(hwId,task,useOrt,metricKey){
 }
 function hideTrendEnvDetail(){var panel=document.getElementById('trendEnvDetail');if(panel)panel.style.display='none';var metaPanel=document.getElementById('trendModelMetaPanel');if(metaPanel)metaPanel.style.display='none';}
 function renderTrendEnvDetail(snap,options){
-  options=options||{};var panel=document.getElementById('trendEnvDetail');if(!panel)return;var env=snap&&snap.environment;if(!env){panel.style.display='none';document.getElementById('trendModelMetaPanel').style.display='none';return;}panel.style.display='';var metric=_trendMetricByKey(state.trendMetric);var dateStr=snap.timestamp?snap.timestamp.substring(0,10):snap.run_id;var verStr=snap.dx_all_suite_version||'unknown';document.getElementById('trendEnvDetailTitle').textContent=(metric.metricLabel||'Metric')+' \u00b7 '+(env.env_id||env.hostname||'Environment')+' ('+(env.npu_product||env.npu_sku||'?')+') \u00b7 DX-AS '+verStr+' \u00b7 '+dateStr+' \u00b7 '+snap.run_id;renderHostInfo(document.getElementById('trendEnvHostInfo'),env);renderNpuInfo(document.getElementById('trendEnvNpuInfo'),env);renderToolsInfo(document.getElementById('trendEnvToolsInfo'),env);
+  options=options||{};var panel=document.getElementById('trendEnvDetail');if(!panel)return;var env=snap&&snap.environment;if(!env){panel.style.display='none';document.getElementById('trendModelMetaPanel').style.display='none';return;}panel.style.display='';var metric=_trendMetricByKey(state.trendMetric);var dateStr=snap.timestamp?snap.timestamp.substring(0,10):snap.run_id;var verStr=snap.dx_all_suite_version||'unknown';document.getElementById('trendEnvDetailTitle').textContent=(metric.metricLabel||'Metric')+' \u00b7 '+(env.env_id||env.hostname||'Environment')+' \u00b7 DX-AS '+verStr+' \u00b7 '+dateStr+' \u00b7 '+snap.run_id;renderHostInfo(document.getElementById('trendEnvHostInfo'),env);renderNpuInfo(document.getElementById('trendEnvNpuInfo'),env);renderToolsInfo(document.getElementById('trendEnvToolsInfo'),env);
   var metaPanel=document.getElementById('trendModelMetaPanel');metaPanel.style.display='';document.getElementById('trendModelMetaTitle').textContent='Benchmarked Models \u2013 '+TASK_MAP[state.trendTask].label+' \u00b7 '+snap.run_id;renderModelMetaForTask(document.getElementById('trendModelMetaSection'),env,state.trendTask);
   if(options.scroll!==false)panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -642,7 +642,7 @@ function initTrendChart(){
   var canvas=document.getElementById('trendChart');if(canvas)state.trendChart=createTrendChart(canvas,function(idx){handleTrendPointClick(idx);});
 }
 function initTrendTab(){
-  var snaps=state.dataset.snapshots||[];var sel=document.getElementById('trendEnvFilter');var hwIds=_getUniqueHwIds();sel.innerHTML=hwIds.map(function(id){var e=_envById(id);var badge=(e&&(e.npu_product||e.npu_sku))||null;return '<option value="'+escHtml(id)+'">'+escHtml(badge?id+' ('+badge+')':id)+'</option>';}).join('');if(hwIds.length){state.trendHwId=hwIds[0];sel.value=hwIds[0];}state.trendTask='object_detection';state.trendOrt=true;state.trendMetric='e2e';document.getElementById('trendMetricFilter').value=state.trendMetric;sel.addEventListener('change',function(){state.trendHwId=this.value;refreshTrend();});document.getElementById('trendTaskFilter').addEventListener('change',function(){state.trendTask=this.value;refreshTrend();});document.getElementById('trendOrtFilter').addEventListener('change',function(){state.trendOrt=this.value==='on';refreshTrend();});document.getElementById('trendMetricFilter').addEventListener('change',function(){state.trendMetric=this.value;refreshTrend();});refreshTrend();
+  var snaps=state.dataset.snapshots||[];var sel=document.getElementById('trendEnvFilter');var hwIds=_getUniqueHwIds();sel.innerHTML=hwIds.map(function(id){return '<option value="'+escHtml(id)+'">'+escHtml(id)+'</option>';}).join('');if(hwIds.length){state.trendHwId=hwIds[0];sel.value=hwIds[0];}state.trendTask='object_detection';state.trendOrt=true;state.trendMetric='e2e';document.getElementById('trendMetricFilter').value=state.trendMetric;sel.addEventListener('change',function(){state.trendHwId=this.value;refreshTrend();});document.getElementById('trendTaskFilter').addEventListener('change',function(){state.trendTask=this.value;refreshTrend();});document.getElementById('trendOrtFilter').addEventListener('change',function(){state.trendOrt=this.value==='on';refreshTrend();});document.getElementById('trendMetricFilter').addEventListener('change',function(){state.trendMetric=this.value;refreshTrend();});refreshTrend();
 }
 
 /* ===== Main ===== */
