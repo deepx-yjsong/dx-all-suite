@@ -8,7 +8,8 @@ import statistics
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .result_layout import iter_result_dirs, make_hw_id as _result_hw_id
+from .npu_catalog import classify_from_raw, format_badge, format_sku
+from .result_layout import iter_result_dirs
 from .runner_pipeline import _extract_pipeline_caps
 
 
@@ -50,10 +51,21 @@ def _parse_board_from_raw(raw: str) -> str | None:
     return None
 
 
+def _resolve_modules(npu: dict) -> list[dict]:
+    modules = npu.get("modules")
+    if modules:
+        return modules
+    raw = npu.get("raw")
+    if isinstance(raw, str) and raw:
+        return classify_from_raw(raw)
+    return []
+
+
 def _build_environment_summary(env_id: str, run_id: str, fingerprint: dict) -> dict:
     host = fingerprint.get("host", {})
     npu = fingerprint.get("npu", {})
     software = fingerprint.get("software", {})
+    modules = _resolve_modules(npu)
 
     board = npu.get("board")
     if (not board or board == "unknown") and npu.get("raw"):
@@ -62,7 +74,7 @@ def _build_environment_summary(env_id: str, run_id: str, fingerprint: dict) -> d
     return {
         "env_id": env_id,
         "dx_all_suite_version": fingerprint.get("dx_all_suite_version"),
-        "hw_id": _result_hw_id(fingerprint),
+        "hw_id": env_id,                     # legacy alias == env_id (folder)
         "latest_run_id": run_id,
         "product_name": fingerprint.get("product_name"),
         "hostname": host.get("hostname"),
@@ -72,7 +84,9 @@ def _build_environment_summary(env_id: str, run_id: str, fingerprint: dict) -> d
         "cpu": host.get("cpu"),
         "cpu_count": host.get("cpu_count"),
         "ram_gb": host.get("ram_gb"),
-        "npu_sku": npu.get("sku"),
+        "npu_product": format_badge(modules),
+        "npu_sku": format_sku(modules),
+        "npu_modules": modules,
         "npu_device_count": npu.get("device_count"),
         "npu_clock_mhz": npu.get("clock_mhz"),
         "rt_driver": npu.get("driver"),
@@ -338,6 +352,8 @@ def aggregate_result_directories(results_root: Path) -> dict:
     result_dirs = iter_result_dirs(results_root)
 
     environments: dict[str, dict] = {}
+    warnings: list[str] = []
+    env_products: dict[str, set] = {}
     runs: list[dict] = []
     model_summary: list[dict] = []
     e2e_single_summary: list[dict] = []
@@ -346,26 +362,34 @@ def aggregate_result_directories(results_root: Path) -> dict:
 
     for result_dir in result_dirs:
         run_id = result_dir.name
+        env_id = result_dir.parent.name          # folder directly under results/
         fingerprint = _load_json_object(result_dir / "environment.json")
-        hw_id = _result_hw_id(fingerprint)
-        # Use hw_id as the environment key across all tabs.
+        modules = _resolve_modules(fingerprint.get("npu", {}))
+        env_products.setdefault(env_id, set()).add(format_sku(modules))
+        # Use env_id (results folder name) as the environment key across all tabs.
         # SW version changes (driver/firmware) are tracked via history/snapshots.
-        environments[hw_id] = _build_environment_summary(hw_id, run_id, fingerprint)
-        runs.append(_normalize_run(run_id, hw_id, result_dir, fingerprint))
+        environments[env_id] = _build_environment_summary(env_id, run_id, fingerprint)
+        runs.append(_normalize_run(run_id, env_id, result_dir, fingerprint))
 
         model_rows = _load_json_list(result_dir / "model_results.json")
         pipeline_rows = _load_json_list(result_dir / "pipeline_results.json")
         multi_rows = _load_json_list(result_dir / "multi_stream_results.json")
         fps_threshold = float(fingerprint.get("protocol", {}).get("fps_threshold", fingerprint.get("benchmark_params", {}).get("fps_threshold", 30.0)) or 30.0)
 
-        model_summary.extend(_flatten_model_results(run_id, hw_id, model_rows))
-        e2e_single_summary.extend(_flatten_pipeline_results(run_id, hw_id, result_dir, pipeline_rows))
-        e2e_multi_capacity_summary.extend(_build_capacity_summary(run_id, hw_id, multi_rows, fps_threshold))
+        model_summary.extend(_flatten_model_results(run_id, env_id, model_rows))
+        e2e_single_summary.extend(_flatten_pipeline_results(run_id, env_id, result_dir, pipeline_rows))
+        e2e_multi_capacity_summary.extend(_build_capacity_summary(run_id, env_id, multi_rows, fps_threshold))
 
         snapshots.append(_build_snapshot(
-            hw_id, run_id, fingerprint,
+            env_id, run_id, fingerprint,
             model_rows, pipeline_rows, multi_rows, fps_threshold, result_dir,
         ))
+
+    for env_id, products in env_products.items():
+        if len(products) > 1:
+            warnings.append(
+                f"Folder '{env_id}' contains runs classified as different NPU "
+                f"products: {sorted(products)}. Check the folder name / hardware.")
 
     snapshots.sort(key=lambda s: (s.get("hw_id", ""), s.get("run_id", "")))
 
@@ -389,6 +413,7 @@ def aggregate_result_directories(results_root: Path) -> dict:
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "run_count": len(runs),
             "environment_count": len(environments),
+            "warnings": warnings,
         },
         "environments": sorted(environments.values(), key=lambda item: item["env_id"]),
         "runs": sorted(runs, key=lambda item: item["run_id"]),
