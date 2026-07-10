@@ -143,6 +143,24 @@ tbody tr:nth-child(even) { background: var(--table-stripe); }
 /* Details = subordinate to the chart: recessed panel, muted eyebrow heading, card sub-blocks */
 .detail-group { background: rgba(255, 255, 255, 0.55); animation: slideIn 0.25s ease-out; }
 .detail-group > h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 0 0 18px; }
-.detail-sub { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-top: 14px; }
+.detail-sub { background: #fff; border: 1px solid var(--border); border-left-width: 4px; border-radius: 12px; padding: 16px 18px; margin-top: 14px; }
 .detail-sub:first-of-type { margin-top: 0; }
-.detail-sub-title { font-size: 14px; font-weight: 700; color: var(--accent); border-bottom: 1px solid var(--accent-soft); padding-bottom: 8px; margin: 0 0 14px; }
+.detail-sub-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin: 0 0 14px; }
+.detail-sub-title::before { font-size: 15px; }
+/* Per-information-type identity: performance (green), hardware (slate-blue), config (amber) */
+.detail-sub--perf { border-left-color: var(--accent); }
+.detail-sub--perf .detail-sub-title { color: var(--accent); }
+.detail-sub--perf .detail-sub-title::before { content: '\1F4CA'; }
+.detail-sub--env { border-left-color: #3d6f96; }
+.detail-sub--env .detail-sub-title { color: #3d6f96; }
+.detail-sub--env .detail-sub-title::before { content: '\1F5A5'; }
+.detail-sub--models { border-left-color: #b5842f; }
+.detail-sub--models .detail-sub-title { color: #9c6f22; }
+.detail-sub--models .detail-sub-title::before { content: '\1F4E6'; }
+
+/* Status pills — reserved status colors; the exception (partial/fail) draws the eye */
+.status { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+.status--ok { color: var(--accent); background: var(--accent-soft); }
+.status--warn { color: #8a5a00; background: #fdecc8; }
+.status--bad { color: #8a1c1c; background: #f8d7da; }
+.metric-primary { font-weight: 700; color: var(--ink); }

@@ -211,7 +211,9 @@ function renderE2eTable(container, envId, task, useOrt, runId) {
     var fpsS=fmt(r.avg_e2e_fps,1);if(r.fps_std!=null)fpsS+=' \u00b1'+fmt(r.fps_std,1);
     var tempS=_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c);
     var clkS=_fmtClock(r.npu_clock_mhz_min,r.npu_clock_mhz_max);
-    html += '<tr><td>'+escHtml(r.model)+'</td><td>'+fpsS+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+tempS+'</td><td>'+clkS+'</td><td>'+fmt(r.max_rss_mib,0)+'</td><td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td><td>'+escHtml(r.status||'-')+'</td></tr>';
+    var _st=r.status||'-';var _sc=_st==='ok'?'ok':(_st==='partial'?'warn':(_st==='-'?'':'bad'));
+    var _stTd=_sc?'<span class="status status--'+_sc+'">'+escHtml(_st)+'</span>':escHtml(_st);
+    html += '<tr><td>'+escHtml(r.model)+'</td><td class="metric-primary">'+fpsS+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+tempS+'</td><td>'+clkS+'</td><td>'+fmt(r.max_rss_mib,0)+'</td><td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td><td>'+_stTd+'</td></tr>';
   });
   html += '</tbody></table>';
   container.innerHTML = html;
