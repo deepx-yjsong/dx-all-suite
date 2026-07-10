@@ -9,6 +9,7 @@ from .npu_catalog import classify_from_raw, format_sku, UNKNOWN_PRODUCT
 
 
 def _get_sku(npu: dict) -> str:
+    """Resolve product SKU: stamped sku > modules > raw backfill > device_count guess."""
     sku = npu.get("sku")
     if sku and sku != UNKNOWN_PRODUCT:
         return str(sku)
@@ -23,10 +24,8 @@ def _get_sku(npu: dict) -> str:
         if s != UNKNOWN_PRODUCT:
             return s
     dc = int(npu.get("device_count", 0) or 0)
-    if dc > 1:
-        return f"M1x{dc}"
-    if dc == 1:
-        return "M1"
+    if dc >= 1:
+        return format_sku([{"product": "M1", "count": dc}])
     return UNKNOWN_PRODUCT
 
 
