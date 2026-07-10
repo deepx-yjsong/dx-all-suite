@@ -57,7 +57,7 @@ def save_results_csv(results: list[dict], path: Path, fieldnames: list[str] | No
                     seen.add(k)
                     fieldnames.append(k)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", newline="") as f:
+    with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(results)
@@ -66,7 +66,7 @@ def save_results_csv(results: list[dict], path: Path, fieldnames: list[str] | No
 def save_results_json(results: list[dict], path: Path) -> None:
     """Write results to a JSON file."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, default=str)
 
 
@@ -209,7 +209,7 @@ def generate_markdown_report(
     lines.append("")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
     return output_path
 

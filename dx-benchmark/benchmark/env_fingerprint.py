@@ -330,7 +330,7 @@ def collect_model_metadata(model_path: str | Path) -> dict[str, Any]:
     """Run ``parse_model -m <model_path>`` and extract key metadata.
 
     Returns a dict with ``format_version``, ``dxcom_version``, and
-    ``total_memory_bytes`` (or empty dict on failure).
+    ``total_memory_mb`` (or empty dict on failure).
     """
     raw = _run(["parse_model", "-m", str(model_path)], default="")
     if not raw:

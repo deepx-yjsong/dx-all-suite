@@ -451,6 +451,6 @@ def aggregate_result_directories(results_root: Path) -> dict:
 
 def save_dataset_json(dataset: dict, output_path: Path) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(dataset, f, indent=2)
     return output_path
