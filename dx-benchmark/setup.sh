@@ -101,8 +101,8 @@ phase_videos() {
     EXTRACT_DIR=$(mktemp -d "$OUTPUT_DIR/.benchmark_video_extract.XXXXXX")
 
     cleanup() {
-        rm -f "$ARCHIVE"
-        rm -rf "$EXTRACT_DIR"
+        rm -f "${ARCHIVE:-}"
+        rm -rf "${EXTRACT_DIR:-}"
     }
 
     trap cleanup INT TERM EXIT
@@ -129,6 +129,12 @@ phase_videos() {
 
     echo "[OK] Benchmark videos ready in $OUTPUT_DIR"
     ls -lh "$OUTPUT_DIR"/*.mp4 2>/dev/null || true
+
+    # Clean the temp archive/extract dir now and drop the EXIT trap, so it does
+    # not fire at script exit when these function-locals are out of scope
+    # (which tripped 'ARCHIVE: unbound variable' under `set -u`).
+    cleanup
+    trap - INT TERM EXIT
 }
 
 case "${1:-all}" in
