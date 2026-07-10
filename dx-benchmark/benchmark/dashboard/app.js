@@ -385,7 +385,7 @@ function handleFpsEnvClick(idx,d,options) {
   options=options||{};
   state.fpsSelectedEnvId=d.envId;
   var panel=document.getElementById('fpsEnvDetail');panel.style.display='';
-  document.getElementById('fpsEnvDetailTitle').textContent=d.env.hostname+' ('+(d.env.npu_sku||'?')+')';
+  document.getElementById('fpsEnvDetailTitle').textContent=(d.env.env_id||d.env.hostname)+' ('+(d.env.npu_product||d.env.npu_sku||'?')+')';
   renderHostInfo(document.getElementById('fpsEnvHostInfo'),d.env);
   renderNpuInfo(document.getElementById('fpsEnvNpuInfo'),d.env);
   renderToolsInfo(document.getElementById('fpsEnvToolsInfo'),d.env);
@@ -418,7 +418,7 @@ function initFpsFilters() {
 function renderEnvDetail(env,options) {
   options=options||{};
   var panel=document.getElementById('envDetail');panel.style.display='';
-  document.getElementById('envDetailTitle').textContent=env.hostname+' ('+(env.npu_sku||'?')+')';
+  document.getElementById('envDetailTitle').textContent=(env.env_id||env.hostname)+' ('+(env.npu_product||env.npu_sku||'?')+')';
   renderHostInfo(document.getElementById('envHostInfo'),env);
   renderNpuInfo(document.getElementById('envNpuInfo'),env);
   renderToolsInfo(document.getElementById('envToolsInfo'),env);
