@@ -52,7 +52,7 @@ var _MODEL_NAME_MAP = {
 function getModelName(task, size) { var m=_MODEL_NAME_MAP[task]||{suf:'',res:'640x640'}; return 'yolo26-' + size + m.suf + '_' + m.res + '.dxnn'; }
 // Worst status across a row's source metrics (non-ok surfaced so partial/failed never hides).
 function _rowStatus(sts){var bad=sts.filter(function(s){return s&&s!=='ok';});if(bad.length){var uniq=[];bad.forEach(function(s){if(uniq.indexOf(s)<0)uniq.push(s);});return uniq.join(', ');}return sts.filter(function(s){return s;}).length?'ok':'-';}
-function envLabel(env) { return (env.hw_id || env.hostname) + '\n(' + (env.npu_sku || '?') + ')'; }
+function envLabel(env) { return (env.env_id || env.hw_id || env.hostname) + '\n(' + (env.npu_product || env.npu_sku || '?') + ')'; }
 function fmt(v, d) { if (v === null || v === undefined) return '-'; var n = Number(v); return Number.isNaN(n) ? '-' : n.toFixed(d === undefined ? 1 : d); }
 function modelSizeChar(name) { var m = String(name||'').match(/yolo26([nslmx])/i); return m ? m[1].toLowerCase() : ''; }
 function formatInputShape(shape) {
@@ -87,7 +87,7 @@ function renderRunSelectors(targetId){
   target.innerHTML=envs.map(function(env){
     var runs=_getRunOptions(env.env_id);if(!runs.length)return '';
     var options=runs.map(function(run){return '<option value="'+escHtml(run.run_id)+'">'+escHtml(run.run_id)+'</option>';}).join('');
-    return '<label><span>'+escHtml(env.hostname)+' ('+escHtml(env.npu_sku||'?')+')</span><select data-run-env="'+escHtml(env.env_id)+'">'+options+'</select></label>';
+    return '<label><span>'+escHtml(env.env_id || env.hostname)+' ('+escHtml(env.npu_product||env.npu_sku||'?')+')</span><select data-run-env="'+escHtml(env.env_id)+'">'+options+'</select></label>';
   }).join('');
   target.querySelectorAll('select[data-run-env]').forEach(function(sel){
     var envId=sel.dataset.runEnv;sel.value=_getSelectedRunId(envId)||sel.value;
@@ -118,7 +118,7 @@ function renderToolsInfo(el, env) {
   el.innerHTML = _infoRows(rows);
 }
 function renderNpuInfo(el, env) {
-  var rows = [['Product',env.npu_sku||'-'],['DXRT',cleanVer(env.rt_version)],['RT Driver',cleanVer(env.rt_driver)],['PCIe Driver',cleanVer(env.pcie_driver)],['Firmware',cleanVer(env.firmware)],['Clock',env.npu_clock_mhz?env.npu_clock_mhz+' MHz':'-'],['Memory',env.memory],['Board',(env.board && env.board !== 'unknown') ? env.board : '-'],['PCIe',env.pcie]];
+  var rows = [['NPU',env.npu_product||env.npu_sku||'-'],['Product',env.npu_sku||'-'],['DXRT',cleanVer(env.rt_version)],['RT Driver',cleanVer(env.rt_driver)],['PCIe Driver',cleanVer(env.pcie_driver)],['Firmware',cleanVer(env.firmware)],['Clock',env.npu_clock_mhz?env.npu_clock_mhz+' MHz':'-'],['Memory',env.memory],['Board',(env.board && env.board !== 'unknown') ? env.board : '-'],['PCIe',env.pcie]];
   el.innerHTML = _infoRows(rows);
 }
 
