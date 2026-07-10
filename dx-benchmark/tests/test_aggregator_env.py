@@ -70,6 +70,13 @@ def test_guard_ignores_unknown_only_run(tmp_path):
     assert ds["meta"]["warnings"] == []
 
 
+def test_runs_carry_suite_version(tmp_path):
+    _write_run(tmp_path, "RPi5B_M1", "20260707_1", "RPi5B", RAW_M1)
+    ds = aggregate_result_directories(tmp_path)
+    assert ds["runs"], "expected at least one run"
+    assert all("dx_all_suite_version" in r for r in ds["runs"])
+
+
 def test_guard_warns_on_mixed_hostnames(tmp_path):
     # Same folder, two runs from different hostnames -> warn.
     _write_run(tmp_path, "FolderH", "run1", "X", RAW_M1)

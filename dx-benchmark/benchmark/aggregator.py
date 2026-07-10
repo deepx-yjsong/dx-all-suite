@@ -109,6 +109,7 @@ def _normalize_run(run_id: str, env_id: str, result_dir: Path, fingerprint: dict
     return {
         "run_id": run_id,
         "env_id": env_id,
+        "dx_all_suite_version": fingerprint.get("dx_all_suite_version"),
         "path": str(result_dir),
         "timestamp": fingerprint.get("timestamp"),
         "protocol": fingerprint.get("protocol", {}),
