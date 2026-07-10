@@ -35,6 +35,7 @@ var state = {
   fpsTask: 'object_detection', fpsOrt: true,
   fpsSelectedEnvId: null, fpsChartData: [],
   selectedRunIds: {},
+  selectedVersion: null,
   detailEnvId: null, detailTask: 'all', detailOrt: 'all',
   trendHwId: null, trendTask: 'object_detection', trendOrt: true, trendMetric: 'e2e',
   trendData: [], trendSelectedIdx: -1, trendChart: null,
@@ -68,9 +69,44 @@ function stripAnsi(s) { return typeof s === 'string' ? s.replace(/\x1b\[[0-9;]*m
 function _history(kind){return ((state.dataset.history||{})[kind])||((state.dataset.summaries||{})[kind])||[];}
 /* Selected-run comparisons are driven from state.dataset.history.e2e_single and friends. */
 function _envById(envId){return (state.dataset.environments||[]).find(function(env){return env.env_id===envId;})||null;}
+function _cmpSemverDesc(a,b){
+  function parse(v){var m=String(v||'').match(/(\d+)\.(\d+)\.(\d+)/);return m?[+m[1],+m[2],+m[3]]:null;}
+  var pa=parse(a),pb=parse(b);
+  if(pa&&pb){for(var i=0;i<3;i++){if(pb[i]!==pa[i])return pb[i]-pa[i];}return 0;}
+  if(pa&&!pb)return -1;            // known versions before unknown/unparseable
+  if(!pa&&pb)return 1;
+  return String(a||'').localeCompare(String(b||''));
+}
+function _allSuiteVersions(){
+  var seen={},out=[];
+  (state.dataset.runs||[]).forEach(function(r){var v=r.dx_all_suite_version||'unknown';if(!seen[v]){seen[v]=true;out.push(v);}});
+  out.sort(_cmpSemverDesc);
+  return out;
+}
+function _runIdForEnvVersion(envId,version){
+  var rows=(state.dataset.runs||[]).filter(function(r){return r.env_id===envId && (r.dx_all_suite_version||'unknown')===version;});
+  rows.sort(function(a,b){return (b.run_id||'').localeCompare(a.run_id||'');});
+  return rows.length?rows[0].run_id:null;
+}
 function _getRunOptions(envId){var rows=(state.dataset.runs||[]).filter(function(r){return r.env_id===envId;});rows.sort(function(a,b){return (b.run_id||'').localeCompare(a.run_id||'');});return rows;}
 function _getSelectedRunId(envId){var env=_envById(envId);return state.selectedRunIds[envId]||(env?env.latest_run_id:null);}
-function _initSelectedRunIds(){(state.dataset.environments||[]).forEach(function(env){state.selectedRunIds[env.env_id]=env.latest_run_id;});}
+function _initSelectedRunIds(){
+  var vers=_allSuiteVersions();
+  state.selectedVersion=vers.length?vers[0]:null;                 // latest (semver desc)
+  (state.dataset.environments||[]).forEach(function(env){
+    state.selectedRunIds[env.env_id]=state.selectedVersion
+      ? _runIdForEnvVersion(env.env_id,state.selectedVersion)
+      : env.latest_run_id;
+  });
+}
+function _applySelectedVersion(version){
+  state.selectedVersion=version;
+  (state.dataset.environments||[]).forEach(function(env){
+    state.selectedRunIds[env.env_id]=_runIdForEnvVersion(env.env_id,version);
+  });
+  renderRunSelectors('fpsRunSelectors');renderRunSelectors('overviewRunSelectors');
+  refreshFpsCompare();refreshChart();
+}
 function _syncRunSelectors(envId,runId){document.querySelectorAll('select[data-run-env]').forEach(function(sel){if(sel.dataset.runEnv===envId)sel.value=runId;});}
 function syncDetailRunFilter(){
   var sel=document.getElementById('detailRunFilter');if(!sel)return;
@@ -84,15 +120,17 @@ function renderRunSelectors(targetId){
   var target=document.getElementById(targetId);if(!target)return;
   var envs=state.dataset.environments||[];
   if(!envs.length){target.innerHTML='<p class="empty-state small">No environments available.</p>';return;}
-  target.innerHTML=envs.map(function(env){
-    var runs=_getRunOptions(env.env_id);if(!runs.length)return '';
-    var options=runs.map(function(run){return '<option value="'+escHtml(run.run_id)+'">'+escHtml(run.run_id)+'</option>';}).join('');
-    return '<label><span>'+escHtml(env.env_id || env.hostname)+'</span><select data-run-env="'+escHtml(env.env_id)+'">'+options+'</select></label>';
+  var vers=_allSuiteVersions();
+  var verOpts=vers.map(function(v){return '<option value="'+escHtml(v)+'"'+(v===state.selectedVersion?' selected':'')+'>'+escHtml(v)+'</option>';}).join('');
+  var caps=envs.map(function(env){
+    var rid=_runIdForEnvVersion(env.env_id,state.selectedVersion);
+    var name=escHtml(env.env_id||env.hostname);
+    if(rid){return '<div class="env-run"><span class="env-name">'+name+'</span><span class="env-run-id">'+escHtml(rid)+'</span></div>';}
+    return '<div class="env-run env-missing"><span class="env-name">'+name+'</span><span class="env-run-id">(no data for '+escHtml(state.selectedVersion||'?')+')</span></div>';
   }).join('');
-  target.querySelectorAll('select[data-run-env]').forEach(function(sel){
-    var envId=sel.dataset.runEnv;sel.value=_getSelectedRunId(envId)||sel.value;
-    sel.addEventListener('change',function(){_handleRunSelectionChange(envId,this.value);});
-  });
+  target.innerHTML='<label class="version-select"><span>dx-all-suite version</span><select data-version-select>'+verOpts+'</select></label><div class="env-run-list">'+caps+'</div>';
+  var sel=target.querySelector('select[data-version-select]');
+  if(sel)sel.addEventListener('change',function(){_applySelectedVersion(this.value);});
 }
 
 /* ===== Dataset ===== */
@@ -443,6 +481,7 @@ function initTabs() {
       document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
       document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
       this.classList.add('active');document.getElementById('tab-'+target).classList.add('active');
+      if(target==='fps-compare'||target==='overview'){_applySelectedVersion(state.selectedVersion);}
       if(target==='fps-compare')FpsChart._resize();
       if(target==='overview')Chart._resize();
       if(target==='detail')renderDetailTables();
