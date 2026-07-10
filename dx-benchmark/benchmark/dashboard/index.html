@@ -212,27 +212,23 @@
         <p class="chart-hint" id="trendChartHint">Click on a data point group to view snapshot environment details</p>
       </section>
 
-      <section class="panel env-detail" id="trendEnvDetail" style="display:none">
-        <h2 id="trendEnvDetailTitle">Environment Details</h2>
-        <div class="env-detail-grid env-detail-grid--3">
-          <div class="env-detail-col">
-            <h3>Host PC</h3>
-            <div id="trendEnvHostInfo"></div>
-          </div>
-          <div class="env-detail-col">
-            <h3>NPU</h3>
-            <div id="trendEnvNpuInfo"></div>
-          </div>
-          <div class="env-detail-col">
-            <h3>Tools</h3>
-            <div id="trendEnvToolsInfo"></div>
+      <section class="panel detail-group" id="trendEnvDetail" style="display:none">
+        <h2 id="trendEnvDetailTitle">Details</h2>
+        <div class="detail-sub detail-sub--env">
+          <h3 class="detail-sub-title">Environment</h3>
+          <div class="env-detail-grid env-detail-grid--3">
+            <div class="env-detail-col"><h3>Host PC</h3><div id="trendEnvHostInfo"></div></div>
+            <div class="env-detail-col"><h3>NPU</h3><div id="trendEnvNpuInfo"></div></div>
+            <div class="env-detail-col"><h3>Tools</h3><div id="trendEnvToolsInfo"></div></div>
           </div>
         </div>
       </section>
 
-      <section class="panel" id="trendModelMetaPanel" style="display:none">
-        <h2 id="trendModelMetaTitle">Benchmarked Models</h2>
-        <div id="trendModelMetaSection"></div>
+      <section class="panel detail-group" id="trendModelMetaPanel" style="display:none">
+        <div class="detail-sub detail-sub--models">
+          <h3 class="detail-sub-title" id="trendModelMetaTitle">Benchmarked Models</h3>
+          <div id="trendModelMetaSection"></div>
+        </div>
       </section>
     </div>
   </main>
