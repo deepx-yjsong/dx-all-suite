@@ -73,3 +73,15 @@ def test_stamp_npu_products_m1m():
     assert npu["sku"] == "M1M"
     assert npu["product"] == "M1M"
     assert npu["modules"] == [{"product": "M1M", "count": 1}]
+
+
+def test_get_npu_info_multi_device_end_to_end(monkeypatch):
+    from benchmark import env_fingerprint as ef
+    monkeypatch.setattr(ef.shutil, "which", lambda name: "/usr/bin/dxrt-cli")
+    monkeypatch.setattr(ef, "_run",
+                        lambda cmd, default="unknown": RAW_H1 if cmd == ["dxrt-cli", "-s"] else default)
+    info = ef._get_npu_info()
+    assert info["device_count"] == 4
+    assert info["modules"] == [{"product": "H1-Quattro", "count": 1}]
+    assert info["sku"] == "H1-Quattro"
+    assert info["product"] == "H1-Quattro"
