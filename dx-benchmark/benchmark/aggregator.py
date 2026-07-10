@@ -8,7 +8,7 @@ import statistics
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .npu_catalog import classify_from_raw, format_badge, format_sku
+from .npu_catalog import UNKNOWN_PRODUCT, classify_from_raw, format_badge, format_sku
 from .result_layout import iter_result_dirs
 from .runner_pipeline import _extract_pipeline_caps
 
@@ -289,7 +289,7 @@ def _build_ort_delta_summary(model_rows: list[dict], e2e_rows: list[dict], capac
         for row in rows:
             key = (row.get("env_id"), row.get("task"), row.get("size"))
             grouped.setdefault(key, {})[bool(row.get("use_ort"))] = row
-        for (hw_id, task, size), pair in grouped.items():
+        for (env_id, task, size), pair in grouped.items():
             if True not in pair or False not in pair:
                 continue
             on = pair[True]
@@ -303,7 +303,7 @@ def _build_ort_delta_summary(model_rows: list[dict], e2e_rows: list[dict], capac
             delta = on_val - off_val
             delta_pct = (delta / off_val * 100.0) if off_val else None
             deltas.append({
-                "env_id": hw_id,
+                "env_id": env_id,
                 "task": task,
                 "size": size,
                 "metric": label,
@@ -365,7 +365,9 @@ def aggregate_result_directories(results_root: Path) -> dict:
         env_id = result_dir.parent.name          # folder directly under results/
         fingerprint = _load_json_object(result_dir / "environment.json")
         modules = _resolve_modules(fingerprint.get("npu", {}))
-        env_products.setdefault(env_id, set()).add(format_sku(modules))
+        sku = format_sku(modules)
+        if sku != UNKNOWN_PRODUCT:
+            env_products.setdefault(env_id, set()).add(sku)
         # Use env_id (results folder name) as the environment key across all tabs.
         # SW version changes (driver/firmware) are tracked via history/snapshots.
         environments[env_id] = _build_environment_summary(env_id, run_id, fingerprint)
@@ -391,6 +393,7 @@ def aggregate_result_directories(results_root: Path) -> dict:
                 f"Folder '{env_id}' contains runs classified as different NPU "
                 f"products: {sorted(products)}. Check the folder name / hardware.")
 
+    # hw_id == env_id here; kept for the JS frontend
     snapshots.sort(key=lambda s: (s.get("hw_id", ""), s.get("run_id", "")))
 
     # Keep only the latest run per (env_id, model, use_ort) for display summaries.

@@ -915,11 +915,17 @@ def cmd_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _print_dataset_warnings(dataset: dict) -> None:
+    for w in dataset.get("meta", {}).get("warnings", []):
+        print(f"[WARN] {w}")
+
+
 def cmd_aggregate(args: argparse.Namespace) -> int:
     """Aggregate multiple benchmark result directories into a single dataset.json."""
     results_root = Path(args.results_root).resolve()
     output_path = Path(args.output).resolve() if args.output else results_root / "dataset.json"
     dataset = aggregate_result_directories(results_root)
+    _print_dataset_warnings(dataset)
     save_dataset_json(dataset, output_path)
     print(f"[DONE] Dataset: {output_path}")
     return 0
@@ -930,6 +936,7 @@ def cmd_dashboard(args: argparse.Namespace) -> int:
     results_root = Path(args.results_root).resolve()
     output_dir = Path(args.output).resolve() if args.output else results_root / "dashboard"
     dataset = aggregate_result_directories(results_root)
+    _print_dataset_warnings(dataset)
     build_static_dashboard(dataset, output_dir)
     print(f"[DONE] Dashboard: {output_dir / 'index.html'}")
     return 0

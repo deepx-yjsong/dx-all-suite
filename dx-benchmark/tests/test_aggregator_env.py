@@ -46,3 +46,25 @@ def test_build_environment_summary_backfills_product():
     fp = {"host": {}, "npu": {"raw": RAW_M1M}, "software": {}}
     env = _build_environment_summary("RPi5B_M1M", "run1", fp)
     assert env["npu_product"] == "M1M"
+
+
+def test_guard_warns_on_mixed_real_products(tmp_path):
+    # Same folder, two runs classifying to DIFFERENT real products -> warn.
+    _write_run(tmp_path, "MixedFolder", "run1", "X", RAW_M1)
+    _write_run(tmp_path, "MixedFolder", "run2", "X", RAW_M1M)
+    ds = aggregate_result_directories(tmp_path)
+    assert ds["meta"]["warnings"]
+    assert "MixedFolder" in ds["meta"]["warnings"][0]
+
+
+def test_guard_ignores_unknown_only_run(tmp_path):
+    # One good run + one run missing raw/modules (dxrt-cli absent) -> must NOT warn.
+    _write_run(tmp_path, "FolderX", "run1", "X", RAW_M1)
+    d = tmp_path / "FolderX" / "run2"
+    d.mkdir(parents=True)
+    fp = {"host": {}, "npu": {"device_count": 1}, "software": {},
+          "timestamp": "run2", "product_name": "X"}
+    (d / "environment.json").write_text(json.dumps(fp))
+    (d / "model_results.json").write_text("[]")
+    ds = aggregate_result_directories(tmp_path)
+    assert ds["meta"]["warnings"] == []
