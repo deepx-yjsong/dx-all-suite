@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from .npu_catalog import classify_devices, format_badge, format_sku
+
 
 def _run(cmd: list[str], default: str = "unknown") -> str:
     """Run a command and return stripped stdout, or *default* on failure."""
@@ -80,20 +82,12 @@ def _get_dx_stream_version() -> str:
     return m.group(1) if m else "unknown"
 
 
-def _summarize_npu_topology(device_boards: list[str | None], device_count: int) -> dict[str, Any]:
-    """Build a compact hardware-topology summary from per-device board types."""
-    normalized = [(board or "").upper() for board in device_boards]
-    from .result_layout import _format_hw_config
-    h1_chips = sum(1 for board in normalized if "H1" in board)
-    h1_cards = (h1_chips + 3) // 4 if h1_chips > 0 else 0
-    m1_modules = max(0, device_count - h1_chips)
-    hw_config = _format_hw_config(h1_cards, m1_modules)
-    return {
-        "h1_cards": h1_cards,
-        "m1_modules": m1_modules,
-        "hw_config": hw_config,
-        "sku": hw_config,
-    }
+def _stamp_npu_products(info: dict, device_signals: list[tuple[str | None, str | None]]) -> None:
+    """Classify per-device (board, memory) signals and stamp product fields."""
+    modules = classify_devices(device_signals)
+    info["modules"] = modules
+    info["product"] = format_badge(modules)
+    info["sku"] = format_sku(modules)
 
 
 def collect_fingerprint() -> dict[str, Any]:
@@ -208,21 +202,22 @@ def _get_npu_info() -> dict[str, Any]:
 
     # Parse structured fields from dxrt-cli -s output
     device_count = 0
-    device_boards: list[str | None] = []   # board type per device
+    device_signals: list[tuple[str | None, str | None]] = []
     current_board: str | None = None
+    current_memory: str | None = None
     for line in raw.split("\n"):
         line = line.strip()
         if line.startswith("* Device"):
-            # " * Device 0: M1, Accelerator type"
             if device_count > 0:
-                device_boards.append(current_board)
+                device_signals.append((current_board, current_memory))
             current_board = None
+            current_memory = None
             device_count += 1
         elif "Board" in line and ":" in line and "Chip" not in line:
             m = re.search(r":\s*(.+)", line)
             if m:
                 val = m.group(1).strip()
-                current_board = val.split(",")[0].strip()
+                current_board = val.split(",")[0].strip()  # e.g. "M.2" / "H1"
                 info["board"] = val
         elif "RT Driver version" in line:
             m = re.search(r":\s*(.+)", line)
@@ -239,20 +234,19 @@ def _get_npu_info() -> dict[str, Any]:
         elif "Memory" in line and ":" in line:
             m = re.search(r":\s*(.+)", line)
             if m:
-                info["memory"] = m.group(1).strip()
+                current_memory = m.group(1).strip()
+                info["memory"] = current_memory
         elif "PCIe" in line and "Gen" in line:
             m = re.search(r":\s*(.+)", line)
             if m:
                 info["pcie"] = m.group(1).strip()
         elif line.startswith("NPU"):
-            # "NPU 0: voltage 750 mV, clock 1000 MHz, temperature 38'C"
             info["cores"].append(line)
-    # Append last device's board
     if device_count > 0:
-        device_boards.append(current_board)
+        device_signals.append((current_board, current_memory))
 
     info["device_count"] = device_count
-    info.update(_summarize_npu_topology(device_boards, device_count))
+    _stamp_npu_products(info, device_signals)
 
     # Extract max NPU clock from core info
     clock_mhz: int | None = None

@@ -62,3 +62,14 @@ def test_format_sku_and_badge():
 def test_classify_from_raw_h1_and_m1m():
     assert classify_from_raw(RAW_H1) == [{"product": "H1-Quattro", "count": 1}]
     assert classify_from_raw(RAW_M1M) == [{"product": "M1M", "count": 1}]
+
+
+from benchmark.env_fingerprint import _stamp_npu_products
+
+
+def test_stamp_npu_products_m1m():
+    npu = {"raw": RAW_M1M, "device_count": 1}
+    _stamp_npu_products(npu, [("M.2, Rev 0.0", "LPDDR4 4200 Mbps, 1.92GiB")])
+    assert npu["sku"] == "M1M"
+    assert npu["product"] == "M1M"
+    assert npu["modules"] == [{"product": "M1M", "count": 1}]
