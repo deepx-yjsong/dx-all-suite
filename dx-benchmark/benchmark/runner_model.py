@@ -49,6 +49,36 @@ def _cleanup_run_model(incident_context: str = "") -> None:
     _cleanup_after_timeout()
 
 
+def _warmup_with_retries(
+    cmd: list[str],
+    cfg: BenchmarkConfig,
+    incident_context: str,
+    work_dir_root: Optional[Path] = None,
+) -> bool:
+    """Run the warmup command, retrying on timeout.
+
+    A single warmup timeout is usually a transient NPU stall; ``_cleanup_run_model``
+    kills the lingering process and recovers the device, so a retry typically
+    succeeds. Returns True once any attempt completes, False if every attempt
+    (1 + ``cfg.model_warmup_retries``) times out.
+    """
+    attempts = 1 + max(0, cfg.model_warmup_retries)
+    for attempt in range(attempts):
+        try:
+            if work_dir_root is not None:
+                with tempfile.TemporaryDirectory(prefix="bench_warmup_", dir=work_dir_root) as wd:
+                    subprocess.run(cmd, capture_output=True, text=True, timeout=600, cwd=wd)
+            else:
+                subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            return True
+        except subprocess.TimeoutExpired:
+            tag = incident_context if attempt == 0 else f"{incident_context}.retry{attempt}"
+            _cleanup_run_model(tag)
+            if attempt + 1 < attempts:
+                print(f"    [warmup timeout] retrying ({attempt + 1}/{attempts - 1})", flush=True)
+    return False
+
+
 @dataclass
 class ModelResult:
     """Result of a single model-level benchmark run."""
@@ -189,16 +219,14 @@ def run_throughput(
     num_runs = max(1, cfg.model_throughput_runs)
     ort_tag = "ort_on" if use_ort else "ort_off"
 
-    # Warmup run (discard result)
+    # Warmup run (discard result); retry on transient timeout before giving up the cell
     print(f"    [throughput warmup] (-t {cfg.model_time_sec}s)", flush=True)
-    try:
-        subprocess.run(cmd, capture_output=True, text=True, timeout=600)
-    except subprocess.TimeoutExpired:
-        _cleanup_run_model(f"{model.name}.{ort_tag}.throughput.warmup")
+    if not _warmup_with_retries(cmd, cfg, f"{model.name}.{ort_tag}.throughput.warmup"):
         return ModelResult(
             model=model.name, task=model.task, size=model.size,
             use_ort=use_ort, family="throughput",
-            status="timeout", reason="warmup run exceeded 600s",
+            status="timeout",
+            reason=f"warmup exceeded 600s on all {1 + max(0, cfg.model_warmup_retries)} attempt(s)",
         )
 
     # Measured runs
@@ -208,8 +236,19 @@ def run_throughput(
     npu_stats_accum: list[NpuStats] = []
     last_npu_mem = None
 
-    for run_idx in range(num_runs):
-        print(f"    [throughput run {run_idx + 1}/{num_runs}]", end=" ", flush=True)
+    # Backfill: keep attempting until *num_runs* successful runs or the attempt
+    # budget (num_runs + model_run_retries) is exhausted. Transient timeouts/parse
+    # failures no longer leave a permanent partial when retries can fill the gap.
+    target = num_runs
+    max_attempts = target + max(0, cfg.model_run_retries)
+    attempt = 0
+    timeout_runs = 0
+    parse_fail_runs = 0
+    while len(fps_values) < target and attempt < max_attempts:
+        attempt += 1
+        slot = len(fps_values) + 1
+        label = f"run{slot}" if attempt <= target else f"run{slot}.retry{attempt - target}"
+        print(f"    [throughput {label} ({len(fps_values)}/{target} ok, attempt {attempt}/{max_attempts})]", end=" ", flush=True)
         t0_run = time.monotonic()
         npu = NpuMonitor(cfg.npu_core_ids, cfg.npu_warmup_sec, cfg.npu_drain_sec)
         npu.start()
@@ -221,20 +260,26 @@ def run_throughput(
             combined = proc.stdout + "\n" + proc.stderr
         except subprocess.TimeoutExpired:
             npu.stop()
-            _cleanup_run_model(f"{model.name}.{ort_tag}.throughput.run{run_idx+1}")
+            _cleanup_run_model(f"{model.name}.{ort_tag}.throughput.{label}")
+            timeout_runs += 1
             print("TIMEOUT", flush=True)
             continue
 
         npu_stats = npu.stop()
-        last_combined = combined
-        npu_stats_accum.append(npu_stats)
+
+        if save_dir:
+            _save_raw(save_dir, model.name, f"throughput.{label}", use_ort, combined, npu_stats.raw_log)
 
         fps = _parse_fps_from_log(combined)
-        if fps:
-            fps_values.append(fps)
-            print(f"{fps:.1f} fps ({time.monotonic() - t0_run:.1f}s)", flush=True)
-        else:
+        if not fps:
+            parse_fail_runs += 1
             print("no fps parsed", flush=True)
+            continue
+
+        fps_values.append(fps)
+        last_combined = combined
+        npu_stats_accum.append(npu_stats)
+        print(f"{fps:.1f} fps ({time.monotonic() - t0_run:.1f}s)", flush=True)
 
         cpu_pct = _parse_cpu_pct(proc.stderr)
         if cpu_pct is not None:
@@ -243,9 +288,6 @@ def run_throughput(
         mem = _parse_npu_memory_bytes(combined)
         if mem is not None:
             last_npu_mem = mem
-
-        if save_dir:
-            _save_raw(save_dir, model.name, f"throughput.run{run_idx + 1}", use_ort, combined, npu_stats.raw_log)
 
     if not fps_values:
         return ModelResult(
@@ -266,6 +308,11 @@ def run_throughput(
 
     input_tensor = _parse_input_tensor_shape(last_combined)
 
+    status = "ok" if len(fps_values) >= target else "partial"
+    reason = f"avg of {len(fps_values)}/{target} runs"
+    if status == "partial":
+        reason += f" (backfill exhausted after {attempt} attempts: {timeout_runs} timeout, {parse_fail_runs} unparsable)"
+
     result = ModelResult(
         model=model.name, task=model.task, size=model.size,
         use_ort=use_ort, family="throughput",
@@ -274,8 +321,8 @@ def run_throughput(
         cpu_pct=avg_cpu,
         npu_stats=npu_dict,
         input_tensor=input_tensor,
-        status="ok",
-        reason=f"avg of {len(fps_values)}/{num_runs} runs",
+        status=status,
+        reason=reason,
     )
 
     return result
@@ -310,17 +357,14 @@ def run_latency(
     num_runs = max(1, cfg.model_latency_runs)
     ort_tag = "ort_on" if use_ort else "ort_off"
 
-    # Warmup run (discard result)
+    # Warmup run (discard result); retry on transient timeout before giving up the cell
     print(f"    [latency warmup] (-l {cfg.model_latency_loops}, profiler)", flush=True)
-    try:
-        with tempfile.TemporaryDirectory(prefix="bench_warmup_", dir=work_dir_root) as wd:
-            subprocess.run(cmd, capture_output=True, text=True, timeout=600, cwd=wd)
-    except subprocess.TimeoutExpired:
-        _cleanup_run_model(f"{model.name}.{ort_tag}.latency.warmup")
+    if not _warmup_with_retries(cmd, cfg, f"{model.name}.{ort_tag}.latency.warmup", work_dir_root=work_dir_root):
         return ModelResult(
             model=model.name, task=model.task, size=model.size,
             use_ort=use_ort, family="latency",
-            status="timeout", reason="warmup run exceeded 600s",
+            status="timeout",
+            reason=f"warmup exceeded 600s on all {1 + max(0, cfg.model_warmup_retries)} attempt(s)",
         )
 
     # Measured runs
@@ -333,9 +377,20 @@ def run_latency(
     last_npu_mem = None
     last_profiler_path = None
 
+    # Backfill: keep attempting until *num_runs* successful runs or the attempt
+    # budget (num_runs + model_run_retries) is exhausted. A run counts as successful
+    # when profiler metrics OR an FPS fallback parse.
+    target = num_runs
+    max_attempts = target + max(0, cfg.model_run_retries)
+    attempt = 0
+    timeout_runs = 0
+    parse_fail_runs = 0
     try:
-        for run_idx in range(num_runs):
-            print(f"    [latency run {run_idx + 1}/{num_runs}]", end=" ", flush=True)
+        while (len(total_ms_values) + len(fps_values)) < target and attempt < max_attempts:
+            attempt += 1
+            slot = len(total_ms_values) + len(fps_values) + 1
+            label = f"run{slot}" if attempt <= target else f"run{slot}.retry{attempt - target}"
+            print(f"    [latency {label} ({len(total_ms_values) + len(fps_values)}/{target} ok, attempt {attempt}/{max_attempts})]", end=" ", flush=True)
             t0_run = time.monotonic()
             with tempfile.TemporaryDirectory(prefix="bench_latency_", dir=work_dir_root) as work_dir:
                 profiler_path = Path(work_dir) / "profiler.json"
@@ -351,24 +406,17 @@ def run_latency(
                     combined = proc.stdout + "\n" + proc.stderr
                 except subprocess.TimeoutExpired:
                     npu.stop()
-                    _cleanup_run_model(f"{model.name}.{ort_tag}.latency.run{run_idx+1}")
+                    _cleanup_run_model(f"{model.name}.{ort_tag}.latency.{label}")
+                    timeout_runs += 1
                     print("TIMEOUT", flush=True)
                     continue
 
                 npu_stats = npu.stop()
-                npu_stats_accum.append(npu_stats)
-
-                cpu_pct = _parse_cpu_pct(proc.stderr)
-                if cpu_pct is not None:
-                    cpu_pcts.append(cpu_pct)
-
-                mem = _parse_npu_memory_bytes(combined)
-                if mem is not None:
-                    last_npu_mem = mem
 
                 npu_task_ms = _parse_profiler_metric(profiler_path, "npu task")
                 cpu_0_ms = _parse_profiler_metric(profiler_path, "cpu_0")
 
+                run_ok = True
                 if npu_task_ms is not None and cpu_0_ms is not None:
                     elapsed_run = time.monotonic() - t0_run
                     print(f"{npu_task_ms + cpu_0_ms:.1f}ms  (npu={npu_task_ms:.1f} cpu0={cpu_0_ms:.1f}, {elapsed_run:.1f}s)", flush=True)
@@ -387,7 +435,18 @@ def run_latency(
                         print(f"{fps_fallback:.1f} fps (profiler fallback, {elapsed_run:.1f}s)", flush=True)
                         fps_values.append(fps_fallback)
                     else:
+                        run_ok = False
+                        parse_fail_runs += 1
                         print("parse failed", flush=True)
+
+                if run_ok:
+                    npu_stats_accum.append(npu_stats)
+                    cpu_pct = _parse_cpu_pct(proc.stderr)
+                    if cpu_pct is not None:
+                        cpu_pcts.append(cpu_pct)
+                    mem = _parse_npu_memory_bytes(combined)
+                    if mem is not None:
+                        last_npu_mem = mem
 
                 # Save last profiler for archival
                 if profiler_path.exists() and save_dir:
@@ -396,23 +455,26 @@ def run_latency(
                     last_profiler_path = dest
 
                 if save_dir:
-                    _save_raw(save_dir, model.name, f"latency.run{run_idx + 1}", use_ort, combined, npu_stats.raw_log)
+                    _save_raw(save_dir, model.name, f"latency.{label}", use_ort, combined, npu_stats.raw_log)
 
         # Compute averages
+        _lat_partial_note = ""
+        if (len(total_ms_values) + len(fps_values)) < target:
+            _lat_partial_note = f" (backfill exhausted after {attempt} attempts: {timeout_runs} timeout, {parse_fail_runs} unparsable)"
         if total_ms_values:
             total_ms = sum(total_ms_values) / len(total_ms_values)
             npu_task_ms = sum(npu_task_ms_values) / len(npu_task_ms_values) if npu_task_ms_values else None
             cpu_0_ms = sum(cpu_0_ms_values) / len(cpu_0_ms_values) if cpu_0_ms_values else None
             fps = 1000.0 / total_ms if total_ms > 0 else None
-            status = "ok"
-            reason = f"avg of {len(total_ms_values)}/{num_runs} runs"
+            status = "ok" if len(total_ms_values) >= target else "partial"
+            reason = f"avg of {len(total_ms_values)}/{target} runs{_lat_partial_note}"
         elif fps_values:
             fps = sum(fps_values) / len(fps_values)
             total_ms = 1000.0 / fps if fps > 0 else None
             npu_task_ms = None
             cpu_0_ms = None
             status = "partial"
-            reason = f"Profiler keys not found; FPS from stdout ({len(fps_values)}/{num_runs} runs)"
+            reason = f"Profiler keys not found; FPS from stdout ({len(fps_values)}/{target} runs){_lat_partial_note}"
         else:
             return ModelResult(
                 model=model.name, task=model.task, size=model.size,

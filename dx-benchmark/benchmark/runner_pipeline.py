@@ -726,16 +726,17 @@ def run_single_stream(
     pipeline = _build_single_pipeline(str(model.path), use_ort, video, postprocess_cfg,
                                       preprocess, inference)
 
-    # Warmup run (with retry on timeout)
+    # Warmup run (with retry on timeout) — same budget as model-level warmup
     ort_tag = "ort_on" if use_ort else "ort_off"
     warmup_timed_out = False
-    for warmup_attempt in range(2):
-        print(f"    [e2e warmup] {model.name}", flush=True)
+    warmup_attempts = 1 + max(0, cfg.model_warmup_retries)
+    for warmup_attempt in range(warmup_attempts):
+        print(f"    [e2e warmup] {model.name} (attempt {warmup_attempt + 1}/{warmup_attempts})", flush=True)
         warmup_log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.warmup")
         if "__TIMEOUT__" not in warmup_log:
             break
         print(f"    [e2e warmup] TIMEOUT", flush=True)
-        if warmup_attempt == 0:
+        if warmup_attempt + 1 < warmup_attempts:
             print(f"    [e2e warmup] retrying ...", flush=True)
         else:
             warmup_timed_out = True
@@ -751,38 +752,29 @@ def run_single_stream(
     npu_stats_accum: list[NpuStats] = []
     timeout_runs = 0
     parse_fail_runs = 0
-    retried_runs: set[int] = set()  # max 1 retry per run index
 
-    for i in range(cfg.e2e_runs):
-        print(f"    [e2e run {i + 1}/{cfg.e2e_runs}]", end=" ", flush=True)
+    # Backfill: keep attempting until *e2e_runs* successful runs or the attempt
+    # budget (e2e_runs + model_run_retries) is exhausted. Deadlock/timeout on any
+    # run is retried within the budget instead of leaving a permanent partial.
+    target = cfg.e2e_runs
+    max_attempts = target + max(0, cfg.model_run_retries)
+    attempt = 0
+    while len(times) < target and attempt < max_attempts:
+        attempt += 1
+        slot = len(times) + 1
+        tag = f"run{slot}" if attempt <= target else f"run{slot}.retry{attempt - target}"
+        print(f"    [e2e {tag} ({len(times)}/{target} ok, attempt {attempt}/{max_attempts})]", end=" ", flush=True)
         npu = NpuMonitor(cfg.npu_core_ids, cfg.npu_warmup_sec, cfg.npu_drain_sec)
         npu.start()
-        log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.run{i+1}")
+        log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.{tag}")
         stats = npu.stop()
         if save_dir:
-            _save_pipeline_log(save_dir, "single", model.name, use_ort, 1, log, run_index=i + 1, npu_log=stats.raw_log)
+            _save_pipeline_log(save_dir, "single", model.name, use_ort, 1, log, run_index=attempt, npu_log=stats.raw_log)
 
         if "__TIMEOUT__" in log:
-            # Retry once (deadlock can happen on any run, not just warmup)
-            if i not in retried_runs:
-                retried_runs.add(i)
-                print("TIMEOUT → retrying ...", flush=True)
-                npu = NpuMonitor(cfg.npu_core_ids, cfg.npu_warmup_sec, cfg.npu_drain_sec)
-                npu.start()
-                log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.run{i+1}.retry")
-                stats = npu.stop()
-                if save_dir:
-                    _save_pipeline_log(save_dir, "single", model.name, use_ort, 1, log, run_index=i + 1, npu_log=stats.raw_log)
-                if "__TIMEOUT__" not in log:
-                    print(f"    [e2e run {i + 1}/{cfg.e2e_runs}] (retry)", end=" ", flush=True)
-                else:
-                    timeout_runs += 1
-                    print(f"    [e2e run {i + 1}/{cfg.e2e_runs}] retry TIMEOUT", flush=True)
-                    continue
-            else:
-                timeout_runs += 1
-                print("TIMEOUT", flush=True)
-                continue
+            timeout_runs += 1
+            print("TIMEOUT", flush=True)
+            continue
 
         t = _parse_execution_time(log)
         if t is None:
@@ -810,7 +802,14 @@ def run_single_stream(
             pipeline_caps = _extract_pipeline_caps(log)
 
     completed_runs = len(times)
-    reason = _build_pipeline_reason(cfg.e2e_runs, timeout_runs, parse_fail_runs, warmup_timed_out)
+    filled = completed_runs >= target
+    if filled and (timeout_runs or parse_fail_runs):
+        # Target reached via backfill — transient failures are diagnostic only.
+        reason = f"backfilled to {completed_runs}/{target} ({timeout_runs} timeout, {parse_fail_runs} unparsable over {attempt} attempts)"
+    elif not filled and times:
+        reason = f"{completed_runs}/{target} runs after backfill exhausted ({timeout_runs} timeout, {parse_fail_runs} unparsable over {attempt} attempts)"
+    else:
+        reason = _build_pipeline_reason(cfg.e2e_runs, timeout_runs, parse_fail_runs, warmup_timed_out)
 
     if not times:
         return PipelineResult(
@@ -850,7 +849,7 @@ def run_single_stream(
         max_rss_mib=max_rss,
         npu_stats=merged_npu.as_dict(cfg.npu_core_ids),
         pipeline_caps=pipeline_caps,
-        status="partial" if timeout_runs or parse_fail_runs else "ok",
+        status="ok" if filled else "partial",
         reason=reason,
     )
 
@@ -877,16 +876,18 @@ def run_multi_stream(
         preprocess, inference,
     )
 
-    # Warmup run (with retry — multi-stream init can deadlock intermittently)
+    # Warmup run (with retry — multi-stream init can deadlock intermittently);
+    # same budget as model-level warmup
     ort_tag = "ort_on" if use_ort else "ort_off"
     warmup_timed_out = False
-    for warmup_attempt in range(2):
-        print(f"    [multi warmup] {stream_count}ch", flush=True)
+    warmup_attempts = 1 + max(0, cfg.model_warmup_retries)
+    for warmup_attempt in range(warmup_attempts):
+        print(f"    [multi warmup] {stream_count}ch (attempt {warmup_attempt + 1}/{warmup_attempts})", flush=True)
         warmup_log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.warmup")
         if "__TIMEOUT__" not in warmup_log:
             break
         print(f"    [multi warmup] TIMEOUT", flush=True)
-        if warmup_attempt == 0:
+        if warmup_attempt + 1 < warmup_attempts:
             print(f"    [multi warmup] retrying ({stream_count}ch) ...", flush=True)
         else:
             warmup_timed_out = True
@@ -902,38 +903,28 @@ def run_multi_stream(
     npu_stats_accum: list[NpuStats] = []
     timeout_runs = 0
     parse_fail_runs = 0
-    retried_runs: set[int] = set()  # max 1 retry per run index
 
-    for i in range(cfg.e2e_runs):
-        print(f"    [multi run {i + 1}/{cfg.e2e_runs}] {stream_count}ch", end=" ", flush=True)
+    # Backfill: keep attempting until *e2e_runs* successful runs or the attempt
+    # budget (e2e_runs + model_run_retries) is exhausted.
+    target = cfg.e2e_runs
+    max_attempts = target + max(0, cfg.model_run_retries)
+    attempt = 0
+    while len(times) < target and attempt < max_attempts:
+        attempt += 1
+        slot = len(times) + 1
+        tag = f"run{slot}" if attempt <= target else f"run{slot}.retry{attempt - target}"
+        print(f"    [multi {tag}] {stream_count}ch ({len(times)}/{target} ok, attempt {attempt}/{max_attempts})", end=" ", flush=True)
         npu = NpuMonitor(cfg.npu_core_ids, cfg.npu_warmup_sec, cfg.npu_drain_sec)
         npu.start()
-        log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.run{i+1}")
+        log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.{tag}")
         stats = npu.stop()
         if save_dir:
-            _save_pipeline_log(save_dir, "multi", model.name, use_ort, stream_count, log, run_index=i + 1, npu_log=stats.raw_log)
+            _save_pipeline_log(save_dir, "multi", model.name, use_ort, stream_count, log, run_index=attempt, npu_log=stats.raw_log)
 
         if "__TIMEOUT__" in log:
-            # Retry once (multi-stream deadlock can happen on any run)
-            if i not in retried_runs:
-                retried_runs.add(i)
-                print("TIMEOUT → retrying ...", flush=True)
-                npu = NpuMonitor(cfg.npu_core_ids, cfg.npu_warmup_sec, cfg.npu_drain_sec)
-                npu.start()
-                log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.run{i+1}.retry")
-                stats = npu.stop()
-                if save_dir:
-                    _save_pipeline_log(save_dir, "multi", model.name, use_ort, stream_count, log, run_index=i + 1, npu_log=stats.raw_log)
-                if "__TIMEOUT__" not in log:
-                    print(f"    [multi run {i + 1}/{cfg.e2e_runs}] {stream_count}ch (retry)", end=" ", flush=True)
-                else:
-                    timeout_runs += 1
-                    print(f"    [multi run {i + 1}/{cfg.e2e_runs}] {stream_count}ch retry TIMEOUT", flush=True)
-                    continue
-            else:
-                timeout_runs += 1
-                print("TIMEOUT", flush=True)
-                continue
+            timeout_runs += 1
+            print("TIMEOUT", flush=True)
+            continue
 
         t = _parse_execution_time(log)
         if t is None:
@@ -962,7 +953,13 @@ def run_multi_stream(
             pipeline_caps = _extract_pipeline_caps(log)
 
     completed_runs = len(times)
-    reason = _build_pipeline_reason(cfg.e2e_runs, timeout_runs, parse_fail_runs, warmup_timed_out)
+    filled = completed_runs >= target
+    if filled and (timeout_runs or parse_fail_runs):
+        reason = f"backfilled to {completed_runs}/{target} ({timeout_runs} timeout, {parse_fail_runs} unparsable over {attempt} attempts)"
+    elif not filled and times:
+        reason = f"{completed_runs}/{target} runs after backfill exhausted ({timeout_runs} timeout, {parse_fail_runs} unparsable over {attempt} attempts)"
+    else:
+        reason = _build_pipeline_reason(cfg.e2e_runs, timeout_runs, parse_fail_runs, warmup_timed_out)
 
     if not times:
         return PipelineResult(
@@ -1003,7 +1000,7 @@ def run_multi_stream(
         max_rss_mib=max_rss,
         npu_stats=merged_npu.as_dict(cfg.npu_core_ids),
         pipeline_caps=pipeline_caps,
-        status="partial" if timeout_runs or parse_fail_runs else "ok",
+        status="ok" if filled else "partial",
         reason=reason,
     )
 

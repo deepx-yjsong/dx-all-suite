@@ -17,6 +17,7 @@ import re
 import statistics
 import sys
 import time
+import traceback
 from datetime import datetime
 from pathlib import Path
 
@@ -289,6 +290,10 @@ def cmd_run(args: argparse.Namespace) -> int:
     total = _count_runs(cfg, models, families)
     done = 0
     failure_context: dict | None = None
+    # Abort the whole run only after this many *consecutive* cooldown failures
+    # (a persistent thermal problem); a one-off cooldown miss just skips its cell.
+    _MAX_COOLDOWN_FAILURES = 3
+    cooldown_consecutive_failures = 0
 
     # ── Per-model sequential execution ───────────────────────────
     # Order per model (steady mode):
@@ -311,15 +316,21 @@ def cmd_run(args: argparse.Namespace) -> int:
             if run_model_level:
                 try:
                     temp = wait_until_cool(cfg)
+                    cooldown_consecutive_failures = 0
                 except RuntimeError as error:
-                    print(f"  [cooldown] FAILED: {error}", flush=True)
-                    failure_context = {
-                        "failure_stage": "cooldown",
-                        "failure_model": m.name,
-                        "failure_ort": ort_s,
-                        "failure_reason": str(error),
-                    }
-                    break
+                    cooldown_consecutive_failures += 1
+                    print(f"  [cooldown] FAILED ({cooldown_consecutive_failures}/{_MAX_COOLDOWN_FAILURES}): {error}", flush=True)
+                    if cooldown_consecutive_failures >= _MAX_COOLDOWN_FAILURES:
+                        print(f"  [cooldown] {_MAX_COOLDOWN_FAILURES} consecutive failures → aborting run (persistent thermal issue)", flush=True)
+                        failure_context = {
+                            "failure_stage": "cooldown",
+                            "failure_model": m.name,
+                            "failure_ort": ort_s,
+                            "failure_reason": str(error),
+                        }
+                        break
+                    print("  [cooldown] skipping this cell, continuing to next", flush=True)
+                    continue
                 if temp > 0:
                     print(f"  [cooldown] ready: {temp:.1f}°C", flush=True)
 
@@ -338,7 +349,12 @@ def cmd_run(args: argparse.Namespace) -> int:
                     if existing:
                         print(f"    retry [{existing.get('status', 'unknown')}]", flush=True)
                     t0 = time.monotonic()
-                    r = run_latency(m, use_ort, cfg, raw_dir)
+                    try:
+                        r = run_latency(m, use_ort, cfg, raw_dir)
+                    except Exception as exc:
+                        traceback.print_exc()
+                        print(f"  [ERROR] latency {m.name} ORT={ort_s} raised {exc!r} → skipping cell", flush=True)
+                        continue
                     elapsed = time.monotonic() - t0
                     r_dict = r.as_dict()
                     _upsert_result(
@@ -364,7 +380,12 @@ def cmd_run(args: argparse.Namespace) -> int:
                     if existing:
                         print(f"    retry [{existing.get('status', 'unknown')}]", flush=True)
                     t0 = time.monotonic()
-                    r = run_throughput(m, use_ort, cfg, raw_dir)
+                    try:
+                        r = run_throughput(m, use_ort, cfg, raw_dir)
+                    except Exception as exc:
+                        traceback.print_exc()
+                        print(f"  [ERROR] throughput {m.name} ORT={ort_s} raised {exc!r} → skipping cell", flush=True)
+                        continue
                     elapsed = time.monotonic() - t0
                     r_dict = r.as_dict()
                     _upsert_result(
@@ -412,7 +433,12 @@ def cmd_run(args: argparse.Namespace) -> int:
                     if existing:
                         print(f"    retry [{existing.get('status', 'unknown')}]", flush=True)
                     t0 = time.monotonic()
-                    r = run_single_stream(m, use_ort, cfg, raw_dir)
+                    try:
+                        r = run_single_stream(m, use_ort, cfg, raw_dir)
+                    except Exception as exc:
+                        traceback.print_exc()
+                        print(f"  [ERROR] e2e {m.name} ORT={ort_s} raised {exc!r} → skipping cell", flush=True)
+                        continue
                     elapsed = time.monotonic() - t0
                     r_dict = r.as_dict()
                     _upsert_result(
@@ -460,15 +486,20 @@ def cmd_run(args: argparse.Namespace) -> int:
                     )
                     _save_result_set(multi_results, out_dir / "multi_stream_results.csv", out_dir / "multi_stream_results.json")
 
-                results = run_multi_stream_sweep(
-                    m, use_ort, cfg, raw_dir,
-                    start_stream=start_stream,
-                    existing_results=existing_multi,
-                    retry_stream_counts=retry_stream_counts,
-                    progress_callback=_multi_progress,
-                    result_callback=_multi_checkpoint,
-                    single_stream_result=single_stream_result,
-                )
+                try:
+                    results = run_multi_stream_sweep(
+                        m, use_ort, cfg, raw_dir,
+                        start_stream=start_stream,
+                        existing_results=existing_multi,
+                        retry_stream_counts=retry_stream_counts,
+                        progress_callback=_multi_progress,
+                        result_callback=_multi_checkpoint,
+                        single_stream_result=single_stream_result,
+                    )
+                except Exception as exc:
+                    traceback.print_exc()
+                    print(f"  [ERROR] multi {m.name} ORT={ort_s} raised {exc!r} → skipping", flush=True)
+                    results = []
                 elapsed = time.monotonic() - t0
 
                 if results:
@@ -907,6 +938,8 @@ def _build_config(args: argparse.Namespace) -> BenchmarkConfig:
     runs_override = getattr(args, "runs", None)
     _model_time = getattr(args, "model_time", None)
     _warmup = getattr(args, "warmup", None)
+    _warmup_retries = getattr(args, "warmup_retries", None)
+    _run_retries = getattr(args, "run_retries", None)
     _fps_thr = getattr(args, "fps_threshold", None)
     return BenchmarkConfig(
         task=getattr(args, "task", base_cfg.task),
@@ -914,6 +947,8 @@ def _build_config(args: argparse.Namespace) -> BenchmarkConfig:
         ort_modes=ort_modes,
         model_time_sec=_model_time if _model_time is not None else base_cfg.model_time_sec,
         model_warmup=_warmup if _warmup is not None else base_cfg.model_warmup,
+        model_warmup_retries=_warmup_retries if _warmup_retries is not None else base_cfg.model_warmup_retries,
+        model_run_retries=_run_retries if _run_retries is not None else base_cfg.model_run_retries,
         e2e_runs=runs_override if runs_override is not None else base_cfg.e2e_runs,
         model_latency_runs=runs_override if runs_override is not None else base_cfg.model_latency_runs,
         model_throughput_runs=runs_override if runs_override is not None else base_cfg.model_throughput_runs,
@@ -1170,6 +1205,10 @@ def _add_benchmark_args(parser: argparse.ArgumentParser, defaults: BenchmarkConf
                         help=f"Duration of model benchmark in seconds (default: {defaults.model_time_sec})")
     parser.add_argument("--warmup", type=int, default=None,
                         help=f"Warmup runs (default: {defaults.model_warmup})")
+    parser.add_argument("--warmup-retries", type=int, default=None,
+                        help=f"Extra warmup attempts on timeout before giving up the cell (default: {defaults.model_warmup_retries})")
+    parser.add_argument("--run-retries", type=int, default=None,
+                        help=f"Extra measured-run attempts to backfill failed runs up to the target count (default: {defaults.model_run_retries})")
     parser.add_argument("--runs", type=int, default=None,
                         help=f"Measured repetitions for model and E2E benchmarks (default: {defaults.e2e_runs})")
     parser.add_argument("--fps-threshold", type=float, default=None,
