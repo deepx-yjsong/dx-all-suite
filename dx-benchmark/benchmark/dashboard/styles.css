@@ -135,3 +135,9 @@ tbody tr:nth-child(even) { background: var(--table-stripe); }
 .chart-header-filters { display: flex; gap: 12px; flex-wrap: wrap; }
 .chart-header-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
 .chart-header-filters select { padding: 4px 8px; border-radius: 8px; }
+
+.detail-group { border-left: 3px solid var(--accent-soft); }
+.detail-group > h2 { margin-bottom: 4px; }
+.detail-sub { margin-top: 22px; }
+.detail-sub:first-of-type { margin-top: 10px; }
+.detail-sub-title { font-size: 15px; color: var(--accent); border-bottom: 2px solid var(--accent-soft); padding-bottom: 6px; margin: 0 0 14px; }

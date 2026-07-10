@@ -60,32 +60,24 @@
         <p class="chart-hint" id="fpsChartHint">Click on a bar group to view environment details</p>
       </section>
 
-      <section class="panel env-detail" id="fpsEnvDetail" style="display:none">
-        <h2 id="fpsEnvDetailTitle">Environment Details</h2>
-        <div class="env-detail-grid env-detail-grid--3">
-          <div class="env-detail-col">
-            <h3>Host PC</h3>
-            <div id="fpsEnvHostInfo"></div>
-          </div>
-          <div class="env-detail-col">
-            <h3>NPU</h3>
-            <div id="fpsEnvNpuInfo"></div>
-          </div>
-          <div class="env-detail-col">
-            <h3>Tools</h3>
-            <div id="fpsEnvToolsInfo"></div>
+      <section class="panel detail-group" id="fpsDetail" style="display:none">
+        <h2 id="fpsDetailTitle">Details</h2>
+        <div class="detail-sub">
+          <h3 class="detail-sub-title" id="fpsE2eTableTitle">E2E Pipeline (Single-Stream)</h3>
+          <div id="fpsE2eTableContent"></div>
+        </div>
+        <div class="detail-sub">
+          <h3 class="detail-sub-title">Environment</h3>
+          <div class="env-detail-grid env-detail-grid--3">
+            <div class="env-detail-col"><h3>Host PC</h3><div id="fpsEnvHostInfo"></div></div>
+            <div class="env-detail-col"><h3>NPU</h3><div id="fpsEnvNpuInfo"></div></div>
+            <div class="env-detail-col"><h3>Tools</h3><div id="fpsEnvToolsInfo"></div></div>
           </div>
         </div>
-      </section>
-
-      <section class="panel" id="fpsModelMetaPanel" style="display:none">
-        <h2 id="fpsModelMetaTitle">Benchmarked Models</h2>
-        <div id="fpsModelMetaSection"></div>
-      </section>
-
-      <section class="panel" id="fpsE2eTableSection" style="display:none">
-        <h2 id="fpsE2eTableTitle">E2E Pipeline (Single-Stream)</h2>
-        <div id="fpsE2eTableContent"></div>
+        <div class="detail-sub">
+          <h3 class="detail-sub-title" id="fpsModelMetaTitle">Benchmarked Models</h3>
+          <div id="fpsModelMetaSection"></div>
+        </div>
       </section>
     </div>
 
@@ -134,27 +126,20 @@
         <p class="chart-hint" id="chartHint">Click on a bar to view environment details</p>
       </section>
 
-      <section class="panel env-detail" id="envDetail" style="display:none">
-        <h2 id="envDetailTitle">Environment Details</h2>
-        <div class="env-detail-grid env-detail-grid--3">
-          <div class="env-detail-col">
-            <h3>Host PC</h3>
-            <div id="envHostInfo"></div>
-          </div>
-          <div class="env-detail-col">
-            <h3>NPU</h3>
-            <div id="envNpuInfo"></div>
-          </div>
-          <div class="env-detail-col">
-            <h3>Tools</h3>
-            <div id="envToolsInfo"></div>
+      <section class="panel detail-group" id="overviewDetail" style="display:none">
+        <h2 id="overviewDetailTitle">Details</h2>
+        <div class="detail-sub">
+          <h3 class="detail-sub-title">Environment</h3>
+          <div class="env-detail-grid env-detail-grid--3">
+            <div class="env-detail-col"><h3>Host PC</h3><div id="envHostInfo"></div></div>
+            <div class="env-detail-col"><h3>NPU</h3><div id="envNpuInfo"></div></div>
+            <div class="env-detail-col"><h3>Tools</h3><div id="envToolsInfo"></div></div>
           </div>
         </div>
-      </section>
-
-      <section class="panel" id="overviewModelMetaPanel" style="display:none">
-        <h2 id="overviewModelMetaTitle">Benchmarked Models</h2>
-        <div id="overviewModelMetaSection"></div>
+        <div class="detail-sub">
+          <h3 class="detail-sub-title" id="overviewModelMetaTitle">Benchmarked Models</h3>
+          <div id="overviewModelMetaSection"></div>
+        </div>
       </section>
     </div>
 

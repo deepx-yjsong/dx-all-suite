@@ -387,8 +387,7 @@ function refreshChart(preferredEnvId) {
   document.getElementById('chartSubtitle').textContent=model;
   if(!data.length){
     state.selectedEnvId=null;
-    document.getElementById('envDetail').style.display='none';
-    document.getElementById('overviewModelMetaPanel').style.display='none';
+    document.getElementById('overviewDetail').style.display='none';
     Chart.update(data,null);return;
   }
   var selected=data[0];
@@ -410,9 +409,7 @@ function refreshFpsCompare(preferredEnvId) {
   document.getElementById('fpsChartSubtitle').textContent='Single Stream \u00b7 30 FPS \u00b7 FHD';
   if(!data.length){
     state.fpsSelectedEnvId=null;
-    document.getElementById('fpsEnvDetail').style.display='none';
-    document.getElementById('fpsModelMetaPanel').style.display='none';
-    document.getElementById('fpsE2eTableSection').style.display='none';
+    document.getElementById('fpsDetail').style.display='none';
     FpsChart.update(data,null);
     return;
   }
@@ -424,15 +421,13 @@ function refreshFpsCompare(preferredEnvId) {
 function handleFpsEnvClick(idx,d,options) {
   options=options||{};
   state.fpsSelectedEnvId=d.envId;
-  var panel=document.getElementById('fpsEnvDetail');panel.style.display='';
-  document.getElementById('fpsEnvDetailTitle').textContent=(d.env.env_id||d.env.hostname);
+  var panel=document.getElementById('fpsDetail');panel.style.display='';
+  document.getElementById('fpsDetailTitle').textContent='Details — '+(d.env.env_id||d.env.hostname);
   renderHostInfo(document.getElementById('fpsEnvHostInfo'),d.env);
   renderNpuInfo(document.getElementById('fpsEnvNpuInfo'),d.env);
   renderToolsInfo(document.getElementById('fpsEnvToolsInfo'),d.env);
-  var metaPanel=document.getElementById('fpsModelMetaPanel');metaPanel.style.display='';
   document.getElementById('fpsModelMetaTitle').textContent='Benchmarked Models – '+TASK_MAP[state.fpsTask].label;
   renderModelMetaForTask(document.getElementById('fpsModelMetaSection'),d.env,state.fpsTask);
-  var e2eSection=document.getElementById('fpsE2eTableSection');e2eSection.style.display='';
   var runId=_getSelectedRunId(d.envId);
   document.getElementById('fpsE2eTableTitle').textContent='E2E Pipeline \u2013 '+TASK_MAP[state.fpsTask].label+' \u00b7 ORT '+(state.fpsOrt?'ON':'OFF')+' \u00b7 '+runId;
   renderE2eTable(document.getElementById('fpsE2eTableContent'),d.envId,state.fpsTask,state.fpsOrt,runId);
@@ -457,12 +452,11 @@ function initFpsFilters() {
 /* ===== Environment Detail (Full Metrics) ===== */
 function renderEnvDetail(env,options) {
   options=options||{};
-  var panel=document.getElementById('envDetail');panel.style.display='';
-  document.getElementById('envDetailTitle').textContent=(env.env_id||env.hostname);
+  var panel=document.getElementById('overviewDetail');panel.style.display='';
+  document.getElementById('overviewDetailTitle').textContent='Details — '+(env.env_id||env.hostname);
   renderHostInfo(document.getElementById('envHostInfo'),env);
   renderNpuInfo(document.getElementById('envNpuInfo'),env);
   renderToolsInfo(document.getElementById('envToolsInfo'),env);
-  var metaPanel=document.getElementById('overviewModelMetaPanel');metaPanel.style.display='';
   document.getElementById('overviewModelMetaTitle').textContent='Benchmarked Models – '+TASK_MAP[state.task].label;
   renderModelMetaForTask(document.getElementById('overviewModelMetaSection'),env,state.task);
   /* View trend link */
