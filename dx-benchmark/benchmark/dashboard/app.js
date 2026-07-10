@@ -465,7 +465,7 @@ function initOverviewFilters() {
 function initDetailTab() {
   var sel=document.getElementById('detailEnvFilter');
   var runSel=document.getElementById('detailRunFilter');
-  sel.innerHTML=(state.dataset.environments||[]).map(function(e){return '<option value="'+e.env_id+'">'+escHtml(e.hostname)+' ('+escHtml(e.npu_sku)+')</option>';}).join('');
+  sel.innerHTML=(state.dataset.environments||[]).map(function(e){return '<option value="'+e.env_id+'">'+escHtml((e.env_id||e.hostname)+' ('+(e.npu_product||e.npu_sku||'?')+')')+'</option>';}).join('');
   if(state.dataset.environments.length){state.detailEnvId=state.dataset.environments[0].env_id;sel.value=state.detailEnvId;}
   syncDetailRunFilter();
   sel.addEventListener('change',function(){state.detailEnvId=this.value;syncDetailRunFilter();renderDetailTables();});
