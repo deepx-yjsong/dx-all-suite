@@ -17,7 +17,10 @@ def build_static_dashboard(dataset: dict, output_dir: Path) -> Path:
     save_dataset_json(dataset, output_dir / "dataset.json")
 
     index_html = (DASHBOARD_SRC_DIR / "index.html").read_text(encoding="utf-8")
-    index_html = index_html.replace(DATASET_PLACEHOLDER, json.dumps(dataset))
+    # Escape "</" so a stray "</script>" inside any string field can't terminate
+    # the inline <script> block that carries the embedded dataset.
+    embedded = json.dumps(dataset).replace("</", "<\\/")
+    index_html = index_html.replace(DATASET_PLACEHOLDER, embedded)
     (output_dir / "index.html").write_text(index_html, encoding="utf-8")
 
     (output_dir / "app.js").write_text(

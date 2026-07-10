@@ -41,7 +41,17 @@ var state = {
 };
 
 /* ===== Helpers ===== */
-function getModelName(task, size) { return 'yolo26' + size + '-' + TASK_MAP[task].suffix + '.dxnn'; }
+// Real on-disk model naming per task (OD/cls carry no task suffix; resolutions differ).
+var _MODEL_NAME_MAP = {
+  object_detection: { suf: '',     res: '640x640'  },
+  pose_estimation:  { suf: '-pose', res: '640x640'  },
+  segmentation:     { suf: '-seg',  res: '640x640'  },
+  oriented_bbox:    { suf: '-obb',  res: '1024x1024'},
+  classification:   { suf: '',     res: '224x224'  },
+};
+function getModelName(task, size) { var m=_MODEL_NAME_MAP[task]||{suf:'',res:'640x640'}; return 'yolo26-' + size + m.suf + '_' + m.res + '.dxnn'; }
+// Worst status across a row's source metrics (non-ok surfaced so partial/failed never hides).
+function _rowStatus(sts){var bad=sts.filter(function(s){return s&&s!=='ok';});if(bad.length){var uniq=[];bad.forEach(function(s){if(uniq.indexOf(s)<0)uniq.push(s);});return uniq.join(', ');}return sts.filter(function(s){return s;}).length?'ok':'-';}
 function envLabel(env) { return (env.hw_id || env.hostname) + '\n(' + (env.npu_sku || '?') + ')'; }
 function fmt(v, d) { if (v === null || v === undefined) return '-'; var n = Number(v); return Number.isNaN(n) ? '-' : n.toFixed(d === undefined ? 1 : d); }
 function modelSizeChar(name) { var m = String(name||'').match(/yolo26([nslmx])/i); return m ? m[1].toLowerCase() : ''; }
@@ -468,8 +478,8 @@ function renderDetailTables() {
   var target=document.getElementById('detailTables');var envId=state.detailEnvId;
   if(!envId){target.innerHTML='<div class="empty-state">No environment selected.</div>';return;}
   var runId=_getSelectedRunId(envId);
-  var latMap={},tpMap={},e2eMap={},capMap={},taskModels={};
-  _history('model').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;var k=r.model+'|'+(r.use_ort?'on':'off');if(r.family==='latency')latMap[k]=r.latency_ms;if(r.family==='throughput')tpMap[k]=r.fps;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
+  var latMap={},tpMap={},e2eMap={},capMap={},taskModels={},latSt={},tpSt={};
+  _history('model').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;var k=r.model+'|'+(r.use_ort?'on':'off');if(r.family==='latency'){latMap[k]=r.latency_ms;latSt[k]=r.status;}if(r.family==='throughput'){tpMap[k]=r.fps;tpSt[k]=r.status;}if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
   _history('e2e_single').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;e2eMap[r.model+'|'+(r.use_ort?'on':'off')]=r;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
   _history('e2e_multi_capacity').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;capMap[r.model+'|'+(r.use_ort?'on':'off')]=r.capacity_streams;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
   var tasks=Object.keys(taskModels).sort(function(a,b){var oa=TASK_ORDER[a],ob=TASK_ORDER[b];return(oa!==undefined?oa:99)-(ob!==undefined?ob:99);});
@@ -477,8 +487,8 @@ function renderDetailTables() {
   if(!tasks.length){target.innerHTML='<div class="empty-state">No data.</div>';return;}
   target.innerHTML=tasks.map(function(task){
     var models=Object.keys(taskModels[task]).sort(function(a,b){var d=sizeOrd(modelSizeChar(a))-sizeOrd(modelSizeChar(b));return d!==0?d:a.localeCompare(b);});
-    var body=models.map(function(model){var ortRows=[true,false].filter(function(useOrt){return state.detailOrt==='all'||state.detailOrt===(useOrt?'on':'off');});var fpsOn=null,fpsOff=null,capOn=null,capOff=null;ortRows.forEach(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};if(useOrt){fpsOn=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOn=capMap[k]!=null?Number(capMap[k]):null;}else{fpsOff=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOff=capMap[k]!=null?Number(capMap[k]):null;}});var bestFpsOrt=null,bestCapOrt=null;if(fpsOn!=null&&fpsOff!=null){bestFpsOrt=fpsOn>=fpsOff?'on':'off';}else if(fpsOn!=null){bestFpsOrt='on';}else if(fpsOff!=null){bestFpsOrt='off';}if(capOn!=null&&capOff!=null){bestCapOrt=capOn>=capOff?'on':'off';}else if(capOn!=null){bestCapOrt='on';}else if(capOff!=null){bestCapOrt='off';}var sz=modelSizeChar(model);var szLabel=sz?sz.toUpperCase():'-';return ortRows.map(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};var ortKey=useOrt?'on':'off';var fpsVal=fmt(e2e.avg_e2e_fps,1);var capVal=capMap[k]!=null?capMap[k]:null;var fpsTd=bestFpsOrt===ortKey?'<td class="cell-best">'+fpsVal+'</td>':'<td>'+fpsVal+'</td>';var capTd=bestCapOrt===ortKey?'<td class="cell-best">'+(capVal!=null?capVal:'-')+'</td>':'<td>'+(capVal!=null?capVal:'-')+'</td>';return '<tr><td>'+escHtml(model)+'</td><td>'+szLabel+'</td><td>'+(useOrt?'ON':'OFF')+'</td><td>'+fmt(latMap[k],2)+'</td><td>'+fmt(tpMap[k],1)+'</td>'+fpsTd+capTd+'</tr>';}).join('');}).join('');
-    return '<section class="task-section"><h3>'+(TASK_MAP[task]?TASK_MAP[task].label:task)+'</h3><table class="summary-table detail-table"><colgroup><col style="width:28%"><col style="width:7%"><col style="width:7%"><col style="width:15%"><col style="width:16%"><col style="width:13%"><col style="width:14%"></colgroup><thead><tr><th>Model</th><th>Size</th><th>ORT</th><th>NPU Latency (ms)</th><th>NPU Throughput (FPS)</th><th>E2E FPS</th><th>Max Channels</th></tr></thead><tbody>'+body+'</tbody></table></section>';
+    var body=models.map(function(model){var ortRows=[true,false].filter(function(useOrt){return state.detailOrt==='all'||state.detailOrt===(useOrt?'on':'off');});var fpsOn=null,fpsOff=null,capOn=null,capOff=null;ortRows.forEach(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};if(useOrt){fpsOn=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOn=capMap[k]!=null?Number(capMap[k]):null;}else{fpsOff=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOff=capMap[k]!=null?Number(capMap[k]):null;}});var bestFpsOrt=null,bestCapOrt=null;if(fpsOn!=null&&fpsOff!=null){bestFpsOrt=fpsOn>=fpsOff?'on':'off';}else if(fpsOn!=null){bestFpsOrt='on';}else if(fpsOff!=null){bestFpsOrt='off';}if(capOn!=null&&capOff!=null){bestCapOrt=capOn>=capOff?'on':'off';}else if(capOn!=null){bestCapOrt='on';}else if(capOff!=null){bestCapOrt='off';}var sz=modelSizeChar(model);var szLabel=sz?sz.toUpperCase():'-';return ortRows.map(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};var ortKey=useOrt?'on':'off';var fpsVal=fmt(e2e.avg_e2e_fps,1);var capVal=capMap[k]!=null?capMap[k]:null;var fpsTd=bestFpsOrt===ortKey?'<td class="cell-best">'+fpsVal+'</td>':'<td>'+fpsVal+'</td>';var capTd=bestCapOrt===ortKey?'<td class="cell-best">'+(capVal!=null?capVal:'-')+'</td>':'<td>'+(capVal!=null?capVal:'-')+'</td>';var st=_rowStatus([latSt[k],tpSt[k],(e2eMap[k]||{}).status]);var stTd='<td'+(st&&st!=='ok'&&st!=='-'?' class="cell-warn"':'')+'>'+escHtml(st)+'</td>';return '<tr><td>'+escHtml(model)+'</td><td>'+szLabel+'</td><td>'+(useOrt?'ON':'OFF')+'</td><td>'+fmt(latMap[k],2)+'</td><td>'+fmt(tpMap[k],1)+'</td>'+fpsTd+capTd+stTd+'</tr>';}).join('');}).join('');
+    return '<section class="task-section"><h3>'+(TASK_MAP[task]?TASK_MAP[task].label:task)+'</h3><table class="summary-table detail-table"><colgroup><col style="width:24%"><col style="width:6%"><col style="width:6%"><col style="width:14%"><col style="width:15%"><col style="width:12%"><col style="width:12%"><col style="width:11%"></colgroup><thead><tr><th>Model</th><th>Size</th><th>ORT</th><th>NPU Latency (ms)</th><th>NPU Throughput (FPS)</th><th>E2E FPS</th><th>Max Channels</th><th>Status</th></tr></thead><tbody>'+body+'</tbody></table></section>';
   }).join('');
 }
 
@@ -578,10 +588,19 @@ function _suiteVer(snap){return snap.dx_all_suite_version||'unknown';}
 function _cmpSuiteVer(a,b){
   if(a===b)return 0;
   if(a==='unknown')return 1; if(b==='unknown')return -1;
-  var pa=String(a).replace(/^v/i,'').split('.').map(Number);
-  var pb=String(b).replace(/^v/i,'').split('.').map(Number);
-  var m=Math.max(pa.length,pb.length);
-  for(var i=0;i<m;i++){var x=pa[i]||0,y=pb[i]||0;if(x!==y)return x-y;}
+  function parse(v){
+    var s=String(v).replace(/^v/i,'');
+    var parts=s.split('-');                                  // "2.4.0-rc.4" -> ["2.4.0","rc.4"]
+    var nums=parts[0].split('.').map(function(n){var x=parseInt(n,10);return isNaN(x)?0:x;});
+    return {nums:nums, pre:parts.length>1?parts.slice(1).join('-'):null};  // pre=null => release
+  }
+  var A=parse(a),B=parse(b);
+  var m=Math.max(A.nums.length,B.nums.length);
+  for(var i=0;i<m;i++){var x=A.nums[i]||0,y=B.nums[i]||0;if(x!==y)return x-y;}
+  // Same numeric core: a release ranks ABOVE its pre-releases.
+  if(A.pre===null&&B.pre!==null)return 1;
+  if(A.pre!==null&&B.pre===null)return -1;
+  if(A.pre!==null&&B.pre!==null){var c=A.pre.localeCompare(B.pre);if(c!==0)return c;}
   return String(a).localeCompare(String(b));
 }
 function getTrendData(hwId,task,useOrt,metricKey){

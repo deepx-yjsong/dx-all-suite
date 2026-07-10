@@ -248,6 +248,22 @@ def _build_capacity_summary(run_id: str, env_id: str, rows: list[dict], fps_thre
                 "capacity_per_channel_fps": best.get("avg_per_channel_fps"),
                 "fps_threshold": fps_threshold,
             })
+        elif group:
+            # No stream count met the threshold (or all multi runs failed) —
+            # emit a 0-capacity sentinel so the model stays visible instead of
+            # silently vanishing from the capacity table.
+            rep = group[0]
+            summaries.append({
+                "run_id": run_id,
+                "env_id": env_id,
+                "task": rep.get("task"),
+                "size": rep.get("size"),
+                "model": rep.get("model"),
+                "use_ort": use_ort,
+                "capacity_streams": 0,
+                "capacity_per_channel_fps": None,
+                "fps_threshold": fps_threshold,
+            })
     return summaries
 
 
@@ -264,8 +280,12 @@ def _build_ort_delta_summary(model_rows: list[dict], e2e_rows: list[dict], capac
                 continue
             on = pair[True]
             off = pair[False]
-            on_val = float(on.get(metric_key, 0.0) or 0.0)
-            off_val = float(off.get(metric_key, 0.0) or 0.0)
+            # Skip pairs where either side has no real metric (None/missing) —
+            # coercing to 0.0 would fabricate a bogus (e.g. -100%) delta.
+            if on.get(metric_key) is None or off.get(metric_key) is None:
+                continue
+            on_val = float(on[metric_key])
+            off_val = float(off[metric_key])
             delta = on_val - off_val
             delta_pct = (delta / off_val * 100.0) if off_val else None
             deltas.append({

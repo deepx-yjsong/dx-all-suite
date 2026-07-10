@@ -85,6 +85,7 @@ select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .task-section h3 { margin-top: 0; }
 .detail-table { table-layout: fixed; width: 100%; }
 .cell-best { font-weight: 700; }
+.cell-warn { color: #b45309; font-weight: 600; }
 .empty-state { padding: 20px; color: var(--muted); border: 1px dashed var(--border); border-radius: 12px; text-align: center; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }

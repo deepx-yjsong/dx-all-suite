@@ -166,6 +166,12 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     if cfg.product_name:
         fp["product_name"] = cfg.product_name
+    else:
+        _hostname = (fp.get("host") or {}).get("hostname", "unknown")
+        print(f"[WARN] --product-name not set; hw_id will be derived from hostname "
+              f"'{_hostname}'. In a multi-HW campaign, two machines sharing a hostname "
+              f"+ NPU config collapse into ONE env at aggregation (data clobbered). "
+              f"Pass a unique --product-name per HW to be safe.", flush=True)
 
     out_dir = _resolve_output_dir(cfg, resume_dir, fp, run_id)
     existing_fp = _load_json_object(out_dir / "environment.json") if resume_dir else {}
