@@ -120,9 +120,10 @@ tbody tr:nth-child(even) { background: var(--table-stripe); }
   th, td { padding: 8px 10px; }
 }
 
-.version-select { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.run-selector-grid .version-select { display: flex; flex-direction: row; align-items: center; gap: 8px; margin-bottom: 8px; }
 .env-run-list { display: flex; flex-direction: column; gap: 2px; }
 .env-run { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; }
+.env-name { flex: 1; }
 .env-run .env-run-id { color: #666; font-variant-numeric: tabular-nums; }
 .env-run.env-missing { opacity: 0.45; }
 .env-run.env-missing .env-run-id { font-style: italic; }
