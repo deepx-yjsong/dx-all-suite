@@ -89,7 +89,10 @@ function _runIdForEnvVersion(envId,version){
   return rows.length?rows[0].run_id:null;
 }
 function _getRunOptions(envId){var rows=(state.dataset.runs||[]).filter(function(r){return r.env_id===envId;});rows.sort(function(a,b){return (b.run_id||'').localeCompare(a.run_id||'');});return rows;}
-function _getSelectedRunId(envId){var env=_envById(envId);return state.selectedRunIds[envId]||(env?env.latest_run_id:null);}
+function _getSelectedRunId(envId){
+  if(Object.prototype.hasOwnProperty.call(state.selectedRunIds,envId))return state.selectedRunIds[envId];
+  var env=_envById(envId);return env?env.latest_run_id:null;
+}
 function _initSelectedRunIds(){
   var vers=_allSuiteVersions();
   state.selectedVersion=vers.length?vers[0]:null;                 // latest (semver desc)
@@ -516,7 +519,11 @@ function initDetailTab() {
 function renderDetailTables() {
   var target=document.getElementById('detailTables');var envId=state.detailEnvId;
   if(!envId){target.innerHTML='<div class="empty-state">No environment selected.</div>';return;}
-  var runId=_getSelectedRunId(envId);
+  /* Detail tab inspects a concrete run; when the selected version has no run for this
+     env, _getSelectedRunId returns null — fall back to the newest run (matches the
+     run-filter dropdown populated by syncDetailRunFilter). */
+  var _detailRuns=_getRunOptions(envId);
+  var runId=_getSelectedRunId(envId)||(_detailRuns.length?_detailRuns[0].run_id:null);
   var latMap={},tpMap={},e2eMap={},capMap={},taskModels={},latSt={},tpSt={};
   _history('model').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;var k=r.model+'|'+(r.use_ort?'on':'off');if(r.family==='latency'){latMap[k]=r.latency_ms;latSt[k]=r.status;}if(r.family==='throughput'){tpMap[k]=r.fps;tpSt[k]=r.status;}if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
   _history('e2e_single').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;e2eMap[r.model+'|'+(r.use_ort?'on':'off')]=r;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
