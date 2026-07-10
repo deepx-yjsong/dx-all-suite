@@ -75,11 +75,12 @@ function _allSuiteVersions(){
   out.sort(function(a,b){return _cmpSuiteVer(b,a);});   // _cmpSuiteVer sorts ascending; reverse for newest-first
   return out;
 }
-function _runIdForEnvVersion(envId,version){
+function _runsForEnvVersion(envId,version){
   var rows=(state.dataset.runs||[]).filter(function(r){return r.env_id===envId && (r.dx_all_suite_version||'unknown')===version;});
   rows.sort(function(a,b){return (b.run_id||'').localeCompare(a.run_id||'');});
-  return rows.length?rows[0].run_id:null;
+  return rows;
 }
+function _runIdForEnvVersion(envId,version){var rows=_runsForEnvVersion(envId,version);return rows.length?rows[0].run_id:null;}
 function _getRunOptions(envId){var rows=(state.dataset.runs||[]).filter(function(r){return r.env_id===envId;});rows.sort(function(a,b){return (b.run_id||'').localeCompare(a.run_id||'');});return rows;}
 function _getSelectedRunId(envId){
   if(Object.prototype.hasOwnProperty.call(state.selectedRunIds,envId))return state.selectedRunIds[envId];
@@ -116,15 +117,22 @@ function renderRunSelectors(targetId){
   if(!envs.length){target.innerHTML='<p class="empty-state small">No environments available.</p>';return;}
   var vers=_allSuiteVersions();
   var verOpts=vers.map(function(v){return '<option value="'+escHtml(v)+'"'+(v===state.selectedVersion?' selected':'')+'>'+escHtml(v)+'</option>';}).join('');
-  var caps=envs.map(function(env){
-    var rid=_runIdForEnvVersion(env.env_id,state.selectedVersion);
+  var rows=envs.map(function(env){
     var name=escHtml(env.env_id||env.hostname);
-    if(rid){return '<div class="env-run"><span class="env-name">'+name+'</span><span class="env-run-id">'+escHtml(rid)+'</span></div>';}
-    return '<div class="env-run env-missing"><span class="env-name">'+name+'</span><span class="env-run-id">(no data for '+escHtml(state.selectedVersion||'?')+')</span></div>';
+    var runs=_runsForEnvVersion(env.env_id,state.selectedVersion);
+    if(!runs.length){
+      return '<div class="env-run env-missing"><span class="env-name">'+name+'</span><span class="env-run-id">(no data for '+escHtml(state.selectedVersion||'?')+')</span></div>';
+    }
+    var cur=_getSelectedRunId(env.env_id);
+    var opts=runs.map(function(r){return '<option value="'+escHtml(r.run_id)+'"'+(r.run_id===cur?' selected':'')+'>'+escHtml(r.run_id)+'</option>';}).join('');
+    return '<div class="env-run"><span class="env-name">'+name+'</span><select class="env-run-select" data-run-env="'+escHtml(env.env_id)+'">'+opts+'</select></div>';
   }).join('');
-  target.innerHTML='<label class="version-select"><span>dx-all-suite version</span><select data-version-select>'+verOpts+'</select></label><div class="env-run-list">'+caps+'</div>';
-  var sel=target.querySelector('select[data-version-select]');
-  if(sel)sel.addEventListener('change',function(){_applySelectedVersion(this.value);});
+  target.innerHTML='<label class="version-select"><span>dx-all-suite version</span><select data-version-select>'+verOpts+'</select></label><div class="env-run-list">'+rows+'</div>';
+  var vsel=target.querySelector('select[data-version-select]');
+  if(vsel)vsel.addEventListener('change',function(){_applySelectedVersion(this.value);});
+  target.querySelectorAll('select[data-run-env]').forEach(function(sel){
+    sel.addEventListener('change',function(){_handleRunSelectionChange(this.dataset.runEnv,this.value);});
+  });
 }
 
 /* ===== Dataset ===== */
@@ -475,8 +483,8 @@ function initTabs() {
       document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
       document.querySelectorAll('.tab-content').forEach(function(c){c.classList.remove('active');});
       this.classList.add('active');document.getElementById('tab-'+target).classList.add('active');
-      if(target==='fps-compare'){_applySelectedVersion(state.selectedVersion,state.fpsSelectedEnvId);}
-      else if(target==='overview'){_applySelectedVersion(state.selectedVersion,state.selectedEnvId);}
+      if(target==='fps-compare'){renderRunSelectors('fpsRunSelectors');refreshFpsCompare(state.fpsSelectedEnvId);}
+      else if(target==='overview'){renderRunSelectors('overviewRunSelectors');refreshChart(state.selectedEnvId);}
       if(target==='fps-compare')FpsChart._resize();
       if(target==='overview')Chart._resize();
       if(target==='detail')renderDetailTables();

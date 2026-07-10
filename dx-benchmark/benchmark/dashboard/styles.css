@@ -127,3 +127,5 @@ tbody tr:nth-child(even) { background: var(--table-stripe); }
 .env-run .env-run-id { color: #666; font-variant-numeric: tabular-nums; }
 .env-run.env-missing { opacity: 0.45; }
 .env-run.env-missing .env-run-id { font-style: italic; }
+.env-run { align-items: center; }
+.env-run-select { font-size: 12px; padding: 4px 8px; border-radius: 8px; max-width: 60%; }
