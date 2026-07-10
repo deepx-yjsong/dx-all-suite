@@ -51,6 +51,9 @@ def _parse_board_from_raw(raw: str) -> str | None:
     return None
 
 
+# NOTE: unlike result_layout._get_sku (fresh-fingerprint path, trusts stamped `sku`),
+# this backfill path IGNORES a possibly-stale on-disk `sku` and re-derives from
+# `modules`/`raw` so legacy data reclassifies under the current catalog.
 def _resolve_modules(npu: dict) -> list[dict]:
     modules = npu.get("modules")
     if modules:
@@ -354,6 +357,7 @@ def aggregate_result_directories(results_root: Path) -> dict:
     environments: dict[str, dict] = {}
     warnings: list[str] = []
     env_products: dict[str, set] = {}
+    env_hostnames: dict[str, set] = {}
     runs: list[dict] = []
     model_summary: list[dict] = []
     e2e_single_summary: list[dict] = []
@@ -368,6 +372,9 @@ def aggregate_result_directories(results_root: Path) -> dict:
         sku = format_sku(modules)
         if sku != UNKNOWN_PRODUCT:
             env_products.setdefault(env_id, set()).add(sku)
+        host = fingerprint.get("host", {}).get("hostname")
+        if host:
+            env_hostnames.setdefault(env_id, set()).add(host)
         # Use env_id (results folder name) as the environment key across all tabs.
         # SW version changes (driver/firmware) are tracked via history/snapshots.
         environments[env_id] = _build_environment_summary(env_id, run_id, fingerprint)
@@ -392,6 +399,12 @@ def aggregate_result_directories(results_root: Path) -> dict:
             warnings.append(
                 f"Folder '{env_id}' contains runs classified as different NPU "
                 f"products: {sorted(products)}. Check the folder name / hardware.")
+
+    for env_id, hosts in env_hostnames.items():
+        if len(hosts) > 1:
+            warnings.append(
+                f"Folder '{env_id}' contains runs from different hostnames: "
+                f"{sorted(hosts)}. Check the folder name / hardware.")
 
     # hw_id == env_id here; kept for the JS frontend
     snapshots.sort(key=lambda s: (s.get("hw_id", ""), s.get("run_id", "")))

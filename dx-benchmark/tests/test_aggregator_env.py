@@ -68,3 +68,16 @@ def test_guard_ignores_unknown_only_run(tmp_path):
     (d / "model_results.json").write_text("[]")
     ds = aggregate_result_directories(tmp_path)
     assert ds["meta"]["warnings"] == []
+
+
+def test_guard_warns_on_mixed_hostnames(tmp_path):
+    # Same folder, two runs from different hostnames -> warn.
+    _write_run(tmp_path, "FolderH", "run1", "X", RAW_M1)
+    d = tmp_path / "FolderH" / "run2"
+    d.mkdir(parents=True)
+    fp = {"host": {"hostname": "other-host"}, "npu": {"raw": RAW_M1, "device_count": 1},
+          "software": {}, "timestamp": "run2", "product_name": "X"}
+    (d / "environment.json").write_text(json.dumps(fp))
+    (d / "model_results.json").write_text("[]")
+    ds = aggregate_result_directories(tmp_path)
+    assert any("different hostnames" in w for w in ds["meta"]["warnings"])
