@@ -55,7 +55,10 @@ function getModelName(task, size) { var m=_MODEL_NAME_MAP[task]||{suf:'',res:'64
 function _rowStatus(sts){var bad=sts.filter(function(s){return s&&s!=='ok';});if(bad.length){var uniq=[];bad.forEach(function(s){if(uniq.indexOf(s)<0)uniq.push(s);});return uniq.join(', ');}return sts.filter(function(s){return s;}).length?'ok':'-';}
 function envLabel(env) { return (env.env_id || env.hw_id || env.hostname); }
 function fmt(v, d) { if (v === null || v === undefined) return '-'; var n = Number(v); return Number.isNaN(n) ? '-' : n.toFixed(d === undefined ? 1 : d); }
-function modelSizeChar(name) { var m = String(name||'').match(/yolo26([nslmx])/i); return m ? m[1].toLowerCase() : ''; }
+// Tolerant fallback ONLY: prefer the stamped `size` field (version-proof).
+// Handles legacy "yolo26n"/"yolo26n-cls" and new "yolo26-n_640x640" naming.
+function modelSizeChar(name) { var m = String(name||'').match(/yolo26-?([nslmx])(?:[-_.]|$)/i); return m ? m[1].toLowerCase() : ''; }
+function sizeOf(r) { return (r && r.size) || modelSizeChar(r && r.model); }
 function formatInputShape(shape) {
   if (!shape || !Array.isArray(shape)) return '-';
   if (shape.length === 4) return shape[1] + '\u00d7' + shape[2];
@@ -182,7 +185,7 @@ function renderE2eTable(container, envId, task, useOrt, runId) {
   var rows = _history('e2e_single').filter(function(r) {
     return r.env_id === envId && r.run_id===runId && r.task === task && r.use_ort === useOrt;
   });
-  rows.sort(function(a,b) { return sizeOrd(modelSizeChar(a.model)) - sizeOrd(modelSizeChar(b.model)); });
+  rows.sort(function(a,b) { return sizeOrd(sizeOf(a)) - sizeOrd(sizeOf(b)); });
   if (!rows.length) { container.innerHTML = '<p class="empty-state">No E2E data for this selection.</p>'; return; }
 
   var html = '';
@@ -324,7 +327,7 @@ var FpsChart = {
     _history('e2e_multi_capacity').forEach(function(r){
       if(r.use_ort!==state.fpsOrt)return;if((r.task||'')!==state.fpsTask)return;
       if(r.run_id!==_getSelectedRunId(r.env_id))return;
-      var sz=r.size||modelSizeChar(r.model);
+      var sz=sizeOf(r);
       var k=r.env_id+'|'+sz;
       if(!capMap[k]||r.capacity_streams>capMap[k])capMap[k]=r.capacity_streams;
     });
@@ -521,15 +524,16 @@ function renderDetailTables() {
   var _detailRuns=_getRunOptions(envId);
   var runId=_getSelectedRunId(envId)||(_detailRuns.length?_detailRuns[0].run_id:null);
   var latMap={},tpMap={},e2eMap={},capMap={},taskModels={},latSt={},tpSt={};
-  _history('model').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;var k=r.model+'|'+(r.use_ort?'on':'off');if(r.family==='latency'){latMap[k]=r.latency_ms;latSt[k]=r.status;}if(r.family==='throughput'){tpMap[k]=r.fps;tpSt[k]=r.status;}if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
-  _history('e2e_single').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;e2eMap[r.model+'|'+(r.use_ort?'on':'off')]=r;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
-  _history('e2e_multi_capacity').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;capMap[r.model+'|'+(r.use_ort?'on':'off')]=r.capacity_streams;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=true;});
+  // taskModels[task][model] = stamped size char (version-proof; name is only a fallback)
+  _history('model').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;var k=r.model+'|'+(r.use_ort?'on':'off');if(r.family==='latency'){latMap[k]=r.latency_ms;latSt[k]=r.status;}if(r.family==='throughput'){tpMap[k]=r.fps;tpSt[k]=r.status;}if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=sizeOf(r);});
+  _history('e2e_single').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;e2eMap[r.model+'|'+(r.use_ort?'on':'off')]=r;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=sizeOf(r);});
+  _history('e2e_multi_capacity').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;capMap[r.model+'|'+(r.use_ort?'on':'off')]=r.capacity_streams;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=sizeOf(r);});
   var tasks=Object.keys(taskModels).sort(function(a,b){var oa=TASK_ORDER[a],ob=TASK_ORDER[b];return(oa!==undefined?oa:99)-(ob!==undefined?ob:99);});
   if(state.detailTask!=='all')tasks=tasks.filter(function(t){return t===state.detailTask;});
   if(!tasks.length){target.innerHTML='<div class="empty-state">No data.</div>';return;}
   target.innerHTML=tasks.map(function(task){
-    var models=Object.keys(taskModels[task]).sort(function(a,b){var d=sizeOrd(modelSizeChar(a))-sizeOrd(modelSizeChar(b));return d!==0?d:a.localeCompare(b);});
-    var body=models.map(function(model){var ortRows=[true,false].filter(function(useOrt){return state.detailOrt==='all'||state.detailOrt===(useOrt?'on':'off');});var fpsOn=null,fpsOff=null,capOn=null,capOff=null;ortRows.forEach(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};if(useOrt){fpsOn=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOn=capMap[k]!=null?Number(capMap[k]):null;}else{fpsOff=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOff=capMap[k]!=null?Number(capMap[k]):null;}});var bestFpsOrt=null,bestCapOrt=null;if(fpsOn!=null&&fpsOff!=null){bestFpsOrt=fpsOn>=fpsOff?'on':'off';}else if(fpsOn!=null){bestFpsOrt='on';}else if(fpsOff!=null){bestFpsOrt='off';}if(capOn!=null&&capOff!=null){bestCapOrt=capOn>=capOff?'on':'off';}else if(capOn!=null){bestCapOrt='on';}else if(capOff!=null){bestCapOrt='off';}var sz=modelSizeChar(model);var szLabel=sz?sz.toUpperCase():'-';return ortRows.map(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};var ortKey=useOrt?'on':'off';var fpsVal=fmt(e2e.avg_e2e_fps,1);var capVal=capMap[k]!=null?capMap[k]:null;var fpsTd=bestFpsOrt===ortKey?'<td class="cell-best">'+fpsVal+'</td>':'<td>'+fpsVal+'</td>';var capTd=bestCapOrt===ortKey?'<td class="cell-best">'+(capVal!=null?capVal:'-')+'</td>':'<td>'+(capVal!=null?capVal:'-')+'</td>';var st=_rowStatus([latSt[k],tpSt[k],(e2eMap[k]||{}).status]);var stTd='<td'+(st&&st!=='ok'&&st!=='-'?' class="cell-warn"':'')+'>'+escHtml(st)+'</td>';return '<tr><td>'+escHtml(model)+'</td><td>'+szLabel+'</td><td>'+(useOrt?'ON':'OFF')+'</td><td>'+fmt(latMap[k],2)+'</td><td>'+fmt(tpMap[k],1)+'</td>'+fpsTd+capTd+stTd+'</tr>';}).join('');}).join('');
+    var szMap=taskModels[task];var models=Object.keys(szMap).sort(function(a,b){var d=sizeOrd(szMap[a]||modelSizeChar(a))-sizeOrd(szMap[b]||modelSizeChar(b));return d!==0?d:a.localeCompare(b);});
+    var body=models.map(function(model){var ortRows=[true,false].filter(function(useOrt){return state.detailOrt==='all'||state.detailOrt===(useOrt?'on':'off');});var fpsOn=null,fpsOff=null,capOn=null,capOff=null;ortRows.forEach(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};if(useOrt){fpsOn=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOn=capMap[k]!=null?Number(capMap[k]):null;}else{fpsOff=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOff=capMap[k]!=null?Number(capMap[k]):null;}});var bestFpsOrt=null,bestCapOrt=null;if(fpsOn!=null&&fpsOff!=null){bestFpsOrt=fpsOn>=fpsOff?'on':'off';}else if(fpsOn!=null){bestFpsOrt='on';}else if(fpsOff!=null){bestFpsOrt='off';}if(capOn!=null&&capOff!=null){bestCapOrt=capOn>=capOff?'on':'off';}else if(capOn!=null){bestCapOrt='on';}else if(capOff!=null){bestCapOrt='off';}var sz=szMap[model]||modelSizeChar(model);var szLabel=sz?sz.toUpperCase():'-';return ortRows.map(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};var ortKey=useOrt?'on':'off';var fpsVal=fmt(e2e.avg_e2e_fps,1);var capVal=capMap[k]!=null?capMap[k]:null;var fpsTd=bestFpsOrt===ortKey?'<td class="cell-best">'+fpsVal+'</td>':'<td>'+fpsVal+'</td>';var capTd=bestCapOrt===ortKey?'<td class="cell-best">'+(capVal!=null?capVal:'-')+'</td>':'<td>'+(capVal!=null?capVal:'-')+'</td>';var st=_rowStatus([latSt[k],tpSt[k],(e2eMap[k]||{}).status]);var stTd='<td'+(st&&st!=='ok'&&st!=='-'?' class="cell-warn"':'')+'>'+escHtml(st)+'</td>';return '<tr><td>'+escHtml(model)+'</td><td>'+szLabel+'</td><td>'+(useOrt?'ON':'OFF')+'</td><td>'+fmt(latMap[k],2)+'</td><td>'+fmt(tpMap[k],1)+'</td>'+fpsTd+capTd+stTd+'</tr>';}).join('');}).join('');
     return '<section class="task-section"><h3>'+(TASK_MAP[task]?TASK_MAP[task].label:task)+'</h3><table class="summary-table detail-table"><colgroup><col style="width:24%"><col style="width:6%"><col style="width:6%"><col style="width:14%"><col style="width:15%"><col style="width:12%"><col style="width:12%"><col style="width:11%"></colgroup><thead><tr><th>Model</th><th>Size</th><th>ORT</th><th>NPU Latency (ms)</th><th>NPU Throughput (FPS)</th><th>E2E FPS</th><th>Max Channels</th><th>Status</th></tr></thead><tbody>'+body+'</tbody></table></section>';
   }).join('');
 }

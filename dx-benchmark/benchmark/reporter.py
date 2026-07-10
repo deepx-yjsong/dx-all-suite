@@ -107,13 +107,24 @@ def _sort_by_size(results: list[dict]) -> list[dict]:
     return sorted(results, key=lambda r: _SIZE_ORDER.get(r.get("size", ""), 99))
 
 
-def _sort_models_by_size(models: list[str]) -> list[str]:
+def _size_char_from_name(name: str) -> str:
+    """Best-effort size char from a model file name (tolerant fallback only).
+
+    Handles both the legacy glued form ("yolo26n", "yolo26n-cls") and the newer
+    hyphenated form ("yolo26-n_640x640", "yolo26-l-pose_640x640"). This is a
+    LAST RESORT — callers should prefer the stamped ``size`` field, which is
+    version-proof; naming rules keep changing and must not drive ordering.
+    """
+    m = re.search(r"yolo26-?([nslmx])(?:[-_.]|$)", name or "")
+    return m.group(1).lower() if m else ""
+
+
+def _sort_models_by_size(models: list[str], size_of: dict[str, str] | None = None) -> list[str]:
+    """Sort model names by size (n<s<m<l<x). Prefers the stamped size from
+    *size_of* (model name → size char); falls back to tolerant name parsing."""
     def _size_key(name: str) -> int:
-        # Real names are e.g. "yolo26-n_640x640.dxnn" / "yolo26-l-pose_640x640.dxnn"
-        m = re.search(r"yolo26-([nsmlx])[-_.]", name)
-        if m:
-            return _SIZE_ORDER.get(m.group(1), 99)
-        return 99
+        size = (size_of or {}).get(name) or _size_char_from_name(name)
+        return _SIZE_ORDER.get(size, 99)
     return sorted(models, key=_size_key)
 
 
@@ -397,9 +408,13 @@ def _add_executive_summary(
     # Collect unique models grouped by task, in canonical task + size order
     all_results = list(model_results) + list(pipeline_results)
     task_model_map: dict[str, set[str]] = {}
+    model_size: dict[str, str] = {}  # stamped size per model (version-proof ordering)
     for r in all_results:
         task = r.get("task", "unknown")
-        task_model_map.setdefault(task, set()).add(r.get("model", "?"))
+        model = r.get("model", "?")
+        task_model_map.setdefault(task, set()).add(model)
+        if r.get("size"):
+            model_size[model] = r["size"]
 
     # Sort tasks in canonical order
     sorted_tasks = sorted(task_model_map.items(),
@@ -433,7 +448,7 @@ def _add_executive_summary(
         lines.append(_HDR)
         lines.append(_SEP)
 
-        for model in _sort_models_by_size(list(task_models)):
+        for model in _sort_models_by_size(list(task_models), model_size):
             for use_ort in [True, False]:
                 key = (model, use_ort)
                 ort_s = "ON" if use_ort else "OFF"
