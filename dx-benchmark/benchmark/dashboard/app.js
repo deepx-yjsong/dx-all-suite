@@ -127,7 +127,7 @@ function renderRunSelectors(targetId){
     var opts=runs.map(function(r){return '<option value="'+escHtml(r.run_id)+'"'+(r.run_id===cur?' selected':'')+'>'+escHtml(r.run_id)+'</option>';}).join('');
     return '<div class="env-run"><span class="env-name">'+name+'</span><select class="env-run-select" data-run-env="'+escHtml(env.env_id)+'">'+opts+'</select></div>';
   }).join('');
-  target.innerHTML='<label class="version-select"><span>dx-all-suite version</span><select data-version-select>'+verOpts+'</select></label><div class="env-run-list">'+rows+'</div>';
+  target.innerHTML='<label class="version-select"><span>dx-all-suite version</span><select data-version-select>'+verOpts+'</select></label><div class="env-run-list"><div class="env-run-header"><span>Environment</span><span>Run ID</span></div>'+rows+'</div>';
   var vsel=target.querySelector('select[data-version-select]');
   if(vsel)vsel.addEventListener('change',function(){_applySelectedVersion(this.value);});
   target.querySelectorAll('select[data-run-env]').forEach(function(sel){
