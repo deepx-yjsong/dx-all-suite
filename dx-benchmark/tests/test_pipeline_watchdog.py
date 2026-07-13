@@ -12,6 +12,15 @@ def test_watchdog_config_defaults():
     assert c.e2e_hard_cap == 1800.0
 
 
+def test_protocol_metadata_includes_watchdog_thresholds():
+    # The watchdog thresholds must be recorded in the run's protocol metadata so
+    # each run captures which stall/hard-cap values were active (reproducibility).
+    from benchmark.config import BenchmarkConfig, get_protocol_metadata
+    md = get_protocol_metadata(BenchmarkConfig())
+    assert md["e2e_stall_timeout"] == 90.0
+    assert md["e2e_hard_cap"] == 1800.0
+
+
 def test_pipeoutcome_values():
     assert PipeOutcome.OK.value == "ok"
     assert PipeOutcome.HANG.value == "hang"
@@ -135,6 +144,27 @@ def test_slow_ok_run_is_recorded_not_discarded(monkeypatch):
     assert r.runs == 3
     # 300s over 100 frames -> ~0.33 fps recorded (slow value honestly kept)
     assert r.avg_e2e_fps < 1.0
+
+
+def test_multi_slow_ok_run_is_recorded_not_discarded(monkeypatch):
+    # Multi-stream analogue of test_slow_ok_run_is_recorded_not_discarded.
+    # run_multi_stream holds the multi measured loop with the same PipeOutcome
+    # branching that run_multi_stream_sweep drives per stream count. A slow-but-OK
+    # run (large exec_time) must be recorded honestly, not discarded as a timeout.
+    # warmup OK + 3 slow-but-OK measured runs -> status ok, 3 runs recorded.
+    _install_wd_pipeline_mocks(
+        monkeypatch,
+        [(PipeOutcome.OK, "w"), (PipeOutcome.OK, "a"), (PipeOutcome.OK, "b"), (PipeOutcome.OK, "c")],
+        exec_time=300.0)
+    monkeypatch.setattr(rp, "_build_multi_pipeline", lambda *a, **kw: ["gst"])
+    r = rp.run_multi_stream(_model(), use_ort=False, stream_count=2,
+                            cfg=_cfg_pipeline(2), save_dir=None)
+    assert r.status == "ok"
+    assert r.runs == 3
+    assert r.timeout_runs == 0
+    # 300s over 2*100 frames -> ~0.67 total fps recorded (slow value honestly kept)
+    assert r.avg_e2e_fps < 1.0
+    assert r.avg_e2e_fps > 0.0
 
 
 def test_hang_retried_within_budget_then_partial(monkeypatch):

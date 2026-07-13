@@ -261,6 +261,8 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "model_latency_runs": cfg.model_latency_runs,
         "model_throughput_runs": cfg.model_throughput_runs,
         "e2e_runs": cfg.e2e_runs,
+        "e2e_stall_timeout": cfg.e2e_stall_timeout,
+        "e2e_hard_cap": cfg.e2e_hard_cap,
         "fps_threshold": cfg.fps_threshold,
         "multi_stream_search": MULTI_STREAM_SEARCH_MODE,
         "stable_capacity_rule": STABLE_CAPACITY_RULE,
