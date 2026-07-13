@@ -44,3 +44,9 @@ def test_watchdog_stall_returns_hang():
 def test_watchdog_hardcap_returns_runaway():
     assert _watchdog_decision(False, now=2000.0, last_progress_ts=1999.0, start_ts=0.0,
                               stall_timeout=90.0, hard_cap=1800.0) is PipeOutcome.RUNAWAY
+
+
+def test_watchdog_exit_wins_over_stall_and_hardcap():
+    # A finished process must classify OK even if it also looks stalled / over cap.
+    assert _watchdog_decision(True, now=5000.0, last_progress_ts=0.0, start_ts=0.0,
+                              stall_timeout=90.0, hard_cap=1800.0) is PipeOutcome.OK

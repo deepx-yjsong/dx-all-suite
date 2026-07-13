@@ -17,6 +17,7 @@ import functools
 import signal
 import statistics
 import subprocess
+import threading
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -383,7 +384,7 @@ def _terminate_pgid(pgid: Optional[int], proc: subprocess.Popen) -> bool:
         except (ProcessLookupError, PermissionError):
             pass
         try:
-            proc.communicate(timeout=10)
+            proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
             # Phase 2: SIGKILL as last resort
             try:
@@ -391,7 +392,7 @@ def _terminate_pgid(pgid: Optional[int], proc: subprocess.Popen) -> bool:
             except (ProcessLookupError, PermissionError):
                 proc.kill()
             try:
-                proc.communicate(timeout=5)
+                proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 pass
             return True
@@ -399,7 +400,7 @@ def _terminate_pgid(pgid: Optional[int], proc: subprocess.Popen) -> bool:
     else:
         proc.kill()
         try:
-            proc.communicate(timeout=5)
+            proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             pass
         return True
@@ -413,7 +414,6 @@ def _run_gst_pipeline(pipeline_parts: list[str], env_extra: dict | None = None, 
     OK/HANG/RUNAWAY via _watchdog_decision(). Slow-but-progressing runs finish
     naturally; only a stall (HANG) or the anti-runaway hard cap ends a run early
     (with NPU recovery)."""
-    import threading
     env = os.environ.copy()
     env["GST_DEBUG_NO_COLOR"] = "1"
     env["GST_DEBUG"] = "0"  # minimal debug for clean benchmarks
@@ -487,7 +487,7 @@ def _run_gst_pipeline(pipeline_parts: list[str], env_extra: dict | None = None, 
     killed_hard = _terminate_pgid(pgid, proc)
     reader.join(timeout=5)
     suffix = ".hang" if outcome is PipeOutcome.HANG else ".runaway"
-    collect_timeout_incident(incident_context or f"gst_pipeline{suffix}")
+    collect_timeout_incident(f"{incident_context or 'gst_pipeline'}{suffix}")
     if killed_hard:
         cleanup_after_timeout()
     if pgid is not None:
