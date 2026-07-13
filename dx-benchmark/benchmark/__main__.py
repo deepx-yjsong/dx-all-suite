@@ -23,7 +23,7 @@ from pathlib import Path
 
 from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
-from .config import BenchmarkConfig, SIZES, TASK_GROUP_MAP, TASK_GROUP_VIDEOS, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
+from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, TASK_GROUP_VIDEOS, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
 from .dashboard_builder import build_static_dashboard
 from .env_fingerprint import collect_fingerprint, check_preflight, save_fingerprint, get_video_info, resolve_dx_all_suite_version
 from .model_catalog import discover_models, filter_models
@@ -50,8 +50,10 @@ def _resolve_resume_dir(resume_arg: str | None) -> Path | None:
         return resume_path
 
     # Keep documented `results/...` usage stable regardless of the caller's cwd.
+    # Anchor to APP_DIR.parent — the SAME results root config.get_output_dir() writes
+    # to — so the resume path and the write path can never drift out of sync.
     if resume_path.parts and resume_path.parts[0] == "results":
-        return (Path(__file__).resolve().parent / resume_path).resolve()
+        return (APP_DIR.parent / resume_path).resolve()
 
     return resume_path.resolve()
 
