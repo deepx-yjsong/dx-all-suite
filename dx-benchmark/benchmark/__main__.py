@@ -956,6 +956,8 @@ def _build_config(args: argparse.Namespace) -> BenchmarkConfig:
     _warmup_retries = getattr(args, "warmup_retries", None)
     _run_retries = getattr(args, "run_retries", None)
     _fps_thr = getattr(args, "fps_threshold", None)
+    _e2e_stall_timeout = getattr(args, "e2e_stall_timeout", None)
+    _e2e_hard_cap = getattr(args, "e2e_hard_cap", None)
     return BenchmarkConfig(
         task=getattr(args, "task", base_cfg.task),
         sizes=sizes,
@@ -965,8 +967,8 @@ def _build_config(args: argparse.Namespace) -> BenchmarkConfig:
         model_warmup_retries=_warmup_retries if _warmup_retries is not None else base_cfg.model_warmup_retries,
         model_run_retries=_run_retries if _run_retries is not None else base_cfg.model_run_retries,
         e2e_runs=runs_override if runs_override is not None else base_cfg.e2e_runs,
-        e2e_stall_timeout=getattr(args, "e2e_stall_timeout", None) or base_cfg.e2e_stall_timeout,
-        e2e_hard_cap=getattr(args, "e2e_hard_cap", None) or base_cfg.e2e_hard_cap,
+        e2e_stall_timeout=_e2e_stall_timeout if _e2e_stall_timeout is not None else base_cfg.e2e_stall_timeout,
+        e2e_hard_cap=_e2e_hard_cap if _e2e_hard_cap is not None else base_cfg.e2e_hard_cap,
         model_latency_runs=runs_override if runs_override is not None else base_cfg.model_latency_runs,
         model_throughput_runs=runs_override if runs_override is not None else base_cfg.model_throughput_runs,
         video=getattr(args, "video", base_cfg.video),
