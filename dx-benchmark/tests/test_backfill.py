@@ -11,6 +11,7 @@ import pytest
 from benchmark import runner_model
 from benchmark.config import BenchmarkConfig
 from benchmark.model_catalog import ModelEntry
+from benchmark.runner_pipeline import PipeOutcome
 
 
 class _FakeProc:
@@ -144,7 +145,14 @@ from benchmark import runner_pipeline
 
 def _install_pipeline_mocks(monkeypatch, gst_sequence):
     seq = iter(gst_sequence)
-    monkeypatch.setattr(runner_pipeline, "_run_gst_pipeline", lambda *a, **kw: next(seq))
+
+    def _fake_run_gst_pipeline(*a, **kw):
+        item = next(seq)
+        if item == "__TIMEOUT__":
+            return PipeOutcome.HANG, item
+        return PipeOutcome.OK, item
+
+    monkeypatch.setattr(runner_pipeline, "_run_gst_pipeline", _fake_run_gst_pipeline)
     monkeypatch.setattr(runner_pipeline, "NpuMonitor", _FakeMonitor)
     monkeypatch.setattr(runner_pipeline, "_get_frame_count", lambda *a, **kw: 100)
     monkeypatch.setattr(runner_pipeline, "get_postprocess_config_path", lambda *a, **kw: "pp")

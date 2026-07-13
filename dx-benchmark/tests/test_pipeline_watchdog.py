@@ -1,5 +1,7 @@
 from benchmark.config import BenchmarkConfig
-from benchmark.runner_pipeline import PipeOutcome, _build_single_pipeline, _build_multi_pipeline
+from benchmark.runner_pipeline import (
+    PipeOutcome, _build_single_pipeline, _build_multi_pipeline, _watchdog_decision,
+)
 
 
 def test_watchdog_config_defaults():
@@ -22,3 +24,23 @@ def test_pipelines_have_progressreport():
     # heartbeat sits right before the terminal fakesink
     assert sp.index("progressreport") < sp.index("fakesink")
     assert mp.index("progressreport") < mp.index("fakesink")
+
+
+def test_watchdog_progressing_returns_none():
+    assert _watchdog_decision(False, now=100.0, last_progress_ts=95.0, start_ts=0.0,
+                              stall_timeout=90.0, hard_cap=1800.0) is None
+
+
+def test_watchdog_exit_returns_ok():
+    assert _watchdog_decision(True, now=100.0, last_progress_ts=95.0, start_ts=0.0,
+                              stall_timeout=90.0, hard_cap=1800.0) is PipeOutcome.OK
+
+
+def test_watchdog_stall_returns_hang():
+    assert _watchdog_decision(False, now=100.0, last_progress_ts=5.0, start_ts=0.0,
+                              stall_timeout=90.0, hard_cap=1800.0) is PipeOutcome.HANG
+
+
+def test_watchdog_hardcap_returns_runaway():
+    assert _watchdog_decision(False, now=2000.0, last_progress_ts=1999.0, start_ts=0.0,
+                              stall_timeout=90.0, hard_cap=1800.0) is PipeOutcome.RUNAWAY

@@ -351,8 +351,69 @@ def _build_multi_pipeline(model_path: str, use_ort: bool, video_path: str,
     return pipeline
 
 
-def _run_gst_pipeline(pipeline_parts: list[str], env_extra: dict | None = None, incident_context: str = "") -> str:
-    """Execute a gst-launch-1.0 pipeline via GNU time wrapper."""
+def _watchdog_decision(exited: bool, now: float, last_progress_ts: float, start_ts: float,
+                       stall_timeout: float, hard_cap: float) -> Optional[PipeOutcome]:
+    """Classify a running pipeline. Returns PipeOutcome or None (= keep waiting).
+
+    A run is HANG only after NO progress for stall_timeout; a slow-but-progressing
+    run is never HANG and continues until it exits or hits the anti-runaway hard cap.
+    """
+    if exited:
+        return PipeOutcome.OK
+    if now - last_progress_ts > stall_timeout:
+        return PipeOutcome.HANG
+    if now - start_ts > hard_cap:
+        return PipeOutcome.RUNAWAY
+    return None
+
+
+def _terminate_pgid(pgid: Optional[int], proc: subprocess.Popen) -> bool:
+    """Escalate SIGTERM → wait 10s → SIGKILL → wait 5s on a process group.
+
+    Graceful shutdown first: SIGTERM gives gst-launch a chance to release NPU
+    inference handles cleanly.  Jumping straight to SIGKILL destroys dxrtd's
+    IPC queue and bricks the NPU until service restart.
+
+    Returns True if SIGKILL was needed (killed_hard), False if SIGTERM sufficed.
+    """
+    if pgid is not None:
+        # Phase 1: SIGTERM → wait up to 10s for graceful exit
+        try:
+            os.killpg(pgid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            pass
+        try:
+            proc.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            # Phase 2: SIGKILL as last resort
+            try:
+                os.killpg(pgid, signal.SIGKILL)
+            except (ProcessLookupError, PermissionError):
+                proc.kill()
+            try:
+                proc.communicate(timeout=5)
+            except subprocess.TimeoutExpired:
+                pass
+            return True
+        return False
+    else:
+        proc.kill()
+        try:
+            proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+        return True
+
+
+def _run_gst_pipeline(pipeline_parts: list[str], env_extra: dict | None = None, incident_context: str = "",
+                      stall_timeout: float = 90.0, hard_cap: float = 1800.0) -> tuple[PipeOutcome, str]:
+    """Execute a gst-launch pipeline; return (PipeOutcome, combined_log).
+
+    A daemon thread drains the merged stdout/stderr while a watchdog classifies
+    OK/HANG/RUNAWAY via _watchdog_decision(). Slow-but-progressing runs finish
+    naturally; only a stall (HANG) or the anti-runaway hard cap ends a run early
+    (with NPU recovery)."""
+    import threading
     env = os.environ.copy()
     env["GST_DEBUG_NO_COLOR"] = "1"
     env["GST_DEBUG"] = "0"  # minimal debug for clean benchmarks
@@ -368,85 +429,70 @@ def _run_gst_pipeline(pipeline_parts: list[str], env_extra: dict | None = None, 
 
     try:
         # Use start_new_session=True so the child and all its descendants form their
-        # own process group (session leader).  On timeout we can then os.killpg() the
-        # entire group, ensuring gst-launch grandchildren (which hold NPU device FDs)
-        # are also killed – not just the direct /usr/bin/time child.
+        # own process group (session leader).  On a stall/runaway we can then
+        # os.killpg() the entire group, ensuring gst-launch grandchildren (which
+        # hold NPU device FDs) are also killed – not just the direct /usr/bin/time child.
         proc = subprocess.Popen(
             full_cmd,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, env=env,
             start_new_session=True,
         )
-        try:
-            pgid = os.getpgid(proc.pid)
-            _active_pipeline_pgids.add(pgid)
-        except (ProcessLookupError, OSError):
-            pgid = None
-        try:
-            stdout, stderr = proc.communicate(timeout=600)
-            rc = proc.returncode
-            sig = -rc if rc < 0 else None
-            trailer = f"\n__EXIT_CODE__={rc}"
-            if sig is not None:
-                try:
-                    sig_name = signal.Signals(-rc).name
-                except ValueError:
-                    sig_name = str(sig)
-                trailer += f"\n__KILLED_BY_SIGNAL__={sig_name}({-rc})"
-            if pgid is not None:
-                _active_pipeline_pgids.discard(pgid)
-            return stdout + "\n" + stderr + trailer
-        except subprocess.TimeoutExpired:
-            # Graceful shutdown: SIGTERM gives gst-launch a chance to release
-            # NPU inference handles cleanly.  Jumping straight to SIGKILL
-            # destroys dxrtd's IPC queue and bricks the NPU until service restart.
-            pgid = None
-            try:
-                pgid = os.getpgid(proc.pid)
-            except (ProcessLookupError, OSError):
-                pass
-
-            killed_hard = False
-            if pgid is not None:
-                # Phase 1: SIGTERM → wait up to 10s for graceful exit
-                try:
-                    os.killpg(pgid, signal.SIGTERM)
-                except (ProcessLookupError, PermissionError):
-                    pass
-                try:
-                    proc.communicate(timeout=10)
-                except subprocess.TimeoutExpired:
-                    # Phase 2: SIGKILL as last resort
-                    try:
-                        os.killpg(pgid, signal.SIGKILL)
-                    except (ProcessLookupError, PermissionError):
-                        proc.kill()
-                    try:
-                        proc.communicate(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        pass
-                    killed_hard = True
-            else:
-                proc.kill()
-                try:
-                    proc.communicate(timeout=5)
-                except subprocess.TimeoutExpired:
-                    pass
-                killed_hard = True
-
-            # SIGKILL was needed → NPU likely corrupted, must recover
-            if killed_hard:
-                collect_timeout_incident(incident_context or "gst_pipeline")
-                cleanup_after_timeout()
-            else:
-                collect_timeout_incident(incident_context or "gst_pipeline.soft_timeout")
-
-            if pgid is not None:
-                _active_pipeline_pgids.discard(pgid)
-            return "__TIMEOUT__"
     except OSError:
         collect_timeout_incident(incident_context or "gst_pipeline.oserror")
-        return "__TIMEOUT__"
+        return PipeOutcome.HANG, "__SPAWN_FAILED__"
+
+    try:
+        pgid = os.getpgid(proc.pid)
+        _active_pipeline_pgids.add(pgid)
+    except (ProcessLookupError, OSError):
+        pgid = None
+
+    lines: list[str] = []
+    state = {"last_progress_ts": time.monotonic()}
+
+    def _drain():
+        assert proc.stdout is not None
+        for line in proc.stdout:
+            lines.append(line)
+            low = line.lower()
+            if "progressreport" in low or "progress:" in low:
+                state["last_progress_ts"] = time.monotonic()
+
+    reader = threading.Thread(target=_drain, daemon=True)
+    reader.start()
+
+    start_ts = time.monotonic()
+    while True:
+        exited = proc.poll() is not None
+        outcome = _watchdog_decision(exited, time.monotonic(), state["last_progress_ts"],
+                                     start_ts, stall_timeout, hard_cap)
+        if outcome is not None:
+            break
+        time.sleep(1.0)
+
+    if outcome is PipeOutcome.OK:
+        reader.join(timeout=5)
+        rc = proc.returncode
+        trailer = f"\n__EXIT_CODE__={rc}"
+        if rc is not None and rc < 0:
+            try:
+                trailer += f"\n__KILLED_BY_SIGNAL__={signal.Signals(-rc).name}({-rc})"
+            except ValueError:
+                trailer += f"\n__KILLED_BY_SIGNAL__={-rc}"
+        if pgid is not None:
+            _active_pipeline_pgids.discard(pgid)
+        return PipeOutcome.OK, "".join(lines) + trailer
+
+    killed_hard = _terminate_pgid(pgid, proc)
+    reader.join(timeout=5)
+    suffix = ".hang" if outcome is PipeOutcome.HANG else ".runaway"
+    collect_timeout_incident(incident_context or f"gst_pipeline{suffix}")
+    if killed_hard:
+        cleanup_after_timeout()
+    if pgid is not None:
+        _active_pipeline_pgids.discard(pgid)
+    return outcome, "".join(lines)
 
 
 # Module-level set tracking PGIDs of pipelines started by this process.
@@ -742,10 +788,12 @@ def run_single_stream(
     warmup_attempts = 1 + max(0, cfg.model_warmup_retries)
     for warmup_attempt in range(warmup_attempts):
         print(f"    [e2e warmup] {model.name} (attempt {warmup_attempt + 1}/{warmup_attempts})", flush=True)
-        warmup_log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.warmup")
-        if "__TIMEOUT__" not in warmup_log:
+        warmup_outcome, warmup_log = _run_gst_pipeline(
+            pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.warmup",
+            stall_timeout=cfg.e2e_stall_timeout, hard_cap=cfg.e2e_hard_cap)
+        if warmup_outcome is PipeOutcome.OK:
             break
-        print(f"    [e2e warmup] TIMEOUT", flush=True)
+        print(f"    [e2e warmup] {warmup_outcome.value.upper()}", flush=True)
         if warmup_attempt + 1 < warmup_attempts:
             print(f"    [e2e warmup] retrying ...", flush=True)
         else:
@@ -776,14 +824,16 @@ def run_single_stream(
         print(f"    [e2e {tag} ({len(times)}/{target} ok, attempt {attempt}/{max_attempts})]", end=" ", flush=True)
         npu = NpuMonitor(cfg.npu_core_ids, cfg.npu_warmup_sec, cfg.npu_drain_sec)
         npu.start()
-        log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.{tag}")
+        outcome, log = _run_gst_pipeline(
+            pipeline, incident_context=f"{model.name}.{ort_tag}.e2e.{tag}",
+            stall_timeout=cfg.e2e_stall_timeout, hard_cap=cfg.e2e_hard_cap)
         stats = npu.stop()
         if save_dir:
             _save_pipeline_log(save_dir, "single", model.name, use_ort, 1, log, run_index=attempt, npu_log=stats.raw_log)
 
-        if "__TIMEOUT__" in log:
+        if outcome is not PipeOutcome.OK:
             timeout_runs += 1
-            print("TIMEOUT", flush=True)
+            print(outcome.value.upper(), flush=True)
             continue
 
         t = _parse_execution_time(log)
@@ -893,10 +943,12 @@ def run_multi_stream(
     warmup_attempts = 1 + max(0, cfg.model_warmup_retries)
     for warmup_attempt in range(warmup_attempts):
         print(f"    [multi warmup] {stream_count}ch (attempt {warmup_attempt + 1}/{warmup_attempts})", flush=True)
-        warmup_log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.warmup")
-        if "__TIMEOUT__" not in warmup_log:
+        warmup_outcome, warmup_log = _run_gst_pipeline(
+            pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.warmup",
+            stall_timeout=cfg.e2e_stall_timeout, hard_cap=cfg.e2e_hard_cap)
+        if warmup_outcome is PipeOutcome.OK:
             break
-        print(f"    [multi warmup] TIMEOUT", flush=True)
+        print(f"    [multi warmup] {warmup_outcome.value.upper()}", flush=True)
         if warmup_attempt + 1 < warmup_attempts:
             print(f"    [multi warmup] retrying ({stream_count}ch) ...", flush=True)
         else:
@@ -926,14 +978,16 @@ def run_multi_stream(
         print(f"    [multi {tag}] {stream_count}ch ({len(times)}/{target} ok, attempt {attempt}/{max_attempts})", end=" ", flush=True)
         npu = NpuMonitor(cfg.npu_core_ids, cfg.npu_warmup_sec, cfg.npu_drain_sec)
         npu.start()
-        log = _run_gst_pipeline(pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.{tag}")
+        outcome, log = _run_gst_pipeline(
+            pipeline, incident_context=f"{model.name}.{ort_tag}.multi.sc{stream_count}.{tag}",
+            stall_timeout=cfg.e2e_stall_timeout, hard_cap=cfg.e2e_hard_cap)
         stats = npu.stop()
         if save_dir:
             _save_pipeline_log(save_dir, "multi", model.name, use_ort, stream_count, log, run_index=attempt, npu_log=stats.raw_log)
 
-        if "__TIMEOUT__" in log:
+        if outcome is not PipeOutcome.OK:
             timeout_runs += 1
-            print("TIMEOUT", flush=True)
+            print(outcome.value.upper(), flush=True)
             continue
 
         t = _parse_execution_time(log)
