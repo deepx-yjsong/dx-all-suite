@@ -8,6 +8,7 @@ Uses gst-launch-1.0 to run full inference pipelines with:
   - NPU stats from dxtop
 """
 
+import enum
 import logging
 import os
 import re
@@ -29,6 +30,13 @@ from .config import (
 from .model_catalog import ModelEntry
 from .npu_monitor import NpuMonitor, NpuStats, read_npu_temp_c, read_npu_clock_mhz
 from .npu_stats_util import merge_npu_stats as _merge_npu_stats
+
+
+class PipeOutcome(enum.Enum):
+    """Outcome classification for an E2E pipeline run under progress watchdog."""
+    OK = "ok"
+    HANG = "hang"
+    RUNAWAY = "runaway"
 
 
 @dataclass
@@ -285,6 +293,7 @@ def _build_single_pipeline(model_path: str, use_ort: bool, video_path: str,
         "queue", "leaky=no", "!",
         "dxpostprocess", f"config-file-path={postprocess_cfg}", "!",
         "queue", "leaky=no", "!",
+        "progressreport", "update-freq=1", "silent=false", "!",
         "fakesink", "sync=false", "async=false", "qos=false", "enable-last-sample=false",
     ]
     return pipeline
@@ -334,6 +343,7 @@ def _build_multi_pipeline(model_path: str, use_ort: bool, video_path: str,
         "queue", "max-size-buffers=10", "leaky=no", "!",
         "dxpostprocess", f"config-file-path={postprocess_cfg}", "!",
         "queue", "max-size-buffers=10", "leaky=no", "!",
+        "progressreport", "update-freq=1", "silent=false", "!",
         "dxoutputselector", "name=out",
     ])
     pipeline.extend(sink_pipes)
