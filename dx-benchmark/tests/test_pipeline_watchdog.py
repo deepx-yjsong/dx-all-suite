@@ -150,3 +150,20 @@ def test_hang_retried_within_budget_then_partial(monkeypatch):
     r = rp.run_single_stream(_model(), use_ort=False, cfg=_cfg_pipeline(2), save_dir=None)
     assert r.status == "partial"
     assert r.runs == 2
+
+
+from benchmark.__main__ import _should_remeasure, _is_failed_result
+
+
+def test_should_remeasure_partial():
+    assert _should_remeasure({"status": "partial"}, True) is True
+    assert _should_remeasure({"status": "ok"}, True) is False
+    assert _should_remeasure({"status": "partial"}, False) is False
+    assert _should_remeasure(None, True) is False
+
+
+def test_is_failed_result_unchanged():
+    # multi-stream logic must still treat partial as NOT-failed
+    assert _is_failed_result({"status": "partial"}) is False
+    assert _is_failed_result({"status": "no_fps"}) is True
+    assert _is_failed_result({"status": "ok"}) is False

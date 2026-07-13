@@ -351,7 +351,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 done += 1
                 print(f"  [{done}/{total}] latency   {m.name} ORT={ort_s}", flush=True)
                 existing = model_index.get(latency_key)
-                if existing and not _should_retry_failed(existing, args.retry_failed):
+                if existing and not _should_remeasure(existing, args.retry_failed):
                     print("    skip [resume]")
                 else:
                     if existing:
@@ -382,7 +382,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 done += 1
                 print(f"  [{done}/{total}] throughput {m.name} ORT={ort_s}", flush=True)
                 existing = model_index.get(throughput_key)
-                if existing and not _should_retry_failed(existing, args.retry_failed):
+                if existing and not _should_remeasure(existing, args.retry_failed):
                     print("    skip [resume]")
                 else:
                     if existing:
@@ -435,7 +435,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 done += 1
                 print(f"  [{done}/{total}] e2e       {m.name} ORT={ort_s}", flush=True)
                 existing = pipeline_index.get(key)
-                if existing and not _should_retry_failed(existing, args.retry_failed):
+                if existing and not _should_remeasure(existing, args.retry_failed):
                     print("    skip [resume]")
                 else:
                     if existing:
@@ -1108,8 +1108,13 @@ def _is_failed_result(result: dict | None) -> bool:
     return result.get("status") not in {"ok", "partial"}
 
 
-def _should_retry_failed(result: dict | None, retry_failed: bool) -> bool:
-    return bool(retry_failed and _is_failed_result(result))
+def _should_remeasure(result: dict | None, retry_failed: bool) -> bool:
+    """Cell-skip predicate for --retry-failed: re-measure anything not clean 'ok'
+    (this INCLUDES 'partial'). Distinct from _is_failed_result (used by the
+    multi-stream sweep), which intentionally treats 'partial' as acceptable."""
+    if not result:
+        return False
+    return bool(retry_failed and result.get("status") != "ok")
 
 
 def _upsert_result(results: list[dict], new_result: dict, key_func) -> None:
