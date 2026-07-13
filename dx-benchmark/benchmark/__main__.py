@@ -965,6 +965,8 @@ def _build_config(args: argparse.Namespace) -> BenchmarkConfig:
         model_warmup_retries=_warmup_retries if _warmup_retries is not None else base_cfg.model_warmup_retries,
         model_run_retries=_run_retries if _run_retries is not None else base_cfg.model_run_retries,
         e2e_runs=runs_override if runs_override is not None else base_cfg.e2e_runs,
+        e2e_stall_timeout=getattr(args, "e2e_stall_timeout", None) or base_cfg.e2e_stall_timeout,
+        e2e_hard_cap=getattr(args, "e2e_hard_cap", None) or base_cfg.e2e_hard_cap,
         model_latency_runs=runs_override if runs_override is not None else base_cfg.model_latency_runs,
         model_throughput_runs=runs_override if runs_override is not None else base_cfg.model_throughput_runs,
         video=getattr(args, "video", base_cfg.video),
@@ -1224,6 +1226,10 @@ def _add_benchmark_args(parser: argparse.ArgumentParser, defaults: BenchmarkConf
                         help=f"Extra warmup attempts on timeout before giving up the cell (default: {defaults.model_warmup_retries})")
     parser.add_argument("--run-retries", type=int, default=None,
                         help=f"Extra measured-run attempts to backfill failed runs up to the target count (default: {defaults.model_run_retries})")
+    parser.add_argument("--e2e-stall-timeout", type=float, default=None,
+                        help=f"E2E no-progress window in seconds before a run is treated as a hang (default: {defaults.e2e_stall_timeout})")
+    parser.add_argument("--e2e-hard-cap", type=float, default=None,
+                        help=f"E2E absolute anti-runaway ceiling in seconds (default: {defaults.e2e_hard_cap})")
     parser.add_argument("--runs", type=int, default=None,
                         help=f"Measured repetitions for model and E2E benchmarks (default: {defaults.e2e_runs})")
     parser.add_argument("--fps-threshold", type=float, default=None,

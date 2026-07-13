@@ -205,6 +205,8 @@ class BenchmarkConfig:
 
     # ── E2E pipeline params ───────────────────────────────────────────
     e2e_runs: int = 3               # repeated measurements per condition
+    e2e_stall_timeout: float = 90.0   # no-progress window (s) → HANG
+    e2e_hard_cap: float = 1800.0      # anti-runaway absolute ceiling (s)
     video: Optional[str] = None     # override video path (overrides per-task)
 
     # ── Multi-stream params ───────────────────────────────────────────
