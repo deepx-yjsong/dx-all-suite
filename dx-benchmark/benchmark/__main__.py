@@ -25,7 +25,7 @@ from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
 from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, TASK_GROUP_VIDEOS, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
 from .dashboard_builder import build_static_dashboard
-from .env_fingerprint import collect_fingerprint, check_preflight, save_fingerprint, get_video_info, resolve_dx_all_suite_version
+from .env_fingerprint import collect_fingerprint, check_preflight, check_cpu_governor, save_fingerprint, get_video_info, resolve_dx_all_suite_version
 from .model_catalog import discover_models, filter_models
 from .npu_monitor import parse_npu_log_temp_clock
 from .reporter import (
@@ -165,6 +165,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         for e in errors:
             print(f"  - {e}")
         return 1
+
+    _gov_warn = check_cpu_governor(fp)
+    if _gov_warn:
+        print(f"[WARN] {_gov_warn}", flush=True)
 
     if cfg.product_name:
         fp["product_name"] = cfg.product_name

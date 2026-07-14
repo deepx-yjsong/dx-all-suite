@@ -4,14 +4,16 @@ Produces a dict that uniquely identifies the measurement environment
 so results from different machines are traceable and comparable.
 """
 
+import glob
 import json
+import os
 import platform
 import re
 import shutil
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from .npu_catalog import classify_devices, format_badge, format_sku
 
@@ -127,6 +129,7 @@ def collect_fingerprint() -> dict[str, Any]:
             "cpu": _get_cpu_model(),
             "cpu_count": platform.os.cpu_count(),  # type: ignore[attr-defined]
             "ram_gb": _get_ram_gb(),
+            "cpu_governors": _get_cpu_governors(),
         },
         "npu": _get_npu_info(),
         "software": {
@@ -201,6 +204,44 @@ def _get_cpu_model() -> str:
             if m:
                 return m.group(1).strip()
     return raw.split("\n")[0] if raw else "unknown"
+
+
+CPU_SYSFS_BASE = "/sys/devices/system/cpu"
+
+
+def _get_cpu_governors(cpu_base: str = CPU_SYSFS_BASE) -> dict[str, int]:
+    """Summarize CPU frequency governors across cores → {governor: cpu_count}.
+
+    Reads ``{cpu_base}/cpu*/cpufreq/scaling_governor``. Returns an empty dict when
+    cpufreq is unavailable (no scaling driver / restricted sysfs). Recorded in the
+    fingerprint so a slow or noisy run can be checked against the CPU power policy:
+    a non-'performance' governor depresses and adds variance to host-bound metrics
+    (latency, small-model throughput, E2E).
+    """
+    govs: dict[str, int] = {}
+    for path in glob.glob(os.path.join(cpu_base, "cpu[0-9]*", "cpufreq", "scaling_governor")):
+        try:
+            with open(path) as f:
+                g = f.read().strip()
+        except OSError:
+            continue
+        if g:
+            govs[g] = govs.get(g, 0) + 1
+    return govs
+
+
+def check_cpu_governor(fingerprint: dict) -> Optional[str]:
+    """Return a warning string if CPU governors aren't all 'performance', else None.
+
+    Empty/unknown governors return None — we don't warn when we cannot tell.
+    """
+    govs = (fingerprint.get("host") or {}).get("cpu_governors") or {}
+    if not govs or set(govs) == {"performance"}:
+        return None
+    summary = ", ".join(f"{g}×{n}" for g, n in sorted(govs.items()))
+    return (f"CPU governor not all 'performance' ({summary}). Host-bound metrics "
+            f"(latency, small-model throughput, E2E) may be depressed and noisy. "
+            f"Set: sudo cpupower frequency-set -g performance")
 
 
 def _get_npu_info() -> dict[str, Any]:
