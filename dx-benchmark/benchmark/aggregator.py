@@ -106,12 +106,21 @@ def _build_environment_summary(env_id: str, run_id: str, fingerprint: dict) -> d
 
 
 def _normalize_run(run_id: str, env_id: str, result_dir: Path, fingerprint: dict) -> dict:
+    npu = fingerprint.get("npu", {})
+    software = fingerprint.get("software", {})
     return {
         "run_id": run_id,
         "env_id": env_id,
         "dx_all_suite_version": fingerprint.get("dx_all_suite_version"),
         "path": str(result_dir),
         "timestamp": fingerprint.get("timestamp"),
+        # Per-run SDK stack (this run's environment.json) — powers the Version Trend
+        # tooltip so each point shows what actually changed at that suite version.
+        "rt_version": npu.get("rt_version"),
+        "rt_driver": npu.get("driver"),
+        "pcie_driver": npu.get("pcie_driver"),
+        "firmware": npu.get("firmware"),
+        "dx_stream_version": software.get("dx_stream"),
         "protocol": fingerprint.get("protocol", {}),
         "benchmark_params": fingerprint.get("benchmark_params", {}),
     }
@@ -129,7 +138,16 @@ def _flatten_model_results(run_id: str, env_id: str, rows: list[dict]) -> list[d
             "use_ort": bool(row.get("use_ort")),
             "family": row.get("family"),
             "fps": row.get("fps"),
+            "fps_std": row.get("fps_std"),
             "latency_ms": row.get("total_ms"),
+            "cpu_pct": row.get("cpu_pct"),
+            "npu_total_avg_pct": row.get("npu_total_avg_pct"),
+            "npu_total_max_pct": row.get("npu_total_max_pct"),
+            "npu_temp_min_c": row.get("npu_temp_min_c"),
+            "npu_temp_max_c": row.get("npu_temp_max_c"),
+            "npu_clock_mhz_min": row.get("npu_clock_mhz_min"),
+            "npu_clock_mhz_max": row.get("npu_clock_mhz_max"),
+            "npu_throttled": row.get("npu_throttled"),
             "status": row.get("status"),
         })
     return flattened

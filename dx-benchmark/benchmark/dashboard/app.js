@@ -24,6 +24,15 @@ var TREND_METRICS = [
   { key: 'e2e', title: 'E2E FPS (Single-Channel) Trend', metricLabel: 'E2E FPS (Single-Channel)', axisLabel: 'E2E FPS', resultKind: 'e2e_single', valueKey: 'avg_e2e_fps', precision: 1 },
   { key: 'capacity', title: 'Max Channel Trend', metricLabel: 'Max Channel', axisLabel: 'Max Channel', resultKind: 'e2e_multi_capacity', valueKey: 'capacity_streams', precision: 0 },
 ];
+// Two conceptual groups for the Version Trend small-multiples: model-inference metrics (NPU is
+// the bottleneck, though inference still uses some host/CPU offload) vs. host+NPU end-to-end
+// pipeline metrics. Rendered as colour-coded blocks so each metric's character is obvious at a
+// glance. `keys` reference TREND_METRICS entries in display order.
+var TREND_GROUPS = [
+  { id: 'npu',  label: 'NPU Performance',     desc: 'model inference · NPU-bound', keys: ['latency', 'throughput'] },
+  { id: 'pipe', label: 'End-to-End Pipeline', desc: 'host + NPU (decode → pre → NPU → post)', input: 'FHD · 30 FPS', keys: ['e2e', 'capacity'] },
+];
+function _metricByKey(k){ return TREND_METRICS.filter(function(m){ return m.key === k; })[0]; }
 
 function sizeOrd(key) { var v = SIZE_ORDER[key]; return v !== undefined ? v : 99; }
 
@@ -36,21 +45,21 @@ var state = {
   fpsSelectedEnvId: null, fpsChartData: [],
   selectedRunIds: {},
   selectedVersion: null,
-  detailEnvId: null, detailTask: 'all', detailOrt: 'all',
-  trendHwId: null, trendTask: 'object_detection', trendOrt: true, trendMetric: 'e2e',
-  trendData: [], trendSelectedIdx: -1, trendChart: null,
+  detailEnvId: null, detailVersion: null, detailMetric: 'all', detailTask: 'object_detection', detailOrt: 'all',
+  trendHwId: null, trendTask: 'object_detection', trendOrt: true,
+  trendData: [], trendSelectedIdx: -1, trendCharts: [], trendRunByVersion: {},
 };
 
 /* ===== Helpers ===== */
-// Real on-disk model naming per task (OD/cls carry no task suffix; resolutions differ).
-var _MODEL_NAME_MAP = {
-  object_detection: { suf: '',     res: '640x640'  },
-  pose_estimation:  { suf: '-pose', res: '640x640'  },
-  segmentation:     { suf: '-seg',  res: '640x640'  },
-  oriented_bbox:    { suf: '-obb',  res: '1024x1024'},
-  classification:   { suf: '',     res: '224x224'  },
+// Input resolution per task (architectural; stable across suite versions — unlike the .dxnn
+// filename, which changed between releases, so charts are captioned by config, not by filename).
+var _TASK_RES = {
+  object_detection: '640×640',
+  pose_estimation:  '640×640',
+  segmentation:     '640×640',
+  oriented_bbox:    '1024×1024',
+  classification:   '224×224',
 };
-function getModelName(task, size) { var m=_MODEL_NAME_MAP[task]||{suf:'',res:'640x640'}; return 'yolo26-' + size + m.suf + '_' + m.res + '.dxnn'; }
 // Worst status across a row's source metrics (non-ok surfaced so partial/failed never hides).
 function _rowStatus(sts){var bad=sts.filter(function(s){return s&&s!=='ok';});if(bad.length){var uniq=[];bad.forEach(function(s){if(uniq.indexOf(s)<0)uniq.push(s);});return uniq.join(', ');}return sts.filter(function(s){return s;}).length?'ok':'-';}
 function envLabel(env) { return (env.env_id || env.hw_id || env.hostname); }
@@ -70,6 +79,65 @@ function _fmtTemp(lo,hi){if(lo==null&&hi==null)return'-';var a=lo!=null?Math.rou
 function _fmtClock(lo,hi){if(lo==null&&hi==null)return'\u2014';var a=lo!=null?Math.round(lo):'?';var b=hi!=null?Math.round(hi):'?';return a===b?String(a):a+'~'+b;}
 function stripAnsi(s) { return typeof s === 'string' ? s.replace(/\x1b\[[0-9;]*m/g, '') : s; }
 function _history(kind){return ((state.dataset.history||{})[kind])||((state.dataset.summaries||{})[kind])||[];}
+/* ---- Annotation helpers (decoder / bound-type / thermal / SDK stack / protocol) ---- */
+// HW vs SW video decoder — determines the E2E pipeline ceiling (SW decode is the bottleneck).
+function _decoderKind(name){
+  if(!name||name==='unknown')return null;
+  var n=String(name).toLowerCase();
+  if(/avdec|libav|ffdec|openh264|software/.test(n))return {kind:'SW',name:name};
+  if(/vaapi|va(h264|dec)|v4l2|mpp|nvh264|nvdec|nvv4l2|d3d11|amfdec|qsv/.test(n))return {kind:'HW',name:name};
+  return {kind:'?',name:name};
+}
+// Matching NPU-only throughput for an E2E cell — used to classify inference-bound vs pipeline-capped.
+function _throughputFps(envId,runId,task,size,useOrt){
+  var rows=_history('model');
+  for(var i=0;i<rows.length;i++){var r=rows[i];
+    if(r.env_id===envId&&r.run_id===runId&&r.task===task&&r.family==='throughput'&&r.use_ort===useOrt&&sizeOf(r)===size&&r.fps!=null)return r.fps;
+  }
+  return null;
+}
+// Bound-type — MONOTONIC by construction. Compare each model's NPU throughput to the group's
+// pipeline ceiling C (= max E2E FPS across sizes for the same env/run/task/ort; the rate fast
+// models converge to when the host pipeline, not the NPU, is the limit).
+//   throughput > C  => 'capped' (NPU could go faster; host decode/pre-post caps E2E at ~C)
+//   throughput <= C => 'npu'    (NPU is the limit; E2E ~ throughput <= C)
+// Throughput decreases monotonically with model size, so labels transition capped→npu at a single
+// crossover — a smaller model can never be 'npu' while a larger one is 'capped'.
+// Thermal throttling is ORTHOGONAL (shown by the separate `throttled` clock badge): a throttled
+// large model reads 'npu' (throttled NPU is the bottleneck) + throttle flag, NOT a bound-type of
+// its own — mixing thermal into bound-type breaks monotonicity (m='thermal' while l='npu').
+function _boundType(thrFps,ceilingC){
+  if(thrFps==null||ceilingC==null||ceilingC<=0)return null;
+  return (thrFps>1.10*ceilingC)?'capped':'npu';
+}
+function _nominalClock(envId){var e=_envById(envId);return (e&&e.npu_clock_mhz)?e.npu_clock_mhz:1000;}
+// Compact per-point SDK label for the Version Trend x-axis (full stack shows in the detail panel).
+function _trendSwLabel(snap){var e=snap&&snap.environment;if(!e)return null;var rt=cleanVer(e.rt_version);return rt?('rt '+rt):null;}
+// Shared run protocol (first run carrying protocol metadata; protocol is uniform across runs).
+function _runProtocol(){
+  var runs=state.dataset.runs||[];
+  for(var i=0;i<runs.length;i++){if(runs[i].protocol&&Object.keys(runs[i].protocol).length)return runs[i].protocol;}
+  return null;
+}
+// Per-metric subtitle shown directly under each Version Trend chart title: what the metric
+// measures and which performance dimension it reflects (no measurement-protocol detail).
+function _trendMetricSubtitle(key){
+  switch(key){
+    case 'latency':    return 'Single-inference latency — NPU inference speed';
+    case 'throughput': return 'Inference throughput (FPS) — NPU compute performance';
+    case 'e2e':        return 'Full-pipeline FPS per channel — delivered throughput';
+    case 'capacity':   return 'Max concurrent channels — multi-channel scalability';
+    default:           return '';
+  }
+}
+// Concise E2E-only note for the E2E table (Latency/Throughput belong to other tables/the trend).
+function _e2eNote(){
+  var p=_runProtocol();
+  var e2e=(p&&p.e2e_runs!=null)?p.e2e_runs:3;
+  var cd=(p&&p.thermal_cooldown_abs_cap_c!=null)?p.thermal_cooldown_abs_cap_c+'°C':'55°C';
+  var hs=(p&&p.thermal_hot_start_block_c!=null)?p.thermal_hot_start_block_c+'°C':'60°C';
+  return '<span class="measure-note"><b>E2E</b> = full pipeline (decode → pre → NPU → post) · <b>sustained/warm</b> continuous measurement · '+e2e+' run · cooldown ≤ '+escHtml(cd)+' before each cell (hot-start > '+escHtml(hs)+' blocked)</span>';
+}
 /* Selected-run comparisons are driven from state.dataset.history.e2e_single and friends. */
 function _envById(envId){return (state.dataset.environments||[]).find(function(env){return env.env_id===envId;})||null;}
 function _allSuiteVersions(){
@@ -106,12 +174,24 @@ function _applySelectedVersion(version,preferredEnvId){
   renderRunSelectors('fpsRunSelectors');renderRunSelectors('overviewRunSelectors');
   refreshFpsCompare(preferredEnvId);refreshChart(preferredEnvId);
 }
+// Populate the detail-tab version dropdown from the runs available for the selected env.
+function syncDetailVersionFilter(){
+  var sel=document.getElementById('detailVersionFilter');if(!sel)return;
+  var envId=state.detailEnvId;var runs=envId?_getRunOptions(envId):[];
+  var vers=[];runs.forEach(function(r){var v=r.dx_all_suite_version;if(v&&vers.indexOf(v)<0)vers.push(v);});
+  vers.sort(function(a,b){return String(b).localeCompare(String(a));});  // newest first
+  sel.innerHTML=vers.map(function(v){return '<option value="'+escHtml(v)+'">dx-all-suite '+escHtml(v)+'</option>';}).join('');
+  sel.disabled=!vers.length;
+  if(!state.detailVersion||vers.indexOf(state.detailVersion)<0)state.detailVersion=vers.length?vers[0]:null;
+  sel.value=state.detailVersion||'';
+}
 function syncDetailRunFilter(){
   var sel=document.getElementById('detailRunFilter');if(!sel)return;
   var envId=state.detailEnvId;var runs=envId?_getRunOptions(envId):[];
+  if(state.detailVersion)runs=runs.filter(function(r){return r.dx_all_suite_version===state.detailVersion;});
   sel.innerHTML=runs.map(function(run){return '<option value="'+escHtml(run.run_id)+'">'+escHtml(run.run_id)+'</option>';}).join('');
   sel.disabled=!runs.length;
-  if(runs.length){sel.value=_getSelectedRunId(envId)||runs[0].run_id;}
+  if(runs.length){var cur=_getSelectedRunId(envId);var ok=runs.some(function(r){return r.run_id===cur;});sel.value=ok?cur:runs[0].run_id;state.selectedRunIds[envId]=sel.value;}
 }
 function _handleRunSelectionChange(envId,runId){state.selectedRunIds[envId]=runId;refreshFpsCompare(envId);refreshChart(envId);if(state.detailEnvId===envId){syncDetailRunFilter();renderDetailTables();}}
 function renderRunSelectors(targetId){
@@ -120,17 +200,18 @@ function renderRunSelectors(targetId){
   if(!envs.length){target.innerHTML='<p class="empty-state small">No environments available.</p>';return;}
   var vers=_allSuiteVersions();
   var verOpts=vers.map(function(v){return '<option value="'+escHtml(v)+'"'+(v===state.selectedVersion?' selected':'')+'>'+escHtml(v)+'</option>';}).join('');
-  var rows=envs.map(function(env){
+  var items=envs.map(function(env){
     var name=escHtml(env.env_id||env.hostname);
     var runs=_runsForEnvVersion(env.env_id,state.selectedVersion);
     if(!runs.length){
-      return '<div class="env-run env-missing"><span class="env-name">'+name+'</span><span class="env-run-id">(no data for '+escHtml(state.selectedVersion||'?')+')</span></div>';
+      return '<span class="run-inline-item run-inline-missing">'+name+' · (no '+escHtml(state.selectedVersion||'?')+')</span>';
     }
     var cur=_getSelectedRunId(env.env_id);
     var opts=runs.map(function(r){return '<option value="'+escHtml(r.run_id)+'"'+(r.run_id===cur?' selected':'')+'>'+escHtml(r.run_id)+'</option>';}).join('');
-    return '<div class="env-run"><span class="env-name">'+name+'</span><span class="env-run-runlabel">Run ID</span><select class="env-run-select" data-run-env="'+escHtml(env.env_id)+'">'+opts+'</select></div>';
+    var badge=runs.length>1?'<span class="run-badge">'+runs.length+' runs</span>':'';
+    return '<label class="run-inline-item"><span class="run-inline-name">'+name+'</span>'+badge+'<select class="env-run-select" data-run-env="'+escHtml(env.env_id)+'">'+opts+'</select></label>';
   }).join('');
-  target.innerHTML='<label class="version-select"><span>dx-all-suite version</span><select data-version-select>'+verOpts+'</select></label><div class="env-section-label">Environment</div><div class="env-run-list">'+rows+'</div>';
+  target.innerHTML='<label class="ubar-field"><span>dx-all-suite version</span><select data-version-select>'+verOpts+'</select></label><span class="run-inline-label">Run per environment</span><div class="run-inline">'+items+'</div>';
   var vsel=target.querySelector('select[data-version-select]');
   if(vsel)vsel.addEventListener('change',function(){_applySelectedVersion(this.value);});
   target.querySelectorAll('select[data-run-env]').forEach(function(sel){
@@ -180,6 +261,23 @@ function renderModelMetaForTask(container, env, task) {
   container.innerHTML = html;
 }
 
+/* Concise decode-path summary (Codec | Decoder SW/HW | perf flags) from pipeline_caps.
+   Shared by the E2E FPS Overview tab and the Detailed Data E2E card for a consistent look. */
+function _decodePathSummary(rows){
+  var caps=null;for(var ci=0;ci<rows.length;ci++){if(rows[ci].pipeline_caps){caps=rows[ci].pipeline_caps;break;}}
+  if(!caps)return '';
+  var parts=[];
+  if(caps.video_codec)parts.push('<b>Codec:</b> '+escHtml(caps.video_codec));
+  var decName=null;for(var di=0;di<rows.length;di++){if(rows[di].decoder&&rows[di].decoder!=='unknown'){decName=rows[di].decoder;break;}}
+  if(decName){var _dk=_decoderKind(decName);var _db=_dk?(' <span class="tag tag--'+(_dk.kind==='SW'?'sw':(_dk.kind==='HW'?'hw':'warn'))+'" title="'+escHtml(decName)+'">'+_dk.kind+'</span>'):'';parts.push('<b>Decoder:</b> '+escHtml(decName)+_db);}
+  var _df=caps.decoder_src_format,_pf=caps.dxpreprocess_sink_format;
+  if(_df&&_pf&&_df!==_pf)parts.push('<b>Color space:</b> '+escHtml(_df)+'→'+escHtml(_pf)+' <span class="tag tag--warn" title="decoder output and preprocess input formats differ → color-convert inserted (CPU cost)">convert</span>');
+  var _dm=caps.decoder_src_memory,_pm=caps.dxpreprocess_sink_memory;
+  if(_dm&&_dm!=='None'&&(!_pm||_pm==='None'))parts.push('<b>Memory:</b> '+escHtml(_dm)+' (GPU) → system RAM <span class="tag tag--warn" title="The HW decoder writes each frame into GPU/device memory (a VA surface). Every frame is then copied to system RAM before NPU preprocessing — an extra CPU/bandwidth cost that a software decoder (which already outputs to system RAM) avoids.">GPU→RAM copy</span>');
+  if(caps.dxpreprocess_backend)parts.push('<b>Preprocess Backend:</b> '+escHtml(caps.dxpreprocess_backend));
+  return '<p class="decode-path-summary">'+parts.join(' &nbsp;|&nbsp; ')+'</p>';
+}
+
 /* ===== E2E Results Table ===== */
 function renderE2eTable(container, envId, task, useOrt, runId) {
   var rows = _history('e2e_single').filter(function(r) {
@@ -189,31 +287,31 @@ function renderE2eTable(container, envId, task, useOrt, runId) {
   if (!rows.length) { container.innerHTML = '<p class="empty-state">No E2E data for this selection.</p>'; return; }
 
   var html = '';
-  /* Decode path summary from first row with pipeline_caps */
-  var caps = null;
-  for (var ci=0;ci<rows.length;ci++){if(rows[ci].pipeline_caps){caps=rows[ci].pipeline_caps;break;}}
-  if (caps) {
-    var parts = [];
-    if (caps.video_codec) parts.push('<b>Codec:</b> '+escHtml(caps.video_codec));
-    /* Decoder element name (same for all rows in this env) */
-    var decName = null;
-    for (var di=0;di<rows.length;di++){if(rows[di].decoder && rows[di].decoder!=='unknown'){decName=rows[di].decoder;break;}}
-    if (decName) parts.push('<b>Decoder:</b> '+escHtml(decName));
-    var decFmt = caps.decoder_src_format||'?';
-    var decMem = caps.decoder_src_memory;
-    parts.push('<b>Decoder Out:</b> '+escHtml(decFmt)+(decMem?' <span class="tag tag--warn">'+escHtml(decMem)+'</span>':''));
-    var ppFmt = caps.dxpreprocess_sink_format||'?';
-    var ppMem = caps.dxpreprocess_sink_memory;
-    parts.push('<b>Preprocess In:</b> '+escHtml(ppFmt)+(ppMem?' <span class="tag tag--warn">'+escHtml(ppMem)+'</span>':''));
-    if (caps.dxpreprocess_backend) parts.push('<b>Preprocess Backend:</b> '+escHtml(caps.dxpreprocess_backend));
-    html += '<p class="decode-path-summary">'+parts.join(' &nbsp;|&nbsp; ')+'</p>';
-  }
+  var _nomClk = _nominalClock(envId);
+  /* Measurement-mode + badge legend (so E2E numbers are read correctly, not as regressions). */
+  html += '<div class="measure-note-box">'+_e2eNote()
+    +'<span class="badge-legend">'
+    +'<span class="tag tag--infbound">NPU-bound</span> NPU is the limit &nbsp; '
+    +'<span class="tag tag--capped">host-bound</span> decode / pre / post-processing is the limit &nbsp; '
+    +'<span class="tag tag--hw">HW</span>/<span class="tag tag--sw">SW</span> decoder &nbsp; '
+    +'<span class="clk-throttled">MHz in red</span> = throttle (thermal)'
+    +'</span></div>';
+  html += _decodePathSummary(rows);
 
   html += '<table class="summary-table"><thead><tr><th>Model</th><th>E2E FPS</th><th>CPU%</th><th>NPU Avg%</th><th>NPU Max%</th><th>NPU Temp \u00b0C</th><th>NPU MHz</th><th>Host RSS (MiB)</th><th>Runs</th><th>Status</th></tr></thead><tbody>';
+  var _ceilByGroup={};rows.forEach(function(_r){var _k=_r.task+'|'+(_r.use_ort?1:0),_v=_r.avg_e2e_fps;if(_v!=null&&(_ceilByGroup[_k]==null||_v>_ceilByGroup[_k]))_ceilByGroup[_k]=_v;});
   rows.forEach(function(r) {
     var fpsS=fmt(r.avg_e2e_fps,1);if(r.fps_std!=null)fpsS+=' \u00b1'+fmt(r.fps_std,1);
+    /* bound-type badge: monotonic via throughput vs group pipeline-ceiling C (thermal is the separate throttle badge) */
+    var _thr=_throughputFps(r.env_id,r.run_id,r.task,sizeOf(r),r.use_ort);
+    var _C=_ceilByGroup[r.task+'|'+(r.use_ort?1:0)];
+    var _bt=_boundType(_thr,_C);
+    if(_bt==='capped')fpsS+=' <span class="tag tag--capped" title="host pipeline (decode / pre / post) is the limit. NPU throughput '+fmt(_thr,0)+' fps > pipeline ceiling '+fmt(_C,0)+' fps.">host-bound</span>';
+    else if(_bt==='npu')fpsS+=' <span class="tag tag--infbound" title="NPU is the limit. throughput '+fmt(_thr,0)+' fps \u2264 ceiling '+fmt(_C,0)+' fps (if throttled, see the throttled badge on the right).">NPU-bound</span>';
     var tempS=_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c);
     var clkS=_fmtClock(r.npu_clock_mhz_min,r.npu_clock_mhz_max);
+    /* throttle badge: min clock below nominal */
+    if(r.npu_clock_mhz_min!=null&&r.npu_clock_mhz_min<_nomClk)clkS='<span class="clk-throttled" title="thermal throttle: below nominal '+_nomClk+'MHz (temp max '+fmt(r.npu_temp_max_c,0)+'\u00b0C). E2E held back by thermal.">'+clkS+'</span>';
     var _st=r.status||'-';var _sc=_st==='ok'?'ok':(_st==='partial'?'warn':(_st==='-'?'':'bad'));
     var _stTd=_sc?'<span class="status status--'+_sc+'">'+escHtml(_st)+'</span>':escHtml(_st);
     html += '<tr><td>'+escHtml(r.model)+'</td><td class="metric-primary">'+fpsS+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+tempS+'</td><td>'+clkS+'</td><td>'+fmt(r.max_rss_mib,0)+'</td><td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td><td>'+_stTd+'</td></tr>';
@@ -281,7 +379,7 @@ var Chart = {
     pts.forEach(function(p){if(p.y==null)return;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/4);ctx.fillStyle=C_LAT;ctx.fillRect(-5,-5,10,10);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(-5,-5,10,10);ctx.restore();ctx.fillStyle=C_LAT;ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(p.v.toFixed(1)+' ms',p.x,p.y-14);});
     /* X labels */ctx.fillStyle='#333';data.forEach(function(d,i){var parts=d.label.split('\n'),lx=midX(i);parts.forEach(function(part,pi){ctx.font=pi===0?'600 11px sans-serif':'11px sans-serif';ctx.textAlign='center';ctx.fillText(part,lx,P.top+CH+16+pi*14);});});
     /* Legend */
-    var items=[{c:C_LAT,bc:C_LAT,label:'NPU Latency (Single-Core)',line:true},{c:C_TP.fill,bc:C_TP.line,label:'NPU Throughput (Multi-Core)',line:false},{c:C_E2E.fill,bc:C_E2E.line,label:'E2E FPS (Single-Stream)',line:false},{c:C_MAX,bc:C_MAX,label:'Max Channels (\u2265 30fps)',line:false,badge:true}];
+    var items=[{c:C_LAT,bc:C_LAT,label:'NPU Latency (Single-Core)',line:true},{c:C_TP.fill,bc:C_TP.line,label:'NPU Throughput (Multi-Core)',line:false},{c:C_E2E.fill,bc:C_E2E.line,label:'E2E FPS (Single-Channel)',line:false},{c:C_MAX,bc:C_MAX,label:'Max Channels (\u2265 30fps)',line:false,badge:true}];
     var lx=P.left,ly=22;items.forEach(function(it){if(it.line){ctx.strokeStyle=it.c;ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+20,ly);ctx.stroke();ctx.setLineDash([]);ctx.save();ctx.translate(lx+10,ly);ctx.rotate(Math.PI/4);ctx.fillStyle=it.c;ctx.fillRect(-4,-4,8,8);ctx.restore();}else if(it.badge){ctx.fillStyle='rgba(136,84,208,0.15)';ctx.fillRect(lx,ly-7,18,14);ctx.strokeStyle=it.bc;ctx.lineWidth=1;ctx.strokeRect(lx,ly-7,18,14);ctx.fillStyle=it.c;ctx.font='bold 8px sans-serif';ctx.textAlign='center';ctx.fillText('ch',lx+9,ly+3);}else{ctx.fillStyle=it.c;ctx.fillRect(lx,ly-7,18,14);ctx.strokeStyle=it.bc;ctx.lineWidth=1;ctx.strokeRect(lx,ly-7,18,14);}ctx.fillStyle='#333';ctx.font='12px sans-serif';ctx.textAlign='left';ctx.fillText(it.label,lx+24,ly+4);lx+=ctx.measureText(it.label).width+44;});
   },
   _hitTest: function(e){var rect=this._canvas.getBoundingClientRect();var x=e.clientX-rect.left;var lay=this._layout();if(x<lay.P.left||x>lay.P.left+lay.CW||!this._data.length)return -1;return Math.min(Math.floor((x-lay.P.left)/(lay.CW/this._data.length)),this._data.length-1);},
@@ -388,8 +486,8 @@ function getChartData() {
 }
 function refreshChart(preferredEnvId) {
   var data=getChartData();state.chartData=data;
-  var model=getModelName(state.task,state.size);
-  document.getElementById('chartSubtitle').textContent=model;
+  var tm=TASK_MAP[state.task]||{},res=_TASK_RES[state.task]||'';
+  document.getElementById('chartSubtitle').textContent=(tm.label||state.task)+' · '+(SIZE_LABELS[state.size]||state.size)+(res?' · '+res:'')+' · ORT '+(state.ort?'ON':'OFF');
   if(!data.length){
     state.selectedEnvId=null;
     document.getElementById('overviewDetail').style.display='none';
@@ -411,7 +509,7 @@ function getFpsCompareData() {
 }
 function refreshFpsCompare(preferredEnvId) {
   var data=getFpsCompareData();state.fpsChartData=data;
-  document.getElementById('fpsChartSubtitle').textContent='Single Stream \u00b7 30 FPS \u00b7 FHD';
+  document.getElementById('fpsChartSubtitle').textContent='Single Channel \u00b7 30 FPS \u00b7 FHD';
   if(!data.length){
     state.fpsSelectedEnvId=null;
     document.getElementById('fpsDetail').style.display='none';
@@ -434,7 +532,7 @@ function handleFpsEnvClick(idx,d,options) {
   document.getElementById('fpsModelMetaTitle').textContent='Benchmarked Models – '+TASK_MAP[state.fpsTask].label;
   renderModelMetaForTask(document.getElementById('fpsModelMetaSection'),d.env,state.fpsTask);
   var runId=_getSelectedRunId(d.envId);
-  document.getElementById('fpsE2eTableTitle').textContent='E2E Pipeline \u2013 '+TASK_MAP[state.fpsTask].label+' \u00b7 ORT '+(state.fpsOrt?'ON':'OFF')+' \u00b7 '+runId;
+  document.getElementById('fpsE2eTableTitle').textContent='E2E FPS (Single-Channel) \u2013 '+TASK_MAP[state.fpsTask].label+' \u00b7 ORT '+(state.fpsOrt?'ON':'OFF')+' \u00b7 '+runId;
   renderE2eTable(document.getElementById('fpsE2eTableContent'),d.envId,state.fpsTask,state.fpsOrt,runId);
   /* View trend link */
   var hwId=_envToHwId(d.env);
@@ -505,37 +603,107 @@ function initOverviewFilters() {
 /* ===== Detail Tab ===== */
 function initDetailTab() {
   var sel=document.getElementById('detailEnvFilter');
+  var verSel=document.getElementById('detailVersionFilter');
   var runSel=document.getElementById('detailRunFilter');
   sel.innerHTML=(state.dataset.environments||[]).map(function(e){return '<option value="'+e.env_id+'">'+escHtml(e.env_id||e.hostname)+'</option>';}).join('');
   if(state.dataset.environments.length){state.detailEnvId=state.dataset.environments[0].env_id;sel.value=state.detailEnvId;}
-  syncDetailRunFilter();
-  sel.addEventListener('change',function(){state.detailEnvId=this.value;syncDetailRunFilter();renderDetailTables();});
+  syncDetailVersionFilter();syncDetailRunFilter();
+  sel.addEventListener('change',function(){state.detailEnvId=this.value;state.detailVersion=null;syncDetailVersionFilter();syncDetailRunFilter();renderDetailTables();});
+  if(verSel)verSel.addEventListener('change',function(){state.detailVersion=this.value||null;syncDetailRunFilter();renderDetailTables();});
   runSel.addEventListener('change',function(){if(state.detailEnvId)_handleRunSelectionChange(state.detailEnvId,this.value);});
+  var pills=document.getElementById('detailMetricPills');
+  if(pills){pills.querySelectorAll('.mpill').forEach(function(b){
+    if(b.dataset.metric===state.detailMetric)b.classList.add('active');
+    b.addEventListener('click',function(){state.detailMetric=this.dataset.metric;pills.querySelectorAll('.mpill').forEach(function(x){x.classList.remove('active');});this.classList.add('active');renderDetailTables();});
+  });}
+  document.getElementById('detailTaskFilter').value=state.detailTask;
+  document.getElementById('detailOrtFilter').value=state.detailOrt;
   document.getElementById('detailTaskFilter').addEventListener('change',function(){state.detailTask=this.value;renderDetailTables();});
   document.getElementById('detailOrtFilter').addEventListener('change',function(){state.detailOrt=this.value;renderDetailTables();});
+  renderDetailTables();  // render on init (consistent with the other tabs), not only on tab-switch
 }
 
+// Detailed Data tab = the full per-run record, mirroring REPORT.md: one section per METRIC
+// (each metric is a separate measurement with its own std/temp/clock/runs), grouped by task.
 function renderDetailTables() {
   var target=document.getElementById('detailTables');var envId=state.detailEnvId;
   if(!envId){target.innerHTML='<div class="empty-state">No environment selected.</div>';return;}
-  /* Detail tab inspects a concrete run; when the selected version has no run for this
-     env, _getSelectedRunId returns null — fall back to the newest run (matches the
-     run-filter dropdown populated by syncDetailRunFilter). */
   var _detailRuns=_getRunOptions(envId);
   var runId=_getSelectedRunId(envId)||(_detailRuns.length?_detailRuns[0].run_id:null);
-  var latMap={},tpMap={},e2eMap={},capMap={},taskModels={},latSt={},tpSt={};
-  // taskModels[task][model] = stamped size char (version-proof; name is only a fallback)
-  _history('model').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;var k=r.model+'|'+(r.use_ort?'on':'off');if(r.family==='latency'){latMap[k]=r.latency_ms;latSt[k]=r.status;}if(r.family==='throughput'){tpMap[k]=r.fps;tpSt[k]=r.status;}if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=sizeOf(r);});
-  _history('e2e_single').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;e2eMap[r.model+'|'+(r.use_ort?'on':'off')]=r;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=sizeOf(r);});
-  _history('e2e_multi_capacity').forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;capMap[r.model+'|'+(r.use_ort?'on':'off')]=r.capacity_streams;if(!taskModels[r.task])taskModels[r.task]={};taskModels[r.task][r.model]=sizeOf(r);});
-  var tasks=Object.keys(taskModels).sort(function(a,b){var oa=TASK_ORDER[a],ob=TASK_ORDER[b];return(oa!==undefined?oa:99)-(ob!==undefined?ob:99);});
-  if(state.detailTask!=='all')tasks=tasks.filter(function(t){return t===state.detailTask;});
-  if(!tasks.length){target.innerHTML='<div class="empty-state">No data.</div>';return;}
-  target.innerHTML=tasks.map(function(task){
-    var szMap=taskModels[task];var models=Object.keys(szMap).sort(function(a,b){var d=sizeOrd(szMap[a]||modelSizeChar(a))-sizeOrd(szMap[b]||modelSizeChar(b));return d!==0?d:a.localeCompare(b);});
-    var body=models.map(function(model){var ortRows=[true,false].filter(function(useOrt){return state.detailOrt==='all'||state.detailOrt===(useOrt?'on':'off');});var fpsOn=null,fpsOff=null,capOn=null,capOff=null;ortRows.forEach(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};if(useOrt){fpsOn=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOn=capMap[k]!=null?Number(capMap[k]):null;}else{fpsOff=e2e.avg_e2e_fps!=null?Number(e2e.avg_e2e_fps):null;capOff=capMap[k]!=null?Number(capMap[k]):null;}});var bestFpsOrt=null,bestCapOrt=null;if(fpsOn!=null&&fpsOff!=null){bestFpsOrt=fpsOn>=fpsOff?'on':'off';}else if(fpsOn!=null){bestFpsOrt='on';}else if(fpsOff!=null){bestFpsOrt='off';}if(capOn!=null&&capOff!=null){bestCapOrt=capOn>=capOff?'on':'off';}else if(capOn!=null){bestCapOrt='on';}else if(capOff!=null){bestCapOrt='off';}var sz=szMap[model]||modelSizeChar(model);var szLabel=sz?sz.toUpperCase():'-';return ortRows.map(function(useOrt){var k=model+'|'+(useOrt?'on':'off');var e2e=e2eMap[k]||{};var ortKey=useOrt?'on':'off';var fpsVal=fmt(e2e.avg_e2e_fps,1);var capVal=capMap[k]!=null?capMap[k]:null;var fpsTd=bestFpsOrt===ortKey?'<td class="cell-best">'+fpsVal+'</td>':'<td>'+fpsVal+'</td>';var capTd=bestCapOrt===ortKey?'<td class="cell-best">'+(capVal!=null?capVal:'-')+'</td>':'<td>'+(capVal!=null?capVal:'-')+'</td>';var st=_rowStatus([latSt[k],tpSt[k],(e2eMap[k]||{}).status]);var stTd='<td'+(st&&st!=='ok'&&st!=='-'?' class="cell-warn"':'')+'>'+escHtml(st)+'</td>';return '<tr><td>'+escHtml(model)+'</td><td>'+szLabel+'</td><td>'+(useOrt?'ON':'OFF')+'</td><td>'+fmt(latMap[k],2)+'</td><td>'+fmt(tpMap[k],1)+'</td>'+fpsTd+capTd+stTd+'</tr>';}).join('');}).join('');
-    return '<section class="task-section"><h3>'+(TASK_MAP[task]?TASK_MAP[task].label:task)+'</h3><table class="summary-table detail-table"><colgroup><col style="width:24%"><col style="width:6%"><col style="width:6%"><col style="width:14%"><col style="width:15%"><col style="width:12%"><col style="width:12%"><col style="width:11%"></colgroup><thead><tr><th>Model</th><th>Size</th><th>ORT</th><th>NPU Latency (ms)</th><th>NPU Throughput (FPS)</th><th>E2E FPS</th><th>Max Channels</th><th>Status</th></tr></thead><tbody>'+body+'</tbody></table></section>';
-  }).join('');
+  var nom=_nominalClock(envId);
+  var ortF=state.detailOrt,taskF=state.detailTask,metF=state.detailMetric;
+  function want(k){return metF==='all'||metF===k;}
+  function ortMatch(uo){return ortF==='all'||ortF===(uo?'on':'off');}
+  function collect(src,fam){var by={};_history(src).forEach(function(r){if(r.env_id!==envId||r.run_id!==runId)return;if(fam&&r.family!==fam)return;if(!ortMatch(r.use_ort))return;if(taskF!=='all'&&r.task!==taskF)return;(by[r.task]=by[r.task]||[]).push(r);});return by;}
+  var thr=want('throughput')?collect('model','throughput'):{},lat=want('latency')?collect('model','latency'):{},e2e=want('e2e')?collect('e2e_single',null):{},cap=want('multi')?collect('e2e_multi_capacity',null):{};
+  var e2eCeil={};Object.keys(e2e).forEach(function(t){e2e[t].forEach(function(r){var k=t+'|'+(r.use_ort?1:0),v=r.avg_e2e_fps;if(v!=null&&(e2eCeil[k]==null||v>e2eCeil[k]))e2eCeil[k]=v;});});
+  function taskOrd(a,b){var oa=TASK_ORDER[a],ob=TASK_ORDER[b];return(oa!==undefined?oa:99)-(ob!==undefined?ob:99);}
+  function sortRows(rows){return rows.slice().sort(function(a,b){var d=sizeOrd(sizeOf(a))-sizeOrd(sizeOf(b));return d!==0?d:(a.use_ort?1:0)-(b.use_ort?1:0);});}
+  function stdSpan(v,s,d){var b=fmt(v,d);if(v!=null&&s!=null)b+=' <span class="detail-std">±'+fmt(s,d)+'</span>';return b;}
+  function mhzTd(r){var lo=r.npu_clock_mhz_min,hi=r.npu_clock_mhz_max,s=_fmtClock(lo,hi);if(lo!=null&&lo<nom)s='<span class="clk-throttled" title="thermal throttle (temp max '+fmt(r.npu_temp_max_c,0)+'°C)">'+s+'</span>';return '<td>'+s+'</td>';}
+  function stTd(s){return '<td'+(s&&s!=='ok'&&s!=='-'?' class="cell-warn"':'')+'>'+escHtml(s||'-')+'</td>';}
+  function msOrt(r){return '<td>'+escHtml(r.model)+'</td><td>'+((sizeOf(r)||'-')+'').toUpperCase()+'</td><td>'+(r.use_ort?'ON':'OFF')+'</td>';}
+  function section(title,sub,by,head,rowFn,preHtml,key){var tasks=Object.keys(by).sort(taskOrd);if(!tasks.length)return '';var inner=tasks.map(function(t){var body=sortRows(by[t]).map(rowFn).join('');return '<h4 class="detail-task">'+(TASK_MAP[t]?TASK_MAP[t].label:t)+'</h4><div class="table-scroll"><table class="summary-table detail-table"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div>';}).join('');return '<section class="detail-metric" id="dm-'+key+'"><h2 class="detail-metric-title">'+title+(sub?' <span class="detail-metric-sub">'+sub+'</span>':'')+'</h2>'+(preHtml||'')+inner+'</section>';}
+
+  var runObj=(state.dataset.runs||[]).filter(function(r){return r.run_id===runId&&r.env_id===envId;})[0]||{};
+  var dateStr=(runObj.timestamp||'').slice(0,10)||(runId||'').slice(0,8);
+  // decode-path summary lives inside the E2E card (E2E-specific info), detected regardless of task/ORT filter
+  var e2eRows=_history('e2e_single').filter(function(r){return r.env_id===envId&&r.run_id===runId;});
+
+  var secThr=section('Model Throughput','multi-core, async',thr,
+    '<th>Model</th><th>Size</th><th>ORT</th><th>FPS</th><th>CPU%</th><th>NPU Avg%</th><th>NPU Max%</th><th>Temp °C</th><th>MHz</th><th>Status</th>',
+    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.fps,r.fps_std,1)+'</td><td>'+fmt(r.cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+stTd(r.status)+'</tr>';},'','throughput');
+  var secLat=section('Model Latency','single-core, sync',lat,
+    '<th>Model</th><th>Size</th><th>ORT</th><th>Latency (ms)</th><th>NPU Avg%</th><th>Temp °C</th><th>MHz</th><th>Status</th>',
+    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+fmt(r.latency_ms,2)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+stTd(r.status)+'</tr>';},'','latency');
+  var secE2e=section('E2E FPS (Single-Channel)','single-channel',e2e,
+    '<th>Model</th><th>Size</th><th>ORT</th><th>E2E FPS</th><th>Total ms</th><th>CPU%</th><th>NPU Avg%</th><th>Temp °C</th><th>MHz</th><th>Runs</th><th>Status</th>',
+    function(r){var tot=r.avg_e2e_fps?1000/r.avg_e2e_fps:null;var thrv=_throughputFps(r.env_id,r.run_id,r.task,sizeOf(r),r.use_ort);var bt=_boundType(thrv,e2eCeil[r.task+'|'+(r.use_ort?1:0)]);var bb=bt==='capped'?' <span class="tag tag--capped" title="host pipeline (decode / pre / post) is the limit">host-bound</span>':(bt==='npu'?' <span class="tag tag--infbound" title="NPU is the limit">NPU-bound</span>':'');return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.avg_e2e_fps,r.fps_std,1)+bb+'</td><td>'+fmt(tot,2)+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+'<td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td>'+stTd(r.status)+'</tr>';},
+    _decodePathSummary(e2eRows),'e2e');
+  var secMul=section('Max Channel Capacity','max channels ≥ threshold',cap,
+    '<th>Model</th><th>Size</th><th>ORT</th><th>Max Channels</th><th>Per-Ch FPS</th><th>FPS Threshold</th>',
+    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+(r.capacity_streams!=null?r.capacity_streams:'-')+'</td><td>'+fmt(r.capacity_per_channel_fps,1)+'</td><td>'+fmt(r.fps_threshold,0)+'</td></tr>';},'','multi');
+
+  // Two metric families surfaced as color-coded groups so users grasp each metric's character:
+  //  · NPU Performance    — model inference · NPU-bound (Throughput + Latency)          → green
+  //  · End-to-End Pipeline — host + NPU (decode → pre → NPU → post) (E2E + Max Channel) → blue
+  var npu=[{h:secThr,id:'dm-throughput',lb:'Throughput'},{h:secLat,id:'dm-latency',lb:'Latency'}].filter(function(c){return c.h;});
+  var pipe=[{h:secE2e,id:'dm-e2e',lb:'E2E'},{h:secMul,id:'dm-multi',lb:'Max Channel'}].filter(function(c){return c.h;});
+  // Reuse the Version Trend tab's group chrome (.trend-group) so both tabs look identical:
+  // colour-coded left border + tinted header band + subtle tint; cards stacked in a padded body.
+  function grpBlock(cls,label,desc,arr,inputNote){return arr.length?'<div class="trend-group trend-group--'+cls+'"><div class="trend-group-head"><span class="trend-group-label">'+label+'</span><span class="trend-group-desc">'+desc+'</span>'+(inputNote?'<span class="trend-group-input">Input: '+inputNote+'</span>':'')+'</div><div class="detail-group-body">'+arr.map(function(c){return c.h;}).join('')+'</div></div>':'';}
+  var groupsHtml=grpBlock('npu','NPU Performance','model inference · NPU-bound',npu)
+               +grpBlock('pipe','End-to-End Pipeline','host + NPU (decode → pre → NPU → post)',pipe,'FHD · 30 FPS');
+  if(!groupsHtml)groupsHtml='<section class="panel"><div class="empty-state">No data for this selection.</div></section>';
+
+  // run-level context (Environment + Benchmarked Models), collapsed by default, same detail-group/detail-sub layout as other tabs
+  var snap=(state.dataset.snapshots||[]).filter(function(s){return s.run_id===runId&&s.env_id===envId;})[0];
+  var env=snap&&snap.environment,modelTasks=[],detailsHtml='';
+  if(env){
+    var dMeta=escHtml(envId)+(runObj.dx_all_suite_version?' · '+escHtml(runObj.dx_all_suite_version):'')+(dateStr?' · '+escHtml(dateStr):'');
+    var envSub='<div class="detail-sub detail-sub--env"><h3 class="detail-sub-title">Environment</h3><div class="env-detail-grid env-detail-grid--3"><div class="env-detail-col"><h3>Host PC</h3><div id="detailEnvHostInfo"></div></div><div class="env-detail-col"><h3>NPU</h3><div id="detailEnvNpuInfo"></div></div><div class="env-detail-col"><h3>Tools</h3><div id="detailEnvToolsInfo"></div></div></div></div>';
+    var seen={};(env.benchmarked_models||[]).forEach(function(m){if(m.task&&!seen[m.task]){seen[m.task]=1;modelTasks.push(m.task);}});
+    if(taskF!=='all')modelTasks=modelTasks.filter(function(t){return t===taskF;});
+    modelTasks.sort(taskOrd);
+    var mm=modelTasks.map(function(t){return '<h4 class="detail-task">'+(TASK_MAP[t]?TASK_MAP[t].label:t)+'</h4><div class="table-scroll" id="detailModelMeta_'+t+'"></div>';}).join('');
+    var modelsSub='<div class="detail-sub detail-sub--models"><h3 class="detail-sub-title">Benchmarked Models</h3>'+(mm||'<p class="empty-state small">No models for this task.</p>')+'</div>';
+    detailsHtml='<details class="panel detail-group" id="dm-details"><summary><span class="dg-caret" aria-hidden="true">▸</span><span class="dg-titlewrap"><span class="dg-title">Environment &amp; Benchmarked Models</span><span class="dg-meta">'+dMeta+'</span></span><span class="dg-hint"></span></summary>'+envSub+modelsSub+'</details>';
+  }
+
+  // sticky in-page jump nav for the long "All metrics" view (color-coded by group)
+  var jump='';
+  if(metF==='all'&&(npu.length||pipe.length)){
+    var jl=function(arr,c){return arr.map(function(x){return '<a class="'+c+'" href="#'+x.id+'">'+escHtml(x.lb)+'</a>';}).join('');};
+    jump='<nav class="detail-jump" aria-label="Jump to metric section"><span class="detail-jump-label">↓ Jump to</span>'+jl(npu,'jl--npu')+jl(pipe,'jl--pipe')+(env?'<a class="jl--muted" href="#dm-details">Details</a>':'')+'</nav>';
+  }
+
+  target.innerHTML=jump+groupsHtml+detailsHtml;
+  if(env){
+    renderHostInfo(document.getElementById('detailEnvHostInfo'),env);
+    renderNpuInfo(document.getElementById('detailEnvNpuInfo'),env);
+    renderToolsInfo(document.getElementById('detailEnvToolsInfo'),env);
+    modelTasks.forEach(function(t){var el=document.getElementById('detailModelMeta_'+t);if(el)renderModelMetaForTask(el,env,t);});
+  }
 }
 
 /* ===== Meta ===== */
@@ -600,7 +768,7 @@ function createTrendChart(canvas,onClick){
   chart.update=function(data,selectedIdx){this._data=data;this._selectedIdx=selectedIdx;this._scheduleDraw();};
   chart._resize=function(){var el=this._canvas.parentElement,dpr=window.devicePixelRatio||1;var w=el.clientWidth,h=el.clientHeight;this._canvas.width=w*dpr;this._canvas.height=h*dpr;this._canvas.style.width=w+'px';this._canvas.style.height=h+'px';this._canvas.getContext('2d').scale(dpr,dpr);this._scheduleDraw();};
   chart._scheduleDraw=function(){var s=this;if(s._raf)cancelAnimationFrame(s._raf);s._raf=requestAnimationFrame(function(){s._draw();});};
-  chart._layout=function(){var dpr=window.devicePixelRatio||1;var W=this._canvas.width/dpr,H=this._canvas.height/dpr;var P={top:55,right:30,bottom:80,left:72};return{W:W,H:H,P:P,CW:W-P.left-P.right,CH:H-P.top-P.bottom};};
+  chart._layout=function(){var dpr=window.devicePixelRatio||1;var W=this._canvas.width/dpr,H=this._canvas.height/dpr;var P={top:(this._showLegend===false?26:55),right:30,bottom:(this._showLegend===false?54:80),left:72};return{W:W,H:H,P:P,CW:W-P.left-P.right,CH:H-P.top-P.bottom};};
   chart._niceMax=function(v){if(v<=0)return 10;var e=Math.pow(10,Math.floor(Math.log10(v)));var f=v/e;return(f<=2?2:f<=5?5:10)*e;};
   chart._draw=function(){
     var data=this._data,cv=this._canvas,ctx=cv.getContext('2d');
@@ -619,8 +787,8 @@ function createTrendChart(canvas,onClick){
     var _labelGap=13;function _spreadLabels(items){items.sort(function(a,b){return a.baseY-b.baseY;});for(var pass=0;pass<4;pass++){for(var j=1;j<items.length;j++){var gap=items[j].y-items[j-1].y;if(gap<_labelGap){var shift=(_labelGap-gap)/2;items[j-1].y-=Math.ceil(shift);items[j].y+=Math.ceil(shift);}}items.sort(function(a,b){return a.y-b.y;});}return items;}
     var colLabels={};data.forEach(function(line,li){line.points.forEach(function(point,i){if(point.value==null)return;if(!colLabels[i])colLabels[i]=[];colLabels[i].push({lineIdx:li,baseY:yPos(point.value)-10,y:yPos(point.value)-10,value:point.value});});});Object.keys(colLabels).forEach(function(k){_spreadLabels(colLabels[k]);});
     data.forEach(function(line,li){var sc=SIZE_COLORS[line.size]||SIZE_COLORS.n;ctx.save();ctx.globalAlpha=hasSelection?0.72:1;ctx.strokeStyle=sc.line;ctx.lineWidth=2.5;ctx.beginPath();var started=false;line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);if(!started){ctx.moveTo(x,y);started=true;}else{ctx.lineTo(x,y);}});ctx.stroke();ctx.restore();line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;var r=isSelectedColumn?7:(isHoveredColumn?6:5);ctx.fillStyle=hasSelection?(isSelectedColumn?sc.hi:(isHoveredColumn?sc.fill:sc.dim)):(isHoveredColumn?sc.hi:sc.fill);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=isSelectedColumn?3:1.5;ctx.stroke();var labelY=y-10;var cl=colLabels[i];if(cl){for(var ci=0;ci<cl.length;ci++){if(cl[ci].lineIdx===li){labelY=cl[ci].y;break;}}}var isEmphasized=isSelectedColumn||isHoveredColumn;var labelText=_formatTrendValue(self._metric,point.value);ctx.font=isEmphasized?'bold 11px sans-serif':'10px sans-serif';ctx.textAlign='center';ctx.globalAlpha=hasSelection?(isEmphasized?1:0.7):1;if(isEmphasized){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeText(labelText,x,labelY);ctx.fillStyle='#111';ctx.fillText(labelText,x,labelY);}else{ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeText(labelText,x,labelY);ctx.fillStyle='#111';ctx.fillText(labelText,x,labelY);}ctx.globalAlpha=1;});});
-    if(data[0]&&data[0].points){data[0].points.forEach(function(point,i){var x=xPos(i);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;ctx.fillStyle=hasSelection?(isSelectedColumn?'#333':(isHoveredColumn?'#5d6572':'rgba(93,101,114,0.55)')):'#333';ctx.font=isSelectedColumn?'600 11px sans-serif':'11px sans-serif';ctx.textAlign='center';ctx.fillText(point.dateLabel||'',x,P.top+CH+16);if(point.swLabel){ctx.fillStyle=hasSelection?(isSelectedColumn?'#888':'rgba(93,101,114,0.45)'):'#888';ctx.font='10px sans-serif';ctx.fillText(point.swLabel,x,P.top+CH+30);}});}
-    var lx=P.left,ly=22;SIZE_KEYS.forEach(function(sz){var sc=SIZE_COLORS[sz];ctx.fillStyle=sc.fill;ctx.beginPath();ctx.arc(lx+6,ly,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=1.5;ctx.stroke();var label=sz.toUpperCase()+' ('+SIZE_LABELS[sz]+')';ctx.fillStyle='#333';ctx.font='12px sans-serif';ctx.textAlign='left';ctx.fillText(label,lx+16,ly+4);lx+=ctx.measureText(label).width+35;});
+    if(data[0]&&data[0].points){data[0].points.forEach(function(point,i){var x=xPos(i);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;ctx.fillStyle=hasSelection?(isSelectedColumn?'#333':(isHoveredColumn?'#5d6572':'rgba(93,101,114,0.55)')):'#333';ctx.font=isSelectedColumn?'600 11px sans-serif':'11px sans-serif';ctx.textAlign='center';ctx.fillText(point.dateLabel||'',x,P.top+CH+16);});}
+    if(this._showLegend===false)return;var lx=P.left,ly=22;SIZE_KEYS.forEach(function(sz){var sc=SIZE_COLORS[sz];ctx.fillStyle=sc.fill;ctx.beginPath();ctx.arc(lx+6,ly,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=1.5;ctx.stroke();var label=sz.toUpperCase()+' ('+SIZE_LABELS[sz]+')';ctx.fillStyle='#333';ctx.font='12px sans-serif';ctx.textAlign='left';ctx.fillText(label,lx+16,ly+4);lx+=ctx.measureText(label).width+35;});
   };
   chart._hitTest=function(e){var rect=this._canvas.getBoundingClientRect();var x=e.clientX-rect.left;var lay=this._layout();var data=this._data;if(!data.length||!data[0].points||!data[0].points.length)return -1;var nPts=data[0].points.length;var xM=nPts<=1?0:Math.max(40,Math.min(lay.CW*0.08,80));var xS=lay.CW-2*xM;if(nPts===1)return Math.abs(x-(lay.P.left+xM+xS/2))<30?0:-1;var step=xS/Math.max(nPts-1,1);var idx=Math.round((x-lay.P.left-xM)/step);if(idx<0||idx>=nPts)return -1;var hitX=lay.P.left+xM+idx*step;return Math.abs(x-hitX)<Math.max(20,step*0.4)?idx:-1;};
   chart._handleClick=function(e){var i=this._hitTest(e);if(i>=0&&this._onClick)this._onClick(i);};
@@ -629,7 +797,7 @@ function createTrendChart(canvas,onClick){
   chart._ro=new ResizeObserver(chart._resize.bind(chart));chart._ro.observe(canvas.parentElement);canvas.addEventListener('click',chart._handleClick.bind(chart));canvas.addEventListener('mousemove',chart._handleHover.bind(chart));canvas.addEventListener('mouseleave',chart._handleLeave.bind(chart));chart._resize();
   return chart;
 }
-function resizeTrendChart(){if(state.trendChart)state.trendChart._resize();}
+function resizeTrendChart(){(state.trendCharts||[]).forEach(function(c){c.chart._resize();});}
 function _suiteVer(snap){return snap.dx_all_suite_version||'unknown';}
 function _cmpSuiteVer(a,b){
   if(a===b)return 0;
@@ -649,46 +817,115 @@ function _cmpSuiteVer(a,b){
   if(A.pre!==null&&B.pre!==null){var c=A.pre.localeCompare(B.pre);if(c!==0)return c;}
   return String(a).localeCompare(String(b));
 }
+function _trendVersionsForHw(hwId){
+  var seen={},out=[];
+  (state.dataset.snapshots||[]).forEach(function(s){if(s.hw_id!==hwId)return;var v=_suiteVer(s);if(!seen[v]){seen[v]=true;out.push(v);}});
+  out.sort(_cmpSuiteVer);   // ascending — matches chart X order
+  return out;
+}
+function _trendRunsForVersion(hwId,version){
+  var out=(state.dataset.snapshots||[]).filter(function(s){return s.hw_id===hwId&&_suiteVer(s)===version;});
+  out.sort(function(a,b){return (a.run_id||'')<(b.run_id||'')?1:-1;});   // latest run_id first
+  return out;
+}
+function renderTrendRunSelectors(){
+  var el=document.getElementById('trendRunSelectors');if(!el)return;
+  var hwId=state.trendHwId;var versions=_trendVersionsForHw(hwId);
+  el.innerHTML=versions.map(function(v){
+    var runs=_trendRunsForVersion(hwId,v);if(!runs.length)return '';
+    var cur=(state.trendRunByVersion&&state.trendRunByVersion[v])||runs[0].run_id;
+    var opts=runs.map(function(s){return '<option value="'+escHtml(s.run_id)+'"'+(s.run_id===cur?' selected':'')+'>'+escHtml(s.run_id)+'</option>';}).join('');
+    var badge=runs.length>1?'<span class="run-badge">'+runs.length+' runs</span>':'';
+    return '<label class="run-inline-item"><span class="run-inline-name">dx-all-suite '+escHtml(v)+'</span>'+badge+'<select data-trend-run-ver="'+escHtml(v)+'">'+opts+'</select></label>';
+  }).join('');
+  el.querySelectorAll('select[data-trend-run-ver]').forEach(function(sel){
+    sel.addEventListener('change',function(){state.trendRunByVersion[this.dataset.trendRunVer]=this.value;refreshTrend();});
+  });
+}
 function getTrendData(hwId,task,useOrt,metricKey){
   var metric=_trendMetricByKey(metricKey);
   var snaps=(state.dataset.snapshots||[]).filter(function(s){return s.hw_id===hwId;});
   if(!snaps.length)return[];
-  /* latest run per suite version (run_id sorts chronologically → last wins) */
+  /* group snapshots by suite version; the selected run per version (state.trendRunByVersion) drives the point, else latest */
   var byVer={};
-  snaps.forEach(function(snap){
-    var v=_suiteVer(snap);
-    if(!byVer[v]||(snap.run_id||'')>(byVer[v].run_id||''))byVer[v]=snap;
-  });
+  snaps.forEach(function(snap){var v=_suiteVer(snap);(byVer[v]=byVer[v]||[]).push(snap);});
   var versions=Object.keys(byVer).sort(_cmpSuiteVer);
   var lines=SIZE_KEYS.map(function(sz){return{size:sz,points:[]};});
   versions.forEach(function(v){
-    var snap=byVer[v];
-    var ts=snap.timestamp?snap.timestamp.substring(0,10):'';
+    var list=byVer[v];
+    var wantRun=state.trendRunByVersion?state.trendRunByVersion[v]:null;
+    var snap=wantRun?list.find(function(s){return s.run_id===wantRun;}):null;
+    if(!snap)snap=list.slice().sort(function(a,b){return (a.run_id||'')<(b.run_id||'')?1:-1;})[0];  // latest run_id
     SIZE_KEYS.forEach(function(sz,si){
       var value=_snapshotMetricValue(snap,task,useOrt,metric,sz);
-      /* dateLabel = version (primary x-axis label), swLabel = run date (secondary line) */
-      lines[si].points.push({value:value!=null?Number(value):null,dateLabel:v,swLabel:ts,run_id:snap.run_id,snap:snap});
+      /* dateLabel = version (x-axis label). Run identity lives in the top run-per-version selector. */
+      lines[si].points.push({value:value!=null?Number(value):null,dateLabel:v,swLabel:_trendSwLabel(snap),run_id:snap.run_id,snap:snap});
     });
   });
   return lines;
 }
 function hideTrendEnvDetail(){var panel=document.getElementById('trendEnvDetail');if(panel)panel.style.display='none';var metaPanel=document.getElementById('trendModelMetaPanel');if(metaPanel)metaPanel.style.display='none';}
 function renderTrendEnvDetail(snap,options){
-  options=options||{};var panel=document.getElementById('trendEnvDetail');if(!panel)return;var env=snap&&snap.environment;if(!env){panel.style.display='none';document.getElementById('trendModelMetaPanel').style.display='none';return;}panel.style.display='';var metric=_trendMetricByKey(state.trendMetric);var dateStr=snap.timestamp?snap.timestamp.substring(0,10):snap.run_id;var verStr=snap.dx_all_suite_version||'unknown';document.getElementById('trendEnvDetailTitle').textContent='Details \u2014 '+(env.env_id||env.hostname||'Environment')+' \u00b7 DX-AS '+verStr+' \u00b7 '+dateStr+' \u00b7 '+snap.run_id;renderHostInfo(document.getElementById('trendEnvHostInfo'),env);renderNpuInfo(document.getElementById('trendEnvNpuInfo'),env);renderToolsInfo(document.getElementById('trendEnvToolsInfo'),env);
+  options=options||{};var panel=document.getElementById('trendEnvDetail');if(!panel)return;var env=snap&&snap.environment;if(!env){panel.style.display='none';document.getElementById('trendModelMetaPanel').style.display='none';return;}panel.style.display='';var dateStr=snap.timestamp?snap.timestamp.substring(0,10):snap.run_id;var verStr=snap.dx_all_suite_version||'unknown';document.getElementById('trendEnvDetailTitle').textContent='Details \u2014 '+(env.env_id||env.hostname||'Environment')+' \u00b7 DX-AS '+verStr+' \u00b7 '+dateStr+' \u00b7 '+snap.run_id;renderHostInfo(document.getElementById('trendEnvHostInfo'),env);renderNpuInfo(document.getElementById('trendEnvNpuInfo'),env);renderToolsInfo(document.getElementById('trendEnvToolsInfo'),env);
   var metaPanel=document.getElementById('trendModelMetaPanel');metaPanel.style.display='';document.getElementById('trendModelMetaTitle').textContent='Benchmarked Models \u2013 '+TASK_MAP[state.trendTask].label;renderModelMetaForTask(document.getElementById('trendModelMetaSection'),env,state.trendTask);
   if(options.scroll!==false)panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function refreshTrend(){
-  var hwId=state.trendHwId;var task=state.trendTask;var useOrt=state.trendOrt;var metric=_trendMetricByKey(state.trendMetric);var data=getTrendData(hwId,task,useOrt,metric.key);var selectedIdx=_latestTrendPointIndex(data);state.trendData=data;state.trendSelectedIdx=selectedIdx;document.getElementById('trendChartTitle').textContent=metric.title;document.getElementById('trendChartSubtitle').textContent=(TASK_MAP[task]?TASK_MAP[task].label:task)+'  \u00b7  ORT '+(useOrt?'ON':'OFF');if(state.trendChart)state.trendChart.setMetric(metric);if(selectedIdx>=0){handleTrendPointClick(selectedIdx,{scroll:false});}else{hideTrendEnvDetail();if(state.trendChart)state.trendChart.update(data,-1);} 
+  var hwId=state.trendHwId;var task=state.trendTask;var useOrt=state.trendOrt;
+  var subtitle=document.getElementById('trendGridSubtitle');
+  if(subtitle)subtitle.textContent=(TASK_MAP[task]?TASK_MAP[task].label:task)+'  \u00b7  ORT '+(useOrt?'ON':'OFF');
+  /* All four metrics share the same X-axis (suite versions for this hw/task/ort). */
+  var selectedIdx=-1;
+  (state.trendCharts||[]).forEach(function(c){
+    c.data=getTrendData(hwId,task,useOrt,c.metric.key);
+    if(selectedIdx<0)selectedIdx=_latestTrendPointIndex(c.data);
+  });
+  state.trendData=(state.trendCharts[0]&&state.trendCharts[0].data)||[];  // primary series drives shared selection
+  state.trendSelectedIdx=selectedIdx;
+  if(selectedIdx>=0){handleTrendPointClick(selectedIdx,{scroll:false});}
+  else{hideTrendEnvDetail();(state.trendCharts||[]).forEach(function(c){c.chart.update(c.data,-1);});}
 }
 function handleTrendPointClick(idx,options){
-  options=options||{};state.trendSelectedIdx=idx;var data=state.trendData||[];if(state.trendChart)state.trendChart.update(data,idx);var snap=null;if(data.length&&data[0].points[idx])snap=data[0].points[idx].snap;if(!snap){hideTrendEnvDetail();return;}renderTrendEnvDetail(snap,options);
+  options=options||{};state.trendSelectedIdx=idx;
+  (state.trendCharts||[]).forEach(function(c){c.chart.update(c.data,idx);});  // sync the version cursor across all 4 charts
+  var data=state.trendData||[];var snap=null;if(data.length&&data[0].points[idx])snap=data[0].points[idx].snap;
+  if(!snap){hideTrendEnvDetail();return;}renderTrendEnvDetail(snap,options);
+}
+function renderTrendLegend(){
+  var el=document.getElementById('trendGridLegend');if(!el)return;
+  el.innerHTML=SIZE_KEYS.map(function(sz){var sc=SIZE_COLORS[sz];return '<span class="tg-leg"><span class="tg-dot" style="background:'+sc.fill+';border-color:'+sc.line+'"></span>'+sz.toUpperCase()+' ('+SIZE_LABELS[sz]+')</span>';}).join('');
 }
 function initTrendChart(){
-  var canvas=document.getElementById('trendChart');if(canvas)state.trendChart=createTrendChart(canvas,function(idx){handleTrendPointClick(idx);});
+  var grid=document.getElementById('trendGrid');if(!grid)return;
+  grid.innerHTML='';state.trendCharts=[];renderTrendLegend();
+  /* One small-multiple per metric, arranged into two colour-coded group blocks (NPU inference vs.
+     host+NPU pipeline). The in-canvas size legend is suppressed in favour of the shared legend above.
+     trendCharts stays in TREND_GROUPS/keys order (latency first) — refreshTrend() drives shared
+     selection off trendCharts[0]. */
+  TREND_GROUPS.forEach(function(group){
+    var block=document.createElement('section');block.className='trend-group trend-group--'+group.id;
+    var head=document.createElement('div');head.className='trend-group-head';
+    head.innerHTML='<span class="trend-group-label">'+escHtml(group.label)+'</span>'
+      +'<span class="trend-group-desc">'+escHtml(group.desc)+'</span>'
+      +(group.input?'<span class="trend-group-input">Input: '+escHtml(group.input)+'</span>':'');
+    var gGrid=document.createElement('div');gGrid.className='trend-group-grid';
+    block.appendChild(head);block.appendChild(gGrid);grid.appendChild(block);
+    group.keys.forEach(function(key){
+      var metric=_metricByKey(key);if(!metric)return;
+      var cell=document.createElement('div');cell.className='trend-cell';
+      var title=document.createElement('div');title.className='trend-cell-title';title.textContent=metric.metricLabel;
+      var sub=document.createElement('div');sub.className='trend-cell-sub';sub.innerHTML=_trendMetricSubtitle(metric.key);
+      var box=document.createElement('div');box.className='trend-cell-canvas';
+      var canvas=document.createElement('canvas');canvas.id='trendChart-'+metric.key;
+      box.appendChild(canvas);cell.appendChild(title);cell.appendChild(sub);cell.appendChild(box);gGrid.appendChild(cell);
+      var chart=createTrendChart(canvas,function(idx){handleTrendPointClick(idx);});
+      chart._showLegend=false;chart.setMetric(metric);
+      state.trendCharts.push({metric:metric,chart:chart,data:[]});
+    });
+  });
 }
 function initTrendTab(){
-  var snaps=state.dataset.snapshots||[];var sel=document.getElementById('trendEnvFilter');var hwIds=_getUniqueHwIds();sel.innerHTML=hwIds.map(function(id){return '<option value="'+escHtml(id)+'">'+escHtml(id)+'</option>';}).join('');if(hwIds.length){state.trendHwId=hwIds[0];sel.value=hwIds[0];}state.trendTask='object_detection';state.trendOrt=true;state.trendMetric='e2e';document.getElementById('trendMetricFilter').value=state.trendMetric;sel.addEventListener('change',function(){state.trendHwId=this.value;refreshTrend();});document.getElementById('trendTaskFilter').addEventListener('change',function(){state.trendTask=this.value;refreshTrend();});document.getElementById('trendOrtFilter').addEventListener('change',function(){state.trendOrt=this.value==='on';refreshTrend();});document.getElementById('trendMetricFilter').addEventListener('change',function(){state.trendMetric=this.value;refreshTrend();});refreshTrend();
+  var sel=document.getElementById('trendEnvFilter');var hwIds=_getUniqueHwIds();sel.innerHTML=hwIds.map(function(id){return '<option value="'+escHtml(id)+'">'+escHtml(id)+'</option>';}).join('');if(hwIds.length){state.trendHwId=hwIds[0];sel.value=hwIds[0];}state.trendTask='object_detection';state.trendOrt=true;state.trendRunByVersion={};renderTrendRunSelectors();sel.addEventListener('change',function(){state.trendHwId=this.value;state.trendRunByVersion={};renderTrendRunSelectors();refreshTrend();});document.getElementById('trendTaskFilter').addEventListener('change',function(){state.trendTask=this.value;refreshTrend();});document.getElementById('trendOrtFilter').addEventListener('change',function(){state.trendOrt=this.value==='on';refreshTrend();});refreshTrend();
 }
 
 /* ===== Main ===== */
