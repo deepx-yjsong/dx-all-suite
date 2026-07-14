@@ -1,0 +1,19 @@
+● dxrt.service - DX-RT Service
+     Loaded: loaded (/etc/systemd/system/dxrt.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-07-13 11:44:00 KST; 15h ago
+   Main PID: 1880 (dxrtd)
+      Tasks: 15 (limit: 9577)
+        CPU: 1h 11min 55.842s
+     CGroup: /system.slice/dxrt.service
+             └─1880 /usr/local/bin/dxrtd
+
+Jul 14 03:07:23 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 2380800 for Task 0, PID 22618
+Jul 14 03:07:23 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa449000 of size 2380800 for Task 0, PID 22618
+Jul 14 03:07:23 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 14 03:17:23 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=545, bytes=-104, errno=104
+Jul 14 03:17:23 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=545
+Jul 14 03:17:23 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=22618
+Jul 14 03:17:23 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=22618, deviceId=0
+Jul 14 03:17:23 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=22618, deviceId=0, runningTaskIds count=0
+Jul 14 03:17:23 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=22618, deviceId=0, taskId=0
+Jul 14 03:17:23 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 22618

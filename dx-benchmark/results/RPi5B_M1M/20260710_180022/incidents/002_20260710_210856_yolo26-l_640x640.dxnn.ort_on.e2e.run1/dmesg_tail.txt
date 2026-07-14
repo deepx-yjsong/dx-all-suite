@@ -1,0 +1,200 @@
+[Fri Jul 10 17:58:21 2026] systemd[1]: Mounted dev-mqueue.mount - POSIX Message Queue File System.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Mounted sys-kernel-debug.mount - Kernel Debug File System.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Mounted sys-kernel-tracing.mount - Kernel Trace File System.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Finished kmod-static-nodes.service - Create List of Static Device Nodes.
+[Fri Jul 10 17:58:21 2026] systemd[1]: modprobe@configfs.service: Deactivated successfully.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Finished modprobe@configfs.service - Load Kernel Module configfs.
+[Fri Jul 10 17:58:21 2026] systemd[1]: modprobe@efi_pstore.service: Deactivated successfully.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Finished modprobe@efi_pstore.service - Load Kernel Module efi_pstore.
+[Fri Jul 10 17:58:21 2026] systemd[1]: modprobe@loop.service: Deactivated successfully.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Finished modprobe@loop.service - Load Kernel Module loop.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Mounting sys-kernel-config.mount - Kernel Configuration File System...
+[Fri Jul 10 17:58:21 2026] systemd[1]: Mounted sys-kernel-config.mount - Kernel Configuration File System.
+[Fri Jul 10 17:58:21 2026] usb 3-2.2: new high-speed USB device number 4 using xhci-hcd
+[Fri Jul 10 17:58:21 2026] device-mapper: ioctl: 4.48.0-ioctl (2023-03-01) initialised: dm-devel@lists.linux.dev
+[Fri Jul 10 17:58:21 2026] systemd[1]: modprobe@dm_mod.service: Deactivated successfully.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Finished modprobe@dm_mod.service - Load Kernel Module dm_mod.
+[Fri Jul 10 17:58:21 2026] systemd[1]: systemd-repart.service - Repartition Root Disk was skipped because no trigger condition checks were met.
+[Fri Jul 10 17:58:21 2026] systemd[1]: modprobe@drm.service: Deactivated successfully.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Finished modprobe@drm.service - Load Kernel Module drm.
+[Fri Jul 10 17:58:21 2026] fuse: init (API version 7.41)
+[Fri Jul 10 17:58:21 2026] systemd[1]: modprobe@fuse.service: Deactivated successfully.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Finished modprobe@fuse.service - Load Kernel Module fuse.
+[Fri Jul 10 17:58:21 2026] EXT4-fs (mmcblk0p2): re-mounted 409cfbb0-1e8c-4a72-b8ed-33baa55a93cd r/w.
+[Fri Jul 10 17:58:21 2026] systemd[1]: Mounting sys-fs-fuse-connections.mount - FUSE Control File System...
+[Fri Jul 10 17:58:21 2026] systemd[1]: Started systemd-journald.service - Journal Service.
+[Fri Jul 10 17:58:21 2026] i2c_dev: i2c /dev entries driver
+[Fri Jul 10 17:58:21 2026] systemd-journald[311]: Received client request to flush runtime journal.
+[Fri Jul 10 17:58:21 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Fri Jul 10 17:58:21 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 17:58:21 2026] usb 3-2.2: Product: USB2.1 Hub
+[Fri Jul 10 17:58:21 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Fri Jul 10 17:58:21 2026] hub 3-2.2:1.0: USB hub found
+[Fri Jul 10 17:58:21 2026] hub 3-2.2:1.0: 4 ports detected
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 107d508500.gpiomem: window base 0x107d508500 size 0x00000040
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 107d508500.gpiomem: initialised 1 regions as /dev/gpiomem1
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 107d517c00.gpiomem: window base 0x107d517c00 size 0x00000040
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 107d517c00.gpiomem: initialised 1 regions as /dev/gpiomem2
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 107d504100.gpiomem: window base 0x107d504100 size 0x00000020
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 107d504100.gpiomem: initialised 1 regions as /dev/gpiomem3
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 107d510700.gpiomem: window base 0x107d510700 size 0x00000020
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 107d510700.gpiomem: initialised 1 regions as /dev/gpiomem4
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 1f000d0000.gpiomem: window base 0x1f000d0000 size 0x00030000
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] rpi-gpiomem 1f000d0000.gpiomem: initialised 1 regions as /dev/gpiomem0
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] rp1-firmware rp1_firmware: RP1 Firmware version 23fca1cd776798b50bd3e640ecb242215778e7f8
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] rp1-pio 1f00178000.pio: Created instance as pio0
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] mc: Linux media interface: v0.10
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] brcmstb-i2c 107d508200.i2c:  @97500hz registered in interrupt mode
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c580000.hvs (ops vc4_hvs_ops [vc4])
+[Fri Jul 10 17:58:21 2026] brcmstb-i2c 107d508280.i2c:  @97500hz registered in interrupt mode
+[Fri Jul 10 17:58:21 2026] Registered IR keymap rc-cec
+[Fri Jul 10 17:58:21 2026] input: pwr_button as /devices/platform/pwr_button/input/input6
+[Fri Jul 10 17:58:21 2026] rc rc0: vc4-hdmi-0 as /devices/platform/soc@107c000000/107c701400.hdmi/rc/rc0
+[Fri Jul 10 17:58:21 2026] dx_dma: loading out-of-tree module taints kernel.
+[Fri Jul 10 17:58:21 2026] input: vc4-hdmi-0 as /devices/platform/soc@107c000000/107c701400.hdmi/rc/rc0/input5
+[Fri Jul 10 17:58:21 2026] videodev: Linux video capture interface: v2.00
+[Fri Jul 10 17:58:21 2026] input: vc4-hdmi-0 HDMI Jack as /devices/platform/soc@107c000000/107c701400.hdmi/sound/card0/input7
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c701400.hdmi (ops vc4_hdmi_ops [vc4])
+[Fri Jul 10 17:58:21 2026] dx_dma_pcie 0001:01:00.0: enabling device (0100 -> 0102)
+[Fri Jul 10 17:58:21 2026] dx_dma_pcie 0001:01:00.0: dw->dx_ver: 3
+[Fri Jul 10 17:58:21 2026] dx_dma_pcie 0001:01:00.0: RPi: forcing single MSI mode (brcmstb multi-MSI data misalignment)
+[Fri Jul 10 17:58:21 2026] dx_dma_pcie 0001:01:00.0: With only a single interrupt handler, the device performance might be slower compared to a multi-interrupt environment
+[Fri Jul 10 17:58:21 2026] dx_dma_pcie 0001:01:00.0: MSI config space: Enable (control=0x0189), pci_dev_msi_enabled=true
+[Fri Jul 10 17:58:21 2026] usb 3-2.2.3: new full-speed USB device number 5 using xhci-hcd
+[Fri Jul 10 17:58:21 2026] dx_dma: Single MSI mode - addr=0xff_fffff000, data=0x8 (IRQ 179)
+[Fri Jul 10 17:58:21 2026] Registered IR keymap rc-cec
+[Fri Jul 10 17:58:21 2026] rc rc1: vc4-hdmi-1 as /devices/platform/soc@107c000000/107c706400.hdmi/rc/rc1
+[Fri Jul 10 17:58:21 2026] input: vc4-hdmi-1 as /devices/platform/soc@107c000000/107c706400.hdmi/rc/rc1/input8
+[Fri Jul 10 17:58:21 2026] pispbe 1000880000.pisp_be: bcm2712_iommu_of_xlate: MMU 1000005100.iommu
+[Fri Jul 10 17:58:21 2026] pispbe 1000880000.pisp_be: bcm2712_iommu_probe_device: MMU 1000005100.iommu
+[Fri Jul 10 17:58:21 2026] input: vc4-hdmi-1 HDMI Jack as /devices/platform/soc@107c000000/107c706400.hdmi/sound/card1/input9
+[Fri Jul 10 17:58:21 2026] debugfs: Directory '0001:01:00.0' with parent 'dmaengine' already present!
+[Fri Jul 10 17:58:21 2026] dx_dma_pcie 0001:01:00.0: link health monitor started (interval=200ms)
+[Fri Jul 10 17:58:21 2026] dx_dma_pcie 0001:01:00.0: [dx_dma_pcie_probe] Probe Done!!
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c706400.hdmi (ops vc4_hdmi_ops [vc4])
+[Fri Jul 10 17:58:21 2026] pispbe 1000880000.pisp_be: bcm2712_iommu_device_group: MMU 1000005100.iommu
+[Fri Jul 10 17:58:21 2026] pispbe 1000880000.pisp_be: Adding to iommu group 0
+[Fri Jul 10 17:58:21 2026] pispbe 1000880000.pisp_be: bcm2712_iommu_attach_dev: MMU 1000005100.iommu
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c500000.mop (ops vc4_txp_ops [vc4])
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c501000.moplet (ops vc4_txp_ops [vc4])
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c410000.pixelvalve (ops vc4_crtc_ops [vc4])
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: bound 107c411000.pixelvalve (ops vc4_crtc_ops [vc4])
+[Fri Jul 10 17:58:21 2026] rpi-hevc-dec 1000800000.codec: bcm2712_iommu_of_xlate: MMU 1000005100.iommu
+[Fri Jul 10 17:58:21 2026] rpi-hevc-dec 1000800000.codec: bcm2712_iommu_probe_device: MMU 1000005100.iommu
+[Fri Jul 10 17:58:21 2026] rpi-hevc-dec 1000800000.codec: bcm2712_iommu_device_group: MMU 1000005100.iommu
+[Fri Jul 10 17:58:21 2026] rpi-hevc-dec 1000800000.codec: Adding to iommu group 0
+[Fri Jul 10 17:58:21 2026] rpi-hevc-dec 1000800000.codec: bcm2712_iommu_attach_dev: MMU 1000005100.iommu
+[Fri Jul 10 17:58:21 2026] dxrt_driver_cdev_init: 1 devices
+[Fri Jul 10 17:58:21 2026]  [200] created device 0:509:0, 000000001387795e, 0000000000000000
+[Fri Jul 10 17:58:21 2026] Bluetooth: Core ver 2.22
+[Fri Jul 10 17:58:21 2026] NET: Registered PF_BLUETOOTH protocol family
+[Fri Jul 10 17:58:21 2026] Bluetooth: HCI device and connection manager initialized
+[Fri Jul 10 17:58:21 2026] Bluetooth: HCI socket layer initialized
+[Fri Jul 10 17:58:21 2026] Bluetooth: L2CAP socket layer initialized
+[Fri Jul 10 17:58:21 2026] Bluetooth: SCO socket layer initialized
+[Fri Jul 10 17:58:21 2026] cfg80211: Loading compiled-in X.509 certificates for regulatory database
+[Fri Jul 10 17:58:21 2026] Loaded X.509 cert 'benh@debian.org: 577e021cb980e0e820821ba7b54b4961b8b4fadf'
+[Fri Jul 10 17:58:21 2026] Loaded X.509 cert 'romain.perier@gmail.com: 3abbc6ec146e09d1b6016ab9d6cf71dd233f0328'
+[Fri Jul 10 17:58:21 2026] Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+[Fri Jul 10 17:58:21 2026] Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'
+[Fri Jul 10 17:58:21 2026] rpi-hevc-dec 1000800000.codec: Device registered as /dev/video19
+[Fri Jul 10 17:58:21 2026] Bluetooth: HCI UART driver ver 2.3
+[Fri Jul 10 17:58:21 2026] Bluetooth: HCI UART protocol H4 registered
+[Fri Jul 10 17:58:21 2026] Bluetooth: HCI UART protocol Three-wire (H5) registered
+[Fri Jul 10 17:58:21 2026] hci_uart_bcm serial0-0: supply vbat not found, using dummy regulator
+[Fri Jul 10 17:58:21 2026] hci_uart_bcm serial0-0: supply vddio not found, using dummy regulator
+[Fri Jul 10 17:58:21 2026] Bluetooth: HCI UART protocol Broadcom registered
+[Fri Jul 10 17:58:21 2026] [drm] Initialized vc4 0.0.0 for axi:gpu on minor 1
+[Fri Jul 10 17:58:21 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Fri Jul 10 17:58:21 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 17:58:21 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Fri Jul 10 17:58:21 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Fri Jul 10 17:58:21 2026] Console: switching to colour frame buffer device 320x90
+[Fri Jul 10 17:58:21 2026] vc4-drm axi:gpu: [drm] fb0: vc4drmfb frame buffer device
+[Fri Jul 10 17:58:21 2026] brcmfmac: F1 signature read @0x18000000=0x15264345
+[Fri Jul 10 17:58:21 2026] brcmfmac: brcmf_fw_alloc_request: using brcm/brcmfmac43455-sdio for chip BCM4345/6
+[Fri Jul 10 17:58:21 2026] usbcore: registered new interface driver brcmfmac
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM: chip id 107
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM: features 0x2f
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM4345C0
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM4345C0 (003.001.025) build 0000
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM4345C0 'brcm/BCM4345C0.raspberrypi,5-model-b.hcd' Patch
+[Fri Jul 10 17:58:22 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.0005/input/input10
+[Fri Jul 10 17:58:22 2026] hid-generic 0003:12C9:1017.0005: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Fri Jul 10 17:58:22 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0006/input/input11
+[Fri Jul 10 17:58:22 2026] brcmfmac: brcmf_c_process_txcap_blob: no txcap_blob available (err=-2)
+[Fri Jul 10 17:58:22 2026] brcmfmac: brcmf_c_preinit_dcmds: Firmware: BCM4345/6 wl0: Aug 29 2023 01:47:08 version 7.45.265 (28bca26 CY) FWID 01-b677b91b
+[Fri Jul 10 17:58:22 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0006/input/input12
+[Fri Jul 10 17:58:22 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0006/input/input13
+[Fri Jul 10 17:58:22 2026] hid-generic 0003:12C9:1017.0006: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Fri Jul 10 17:58:22 2026] hid-generic 0003:12C9:1017.0007: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM: features 0x2f
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM43455 37.4MHz Raspberry Pi 3+-0190
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM4345C0 (003.001.025) build 0382
+[Fri Jul 10 17:58:22 2026] Bluetooth: hci0: BCM: Using default device address (43:45:c0:00:1f:ac)
+[Fri Jul 10 17:58:22 2026] Adding 524272k swap on /var/swap.  Priority:-2 extents:8 across:13893616k SS
+[Fri Jul 10 17:58:22 2026] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+[Fri Jul 10 17:58:22 2026] Bluetooth: BNEP filters: protocol multicast
+[Fri Jul 10 17:58:22 2026] Bluetooth: BNEP socket layer initialized
+[Fri Jul 10 17:58:22 2026] Bluetooth: MGMT ver 1.23
+[Fri Jul 10 17:58:22 2026] NET: Registered PF_ALG protocol family
+[Fri Jul 10 17:58:23 2026] macb 1f00100000.ethernet eth0: PHY [1f00100000.ethernet-ffffffff:01] driver [Broadcom BCM54213PE] (irq=POLL)
+[Fri Jul 10 17:58:23 2026] macb 1f00100000.ethernet eth0: configuring for phy/rgmii-id link mode
+[Fri Jul 10 17:58:23 2026] macb 1f00100000.ethernet: gem-ptp-timer ptp clock registered.
+[Fri Jul 10 17:58:23 2026] brcmfmac: brcmf_cfg80211_set_power_mgmt: power save enabled
+[Fri Jul 10 17:58:25 2026] Bluetooth: RFCOMM TTY layer initialized
+[Fri Jul 10 17:58:25 2026] Bluetooth: RFCOMM socket layer initialized
+[Fri Jul 10 17:58:25 2026] Bluetooth: RFCOMM ver 1.11
+[Fri Jul 10 17:58:27 2026] macb 1f00100000.ethernet eth0: Link is Up - 1Gbps/Full - flow control off
+[Fri Jul 10 18:00:33 2026] usb 3-2.2: USB disconnect, device number 4
+[Fri Jul 10 18:00:33 2026] usb 3-2.2.3: USB disconnect, device number 5
+[Fri Jul 10 18:03:00 2026] usb 3-2.2: new high-speed USB device number 6 using xhci-hcd
+[Fri Jul 10 18:03:01 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Fri Jul 10 18:03:01 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 18:03:01 2026] usb 3-2.2: Product: USB2.1 Hub
+[Fri Jul 10 18:03:01 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Fri Jul 10 18:03:01 2026] hub 3-2.2:1.0: USB hub found
+[Fri Jul 10 18:03:01 2026] hub 3-2.2:1.0: 4 ports detected
+[Fri Jul 10 18:03:01 2026] usb 3-2.2.3: new full-speed USB device number 7 using xhci-hcd
+[Fri Jul 10 18:03:01 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Fri Jul 10 18:03:01 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 18:03:01 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Fri Jul 10 18:03:01 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Fri Jul 10 18:03:01 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.0008/input/input14
+[Fri Jul 10 18:03:01 2026] hid-generic 0003:12C9:1017.0008: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Fri Jul 10 18:03:01 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0009/input/input15
+[Fri Jul 10 18:03:01 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0009/input/input16
+[Fri Jul 10 18:03:01 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.0009/input/input17
+[Fri Jul 10 18:03:01 2026] hid-generic 0003:12C9:1017.0009: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Fri Jul 10 18:03:01 2026] hid-generic 0003:12C9:1017.000A: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Fri Jul 10 18:03:10 2026] usb 3-2.2: USB disconnect, device number 6
+[Fri Jul 10 18:03:10 2026] usb 3-2.2.3: USB disconnect, device number 7
+[Fri Jul 10 18:07:49 2026] usb 3-2.2: new high-speed USB device number 8 using xhci-hcd
+[Fri Jul 10 18:07:49 2026] usb 3-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Fri Jul 10 18:07:49 2026] usb 3-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 18:07:49 2026] usb 3-2.2: Product: USB2.1 Hub
+[Fri Jul 10 18:07:49 2026] usb 3-2.2: Manufacturer: GenesysLogic
+[Fri Jul 10 18:07:49 2026] hub 3-2.2:1.0: USB hub found
+[Fri Jul 10 18:07:49 2026] hub 3-2.2:1.0: 4 ports detected
+[Fri Jul 10 18:07:50 2026] usb 3-2.2.3: new full-speed USB device number 9 using xhci-hcd
+[Fri Jul 10 18:07:50 2026] usb 3-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Fri Jul 10 18:07:50 2026] usb 3-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 18:07:50 2026] usb 3-2.2.3: Product: USB Gaming Mouse
+[Fri Jul 10 18:07:50 2026] usb 3-2.2.3: Manufacturer: SOAI
+[Fri Jul 10 18:07:50 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.0/0003:12C9:1017.000B/input/input18
+[Fri Jul 10 18:07:50 2026] hid-generic 0003:12C9:1017.000B: input,hidraw4: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input0
+[Fri Jul 10 18:07:50 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000C/input/input19
+[Fri Jul 10 18:07:50 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000C/input/input20
+[Fri Jul 10 18:07:50 2026] input: SOAI USB Gaming Mouse as /devices/platform/axi/1000120000.pcie/1f00300000.usb/xhci-hcd.1/usb3/3-2/3-2.2/3-2.2.3/3-2.2.3:1.1/0003:12C9:1017.000C/input/input21
+[Fri Jul 10 18:07:50 2026] hid-generic 0003:12C9:1017.000C: input,hiddev96,hidraw5: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input1
+[Fri Jul 10 18:07:50 2026] hid-generic 0003:12C9:1017.000D: hiddev97,hidraw6: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-xhci-hcd.1-2.2.3/input2
+[Fri Jul 10 20:28:47 2026] hwmon hwmon3: Undervoltage detected!
+[Fri Jul 10 20:28:49 2026] hwmon hwmon3: Voltage normalised

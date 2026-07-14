@@ -1,0 +1,100 @@
+Jul 13 17:33:01.714753 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 10497
+Jul 13 17:33:01.749683 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 13 17:33:10.457612 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 10497
+Jul 13 17:33:10.458125 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 10497
+Jul 13 17:33:10.458195 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 10497
+Jul 13 17:33:10.490121 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=215, bytes=-104, errno=104
+Jul 13 17:33:10.490121 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=215
+Jul 13 17:33:10.490121 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=10497
+Jul 13 17:33:10.490121 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10497, deviceId=0
+Jul 13 17:33:10.490311 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10497, deviceId=0, runningTaskIds count=0
+Jul 13 17:33:11.527474 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 10513
+Jul 13 17:33:11.527474 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 10513
+Jul 13 17:33:11.528032 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 10513
+Jul 13 17:33:11.528032 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 10513
+Jul 13 17:33:11.564898 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 13 17:33:20.102007 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 10513
+Jul 13 17:33:20.102420 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 10513
+Jul 13 17:33:20.102580 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 10513
+Jul 13 17:33:20.136555 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=216, bytes=-104, errno=104
+Jul 13 17:33:20.136555 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=216
+Jul 13 17:33:20.136555 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=10513
+Jul 13 17:33:20.136555 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10513, deviceId=0
+Jul 13 17:33:20.136555 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10513, deviceId=0, runningTaskIds count=0
+Jul 13 17:33:22.736018 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 10528
+Jul 13 17:33:22.736018 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 10528
+Jul 13 17:33:22.736542 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 10528
+Jul 13 17:33:22.736542 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 10528
+Jul 13 17:33:22.772482 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 13 17:33:52.882757 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 10528
+Jul 13 17:33:52.883827 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 10528
+Jul 13 17:33:52.884046 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 10528
+Jul 13 17:33:52.902728 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=217, bytes=-104, errno=104
+Jul 13 17:33:52.902728 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=217
+Jul 13 17:33:52.902845 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=10528
+Jul 13 17:33:52.902845 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10528, deviceId=0
+Jul 13 17:33:52.902845 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10528, deviceId=0, runningTaskIds count=0
+Jul 13 17:33:53.935711 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 10544
+Jul 13 17:33:53.935711 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 10544
+Jul 13 17:33:53.936065 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 10544
+Jul 13 17:33:53.936065 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 10544
+Jul 13 17:33:53.971308 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 13 17:34:24.070407 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 10544
+Jul 13 17:34:24.071747 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 10544
+Jul 13 17:34:24.072000 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 10544
+Jul 13 17:34:24.090724 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=218, bytes=-104, errno=104
+Jul 13 17:34:24.090724 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=218
+Jul 13 17:34:24.090724 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=10544
+Jul 13 17:34:24.090724 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10544, deviceId=0
+Jul 13 17:34:24.090724 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10544, deviceId=0, runningTaskIds count=0
+Jul 13 17:34:27.652056 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 10564
+Jul 13 17:34:27.652056 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 10564
+Jul 13 17:34:27.652405 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 10564
+Jul 13 17:34:27.652405 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 10564
+Jul 13 17:34:27.687470 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 13 17:34:57.783738 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 10564
+Jul 13 17:34:57.784852 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 10564
+Jul 13 17:34:57.785051 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 10564
+Jul 13 17:34:57.803656 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=219, bytes=-104, errno=104
+Jul 13 17:34:57.803656 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=219
+Jul 13 17:34:57.803771 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=10564
+Jul 13 17:34:57.803771 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10564, deviceId=0
+Jul 13 17:34:57.803771 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10564, deviceId=0, runningTaskIds count=0
+Jul 13 17:35:01.365135 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 10582
+Jul 13 17:35:01.365135 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 10582
+Jul 13 17:35:01.365647 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 10582
+Jul 13 17:35:01.365647 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 10582
+Jul 13 17:35:01.400439 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 13 17:35:31.498402 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 10582
+Jul 13 17:35:31.499449 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 10582
+Jul 13 17:35:31.499594 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 10582
+Jul 13 17:35:31.518186 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=220, bytes=-104, errno=104
+Jul 13 17:35:31.518186 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=220
+Jul 13 17:35:31.518186 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=10582
+Jul 13 17:35:31.518186 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10582, deviceId=0
+Jul 13 17:35:31.518186 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10582, deviceId=0, runningTaskIds count=0
+Jul 13 17:35:34.251747 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 10598
+Jul 13 17:35:34.251747 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 10598
+Jul 13 17:35:34.252283 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 10598
+Jul 13 17:35:34.252283 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 10598
+Jul 13 17:35:34.287306 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 13 17:36:18.644457 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 10598
+Jul 13 17:36:18.645440 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 10598
+Jul 13 17:36:18.645613 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 10598
+Jul 13 17:36:18.664388 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=221, bytes=-104, errno=104
+Jul 13 17:36:18.664550 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=221
+Jul 13 17:36:18.664550 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=10598
+Jul 13 17:36:18.664550 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10598, deviceId=0
+Jul 13 17:36:18.664550 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10598, deviceId=0, runningTaskIds count=0
+Jul 13 17:36:19.870961 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 10629
+Jul 13 17:36:19.870961 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 10629
+Jul 13 17:36:19.871406 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 10629
+Jul 13 17:36:19.871406 raspberrypi dxrtd[1880]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 10629
+Jul 13 17:36:19.906506 raspberrypi dxrtd[1880]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 13 17:46:19.773005 raspberrypi dxrtd[1880]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=222, bytes=-104, errno=104
+Jul 13 17:46:19.773005 raspberrypi dxrtd[1880]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=222
+Jul 13 17:46:19.773005 raspberrypi dxrtd[1880]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=10629
+Jul 13 17:46:19.773005 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10629, deviceId=0
+Jul 13 17:46:19.773005 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=10629, deviceId=0, runningTaskIds count=0
+Jul 13 17:46:19.773005 raspberrypi dxrtd[1880]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=10629, deviceId=0, taskId=0
+Jul 13 17:46:19.773005 raspberrypi dxrtd[1880]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 10629

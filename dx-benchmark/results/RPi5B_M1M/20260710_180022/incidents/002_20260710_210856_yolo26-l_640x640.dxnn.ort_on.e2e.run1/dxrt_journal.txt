@@ -1,0 +1,100 @@
+Jul 10 20:56:41.348686 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=5451, deviceId=0, runningTaskIds count=0
+Jul 10 20:56:44.946069 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 25039040 for Task 0, PID 5469
+Jul 10 20:56:44.946069 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address 7981e000 of size 25039040 for Task 0, PID 5469
+Jul 10 20:56:44.946644 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1911360 for Task 0, PID 5469
+Jul 10 20:56:44.946644 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address 7964b000 of size 1911360 for Task 0, PID 5469
+Jul 10 20:56:45.026098 raspberrypi dxrtd[646]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 10 20:56:45.059611 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=570)
+Jul 10 20:56:45.437417 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=571)
+Jul 10 20:56:45.930219 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=572)
+Jul 10 20:56:46.444133 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=573)
+Jul 10 20:56:46.937115 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=574)
+Jul 10 20:56:47.453745 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=575)
+Jul 10 20:56:47.945973 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=576)
+Jul 10 20:56:51.486388 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=577)
+Jul 10 20:56:52.542898 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=578)
+Jul 10 20:56:53.562138 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=579)
+Jul 10 20:56:54.038585 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=580)
+Jul 10 20:56:55.058310 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=581)
+Jul 10 20:56:55.580672 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=582)
+Jul 10 20:56:56.595789 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=583)
+Jul 10 20:56:57.090318 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=584)
+Jul 10 20:56:57.608207 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=585)
+Jul 10 20:56:58.102407 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=586)
+Jul 10 20:56:59.118860 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=587)
+Jul 10 20:56:59.640521 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=588)
+Jul 10 20:57:03.708779 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=589)
+Jul 10 20:57:04.204819 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=590)
+Jul 10 20:57:15.267102 raspberrypi dxrtd[646]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 5469
+Jul 10 20:57:15.268687 raspberrypi dxrtd[646]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 7964b000 for PID 5469
+Jul 10 20:57:15.268883 raspberrypi dxrtd[646]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 7981e000 for PID 5469
+Jul 10 20:57:15.282907 raspberrypi dxrtd[646]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=99, bytes=-104, errno=104
+Jul 10 20:57:15.282907 raspberrypi dxrtd[646]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=99
+Jul 10 20:57:15.282907 raspberrypi dxrtd[646]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=5469
+Jul 10 20:57:15.282907 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=5469, deviceId=0
+Jul 10 20:57:15.283051 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=5469, deviceId=0, runningTaskIds count=0
+Jul 10 20:57:18.073200 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 25039040 for Task 0, PID 5485
+Jul 10 20:57:18.073200 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address 7981e000 of size 25039040 for Task 0, PID 5485
+Jul 10 20:57:18.073773 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1911360 for Task 0, PID 5485
+Jul 10 20:57:18.073773 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address 7964b000 of size 1911360 for Task 0, PID 5485
+Jul 10 20:57:18.151299 raspberrypi dxrtd[646]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 10 20:57:18.288569 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=591)
+Jul 10 20:57:18.406683 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=592)
+Jul 10 20:57:18.924547 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=593)
+Jul 10 20:57:19.438497 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=594)
+Jul 10 20:57:19.970583 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=595)
+Jul 10 20:57:20.440917 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=596)
+Jul 10 20:57:23.511940 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=597)
+Jul 10 20:57:24.049908 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=598)
+Jul 10 20:57:24.506779 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=599)
+Jul 10 20:57:33.139729 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=600)
+Jul 10 20:57:34.669338 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=601)
+Jul 10 20:57:35.146300 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=602)
+Jul 10 20:57:40.258010 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=603)
+Jul 10 20:58:55.179851 raspberrypi dxrtd[646]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 5485
+Jul 10 20:58:55.181427 raspberrypi dxrtd[646]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 7964b000 for PID 5485
+Jul 10 20:58:55.182327 raspberrypi dxrtd[646]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 7981e000 for PID 5485
+Jul 10 20:58:55.201317 raspberrypi dxrtd[646]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=100, bytes=-104, errno=104
+Jul 10 20:58:55.201317 raspberrypi dxrtd[646]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=100
+Jul 10 20:58:55.201317 raspberrypi dxrtd[646]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=5485
+Jul 10 20:58:55.201317 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=5485, deviceId=0
+Jul 10 20:58:55.201317 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=5485, deviceId=0, runningTaskIds count=0
+Jul 10 20:58:56.430475 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 25039040 for Task 0, PID 5517
+Jul 10 20:58:56.430475 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address 7981e000 of size 25039040 for Task 0, PID 5517
+Jul 10 20:58:56.431014 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1911360 for Task 0, PID 5517
+Jul 10 20:58:56.431014 raspberrypi dxrtd[646]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address 7964b000 of size 1911360 for Task 0, PID 5517
+Jul 10 20:58:56.508455 raspberrypi dxrtd[646]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 10 20:58:56.636501 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=604)
+Jul 10 20:58:56.822189 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=605)
+Jul 10 20:58:57.330698 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=606)
+Jul 10 20:59:08.511204 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=607)
+Jul 10 20:59:09.060761 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=608)
+Jul 10 20:59:09.497791 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=609)
+Jul 10 20:59:24.735346 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=610)
+Jul 10 20:59:27.838719 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=611)
+Jul 10 20:59:28.273569 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=612)
+Jul 10 20:59:35.393951 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=613)
+Jul 10 20:59:37.480795 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=614)
+Jul 10 20:59:37.944857 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=615)
+Jul 10 20:59:56.200687 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=616)
+Jul 10 20:59:58.754406 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=617)
+Jul 10 20:59:59.231762 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=618)
+Jul 10 21:00:06.352368 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=619)
+Jul 10 21:00:09.939335 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=620)
+Jul 10 21:00:10.401126 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=621)
+Jul 10 21:00:19.043822 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=622)
+Jul 10 21:00:25.635407 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=623)
+Jul 10 21:00:26.101380 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=624)
+Jul 10 21:00:28.147428 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=625)
+Jul 10 21:00:31.249175 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=626)
+Jul 10 21:00:31.682947 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=627)
+Jul 10 21:00:37.293458 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=628)
+Jul 10 21:00:42.401799 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=629)
+Jul 10 21:00:42.865415 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=630)
+Jul 10 21:08:56.257847 raspberrypi dxrtd[646]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=101, bytes=-104, errno=104
+Jul 10 21:08:56.257847 raspberrypi dxrtd[646]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=101
+Jul 10 21:08:56.257847 raspberrypi dxrtd[646]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=5517
+Jul 10 21:08:56.257847 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=5517, deviceId=0
+Jul 10 21:08:56.257847 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=5517, deviceId=0, runningTaskIds count=0
+Jul 10 21:08:56.257847 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=5517, deviceId=0, taskId=0
+Jul 10 21:08:56.257847 raspberrypi dxrtd[646]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 5517

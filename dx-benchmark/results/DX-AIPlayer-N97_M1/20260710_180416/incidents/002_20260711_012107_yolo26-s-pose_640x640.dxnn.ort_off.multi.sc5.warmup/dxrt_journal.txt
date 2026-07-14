@@ -1,0 +1,100 @@
+Jul 11 01:07:57.026720 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 88956
+Jul 11 01:07:57.052743 deepx dxrtd[724]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 11 01:08:27.129155 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 88956
+Jul 11 01:08:27.133882 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 88956
+Jul 11 01:08:27.134679 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 88956
+Jul 11 01:08:27.140557 deepx dxrtd[724]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=239, bytes=-104, errno=104
+Jul 11 01:08:27.140557 deepx dxrtd[724]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=239
+Jul 11 01:08:27.140557 deepx dxrtd[724]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=88956
+Jul 11 01:08:27.140557 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=88956, deviceId=0
+Jul 11 01:08:27.140557 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=88956, deviceId=0, runningTaskIds count=0
+Jul 11 01:08:30.741134 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 88980
+Jul 11 01:08:30.741134 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 88980
+Jul 11 01:08:30.741528 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 88980
+Jul 11 01:08:30.741528 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 88980
+Jul 11 01:08:30.767884 deepx dxrtd[724]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 11 01:09:00.851856 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 88980
+Jul 11 01:09:00.856511 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 88980
+Jul 11 01:09:00.857006 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 88980
+Jul 11 01:09:00.863985 deepx dxrtd[724]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=240, bytes=-104, errno=104
+Jul 11 01:09:00.863985 deepx dxrtd[724]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=240
+Jul 11 01:09:00.863985 deepx dxrtd[724]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=88980
+Jul 11 01:09:00.863985 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=88980, deviceId=0
+Jul 11 01:09:00.863985 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=88980, deviceId=0, runningTaskIds count=0
+Jul 11 01:09:04.452705 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 89177
+Jul 11 01:09:04.452705 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 89177
+Jul 11 01:09:04.453121 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 89177
+Jul 11 01:09:04.453121 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 89177
+Jul 11 01:09:04.481161 deepx dxrtd[724]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 11 01:09:34.568140 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 89177
+Jul 11 01:09:34.573121 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 89177
+Jul 11 01:09:34.573881 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 89177
+Jul 11 01:09:34.579405 deepx dxrtd[724]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=241, bytes=-104, errno=104
+Jul 11 01:09:34.579405 deepx dxrtd[724]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=241
+Jul 11 01:09:34.579405 deepx dxrtd[724]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=89177
+Jul 11 01:09:34.579405 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89177, deviceId=0
+Jul 11 01:09:34.579405 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89177, deviceId=0, runningTaskIds count=0
+Jul 11 01:09:37.226625 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 89202
+Jul 11 01:09:37.226625 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 89202
+Jul 11 01:09:37.227167 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 89202
+Jul 11 01:09:37.227167 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 89202
+Jul 11 01:09:37.253338 deepx dxrtd[724]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 11 01:09:57.268630 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 89202
+Jul 11 01:09:57.271783 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 89202
+Jul 11 01:09:57.272301 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 89202
+Jul 11 01:09:57.281447 deepx dxrtd[724]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=242, bytes=-104, errno=104
+Jul 11 01:09:57.281447 deepx dxrtd[724]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=242
+Jul 11 01:09:57.281447 deepx dxrtd[724]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=89202
+Jul 11 01:09:57.281447 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89202, deviceId=0
+Jul 11 01:09:57.281447 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89202, deviceId=0, runningTaskIds count=0
+Jul 11 01:09:58.395680 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 89404
+Jul 11 01:09:58.395680 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 89404
+Jul 11 01:09:58.396060 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 89404
+Jul 11 01:09:58.396060 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 89404
+Jul 11 01:09:58.422837 deepx dxrtd[724]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 11 01:10:18.390248 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 89404
+Jul 11 01:10:18.394288 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 89404
+Jul 11 01:10:18.394817 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 89404
+Jul 11 01:10:18.404046 deepx dxrtd[724]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=243, bytes=-104, errno=104
+Jul 11 01:10:18.404046 deepx dxrtd[724]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=243
+Jul 11 01:10:18.404046 deepx dxrtd[724]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=89404
+Jul 11 01:10:18.404046 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89404, deviceId=0
+Jul 11 01:10:18.404046 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89404, deviceId=0, runningTaskIds count=0
+Jul 11 01:10:22.070982 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 89437
+Jul 11 01:10:22.070982 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 89437
+Jul 11 01:10:22.071403 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 89437
+Jul 11 01:10:22.071403 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 89437
+Jul 11 01:10:22.097922 deepx dxrtd[724]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 11 01:10:41.734059 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 89437
+Jul 11 01:10:41.737365 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 89437
+Jul 11 01:10:41.737883 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 89437
+Jul 11 01:10:41.747419 deepx dxrtd[724]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=244, bytes=-104, errno=104
+Jul 11 01:10:41.747419 deepx dxrtd[724]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=244
+Jul 11 01:10:41.747419 deepx dxrtd[724]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=89437
+Jul 11 01:10:41.747419 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89437, deviceId=0
+Jul 11 01:10:41.747419 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89437, deviceId=0, runningTaskIds count=0
+Jul 11 01:10:45.410002 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 89469
+Jul 11 01:10:45.410002 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 89469
+Jul 11 01:10:45.410478 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 89469
+Jul 11 01:10:45.410478 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 89469
+Jul 11 01:10:45.437003 deepx dxrtd[724]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 11 01:11:05.197651 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 89469
+Jul 11 01:11:05.200498 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa498000 for PID 89469
+Jul 11 01:11:05.200945 deepx dxrtd[724]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address fa5c0000 for PID 89469
+Jul 11 01:11:05.213633 deepx dxrtd[724]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=245, bytes=-104, errno=104
+Jul 11 01:11:05.213633 deepx dxrtd[724]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=245
+Jul 11 01:11:05.213633 deepx dxrtd[724]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=89469
+Jul 11 01:11:05.213633 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89469, deviceId=0
+Jul 11 01:11:05.213633 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89469, deviceId=0, runningTaskIds count=0
+Jul 11 01:11:07.874354 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 10744000 for Task 0, PID 89671
+Jul 11 01:11:07.874354 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa5c0000 of size 10744000 for Task 0, PID 89671
+Jul 11 01:11:07.874755 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1210560 for Task 0, PID 89671
+Jul 11 01:11:07.874755 deepx dxrtd[724]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address fa498000 of size 1210560 for Task 0, PID 89671
+Jul 11 01:11:07.900074 deepx dxrtd[724]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+Jul 11 01:21:07.906703 deepx dxrtd[724]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=246, bytes=-104, errno=104
+Jul 11 01:21:07.906703 deepx dxrtd[724]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=246
+Jul 11 01:21:07.906703 deepx dxrtd[724]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=89671
+Jul 11 01:21:07.906703 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89671, deviceId=0
+Jul 11 01:21:07.906703 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=89671, deviceId=0, runningTaskIds count=0
+Jul 11 01:21:07.906703 deepx dxrtd[724]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=89671, deviceId=0, taskId=0
+Jul 11 01:21:07.906703 deepx dxrtd[724]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 89671

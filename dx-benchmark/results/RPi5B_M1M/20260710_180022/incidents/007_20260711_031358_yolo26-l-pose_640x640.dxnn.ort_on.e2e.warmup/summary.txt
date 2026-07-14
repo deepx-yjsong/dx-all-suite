@@ -1,0 +1,5 @@
+incident: 007_20260711_031358_yolo26-l-pose_640x640.dxnn.ort_on.e2e.warmup
+context: yolo26-l-pose_640x640.dxnn.ort_on.e2e.warmup
+timestamp: 20260711_031358
+npu_temp_c: 56.0
+npu_clock_mhz: 300.0

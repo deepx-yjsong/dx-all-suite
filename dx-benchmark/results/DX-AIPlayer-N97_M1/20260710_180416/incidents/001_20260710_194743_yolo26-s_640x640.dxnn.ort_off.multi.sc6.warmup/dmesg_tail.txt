@@ -1,0 +1,200 @@
+[Fri Jul 10 17:59:04 2026] Bluetooth: hci0: Fseq status: Success (0x00)
+[Fri Jul 10 17:59:04 2026] Bluetooth: hci0: Fseq executed: 00.00.02.41
+[Fri Jul 10 17:59:04 2026] Bluetooth: hci0: Fseq BT Top: 00.00.02.41
+[Fri Jul 10 17:59:04 2026] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+[Fri Jul 10 17:59:04 2026] Bluetooth: BNEP filters: protocol multicast
+[Fri Jul 10 17:59:04 2026] Bluetooth: BNEP socket layer initialized
+[Fri Jul 10 17:59:04 2026] Bluetooth: MGMT ver 1.23
+[Fri Jul 10 17:59:04 2026] NET: Registered PF_ALG protocol family
+[Fri Jul 10 17:59:04 2026] NET: Registered PF_QIPCRTR protocol family
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] [ENCODER:204:DDI A/PHY A] failed to retrieve link info, disabling eDP
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] GT0: GuC firmware i915/tgl_guc_70.bin version 70.36.0
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] GT0: HuC firmware i915/tgl_huc.bin version 7.9.3
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] GT0: HuC: authenticated for all workloads
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] GT0: GUC: submission enabled
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] GT0: GUC: SLPC enabled
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] GT0: GUC: RC enabled
+[Fri Jul 10 17:59:05 2026] mei_pxp 0000:00:16.0-fbf6fcf1-96cf-4e2e-a6a6-1bab8cbe36b1: bound 0000:00:02.0 (ops i915_pxp_tee_component_ops [i915])
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] Protected Xe Path (PXP) protected content support initialized
+[Fri Jul 10 17:59:05 2026] mei_hdcp 0000:00:16.0-b638ab7e-94e2-4ea2-a552-d1c54b627f04: bound 0000:00:02.0 (ops i915_hdcp_ops [i915])
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] Registered 3 planes with drm panic
+[Fri Jul 10 17:59:05 2026] [drm] Initialized i915 1.6.0 for 0000:00:02.0 on minor 0
+[Fri Jul 10 17:59:05 2026] ACPI: video: Video Device [GFX0] (multi-head: yes  rom: no  post: no)
+[Fri Jul 10 17:59:05 2026] input: Video Bus as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/LNXVIDEO:00/input/input11
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] Cannot find any crtc or sizes
+[Fri Jul 10 17:59:05 2026] i915 0000:00:02.0: [drm] Cannot find any crtc or sizes
+[Fri Jul 10 17:59:05 2026] snd_hda_intel 0000:00:1f.3: bound 0000:00:02.0 (ops intel_audio_component_bind_ops [i915])
+[Fri Jul 10 17:59:05 2026] input: HDA Intel PCH HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:1f.3/sound/card0/input12
+[Fri Jul 10 17:59:05 2026] input: HDA Intel PCH HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:1f.3/sound/card0/input13
+[Fri Jul 10 17:59:05 2026] input: HDA Intel PCH HDMI/DP,pcm=8 as /devices/pci0000:00/0000:00:1f.3/sound/card0/input14
+[Fri Jul 10 17:59:05 2026] input: HDA Intel PCH HDMI/DP,pcm=9 as /devices/pci0000:00/0000:00:1f.3/sound/card0/input15
+[Fri Jul 10 17:59:05 2026] Generic FE-GE Realtek PHY r8169-0-100:00: attached PHY driver (mii_bus:phy_addr=r8169-0-100:00, irq=MAC)
+[Fri Jul 10 17:59:05 2026] r8169 0000:01:00.0 enp1s0: Link is Down
+[Fri Jul 10 17:59:05 2026] Generic FE-GE Realtek PHY r8169-0-200:00: attached PHY driver (mii_bus:phy_addr=r8169-0-200:00, irq=MAC)
+[Fri Jul 10 17:59:05 2026] r8169 0000:02:00.0 enp2s0: Link is Down
+[Fri Jul 10 17:59:06 2026] systemd-journald[259]: /var/log/journal/b5d183f266484816b3b145895a42d689/user-1000.journal: Journal file uses a different sequence number ID, rotating.
+[Fri Jul 10 17:59:07 2026] Bluetooth: RFCOMM TTY layer initialized
+[Fri Jul 10 17:59:07 2026] Bluetooth: RFCOMM socket layer initialized
+[Fri Jul 10 17:59:07 2026] Bluetooth: RFCOMM ver 1.11
+[Fri Jul 10 17:59:07 2026] warning: `MediaServerProc' uses wireless extensions which will stop working for Wi-Fi 7 hardware; use nl80211
+[Fri Jul 10 17:59:08 2026] r8169 0000:01:00.0 enp1s0: Link is Up - 1Gbps/Full - flow control off
+[Fri Jul 10 17:59:09 2026] rfkill: input handler disabled
+[Fri Jul 10 17:59:44 2026] kauditd_printk_skb: 153 callbacks suppressed
+[Fri Jul 10 17:59:44 2026] audit: type=1400 audit(1783673984.385:165): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=2770 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:00:06 2026] audit: type=1400 audit(1783674006.259:166): apparmor="DENIED" operation="open" class="file" profile="snap.firmware-updater.firmware-notifier" name="/proc/sys/vm/max_map_count" pid=2816 comm="firmware-notifi" requested_mask="r" denied_mask="r" fsuid=1000 ouid=0
+[Fri Jul 10 18:00:45 2026] audit: type=1400 audit(1783674045.377:167): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=3121 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:01:45 2026] audit: type=1400 audit(1783674105.976:168): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=3300 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:02:46 2026] audit: type=1400 audit(1783674166.514:169): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=3479 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:03:21 2026] fbcon: i915drmfb (fb0) is primary device
+[Fri Jul 10 18:03:21 2026] fbcon: Deferring console take-over
+[Fri Jul 10 18:03:21 2026] i915 0000:00:02.0: [drm] fb0: i915drmfb frame buffer device
+[Fri Jul 10 18:03:21 2026] usb 1-2.2: new high-speed USB device number 6 using xhci_hcd
+[Fri Jul 10 18:03:21 2026] usb 1-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Fri Jul 10 18:03:21 2026] usb 1-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 18:03:21 2026] usb 1-2.2: Product: USB2.1 Hub
+[Fri Jul 10 18:03:21 2026] usb 1-2.2: Manufacturer: GenesysLogic
+[Fri Jul 10 18:03:21 2026] hub 1-2.2:1.0: USB hub found
+[Fri Jul 10 18:03:21 2026] hub 1-2.2:1.0: 4 ports detected
+[Fri Jul 10 18:03:21 2026] usb 1-2.2.3: new full-speed USB device number 7 using xhci_hcd
+[Fri Jul 10 18:03:21 2026] usb 1-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Fri Jul 10 18:03:21 2026] usb 1-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 18:03:21 2026] usb 1-2.2.3: Product: USB Gaming Mouse
+[Fri Jul 10 18:03:21 2026] usb 1-2.2.3: Manufacturer: SOAI
+[Fri Jul 10 18:03:21 2026] input: SOAI USB Gaming Mouse as /devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2.3/1-2.2.3:1.0/0003:12C9:1017.0006/input/input16
+[Fri Jul 10 18:03:21 2026] hid-generic 0003:12C9:1017.0006: input,hidraw5: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-0000:00:14.0-2.2.3/input0
+[Fri Jul 10 18:03:21 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2.3/1-2.2.3:1.1/0003:12C9:1017.0007/input/input17
+[Fri Jul 10 18:03:21 2026] input: SOAI USB Gaming Mouse as /devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2.3/1-2.2.3:1.1/0003:12C9:1017.0007/input/input18
+[Fri Jul 10 18:03:21 2026] input: SOAI USB Gaming Mouse as /devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2.3/1-2.2.3:1.1/0003:12C9:1017.0007/input/input19
+[Fri Jul 10 18:03:21 2026] hid-generic 0003:12C9:1017.0007: input,hiddev0,hidraw6: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-0000:00:14.0-2.2.3/input1
+[Fri Jul 10 18:03:21 2026] hid-generic 0003:12C9:1017.0008: hiddev1,hidraw7: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-0000:00:14.0-2.2.3/input2
+[Fri Jul 10 18:03:47 2026] audit: type=1400 audit(1783674227.106:170): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=3852 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:04:24 2026] usb 1-2.2: USB disconnect, device number 6
+[Fri Jul 10 18:04:24 2026] usb 1-2.2.3: USB disconnect, device number 7
+[Fri Jul 10 18:04:47 2026] audit: type=1400 audit(1783674287.920:171): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=4246 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:05:48 2026] audit: type=1400 audit(1783674348.545:172): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=4455 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:06:49 2026] audit: type=1400 audit(1783674409.346:173): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=4669 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:07:21 2026] usb 1-2.2: new high-speed USB device number 8 using xhci_hcd
+[Fri Jul 10 18:07:21 2026] usb 1-2.2: New USB device found, idVendor=05e3, idProduct=0610, bcdDevice= 6.56
+[Fri Jul 10 18:07:21 2026] usb 1-2.2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 18:07:21 2026] usb 1-2.2: Product: USB2.1 Hub
+[Fri Jul 10 18:07:21 2026] usb 1-2.2: Manufacturer: GenesysLogic
+[Fri Jul 10 18:07:21 2026] hub 1-2.2:1.0: USB hub found
+[Fri Jul 10 18:07:21 2026] hub 1-2.2:1.0: 4 ports detected
+[Fri Jul 10 18:07:21 2026] usb 1-2.2.3: new full-speed USB device number 9 using xhci_hcd
+[Fri Jul 10 18:07:21 2026] usb 1-2.2.3: New USB device found, idVendor=12c9, idProduct=1017, bcdDevice= 2.03
+[Fri Jul 10 18:07:21 2026] usb 1-2.2.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[Fri Jul 10 18:07:21 2026] usb 1-2.2.3: Product: USB Gaming Mouse
+[Fri Jul 10 18:07:21 2026] usb 1-2.2.3: Manufacturer: SOAI
+[Fri Jul 10 18:07:21 2026] input: SOAI USB Gaming Mouse as /devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2.3/1-2.2.3:1.0/0003:12C9:1017.0009/input/input20
+[Fri Jul 10 18:07:21 2026] hid-generic 0003:12C9:1017.0009: input,hidraw5: USB HID v1.10 Mouse [SOAI USB Gaming Mouse] on usb-0000:00:14.0-2.2.3/input0
+[Fri Jul 10 18:07:21 2026] input: SOAI USB Gaming Mouse Keyboard as /devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2.3/1-2.2.3:1.1/0003:12C9:1017.000A/input/input21
+[Fri Jul 10 18:07:22 2026] input: SOAI USB Gaming Mouse as /devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2.3/1-2.2.3:1.1/0003:12C9:1017.000A/input/input22
+[Fri Jul 10 18:07:22 2026] input: SOAI USB Gaming Mouse as /devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2.3/1-2.2.3:1.1/0003:12C9:1017.000A/input/input23
+[Fri Jul 10 18:07:22 2026] hid-generic 0003:12C9:1017.000A: input,hiddev0,hidraw6: USB HID v1.10 Keyboard [SOAI USB Gaming Mouse] on usb-0000:00:14.0-2.2.3/input1
+[Fri Jul 10 18:07:22 2026] hid-generic 0003:12C9:1017.000B: hiddev1,hidraw7: USB HID v1.10 Device [SOAI USB Gaming Mouse] on usb-0000:00:14.0-2.2.3/input2
+[Fri Jul 10 18:07:33 2026] usb 1-2.2: USB disconnect, device number 8
+[Fri Jul 10 18:07:33 2026] usb 1-2.2.3: USB disconnect, device number 9
+[Fri Jul 10 18:07:50 2026] audit: type=1400 audit(1783674470.168:174): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=5011 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:08:51 2026] audit: type=1400 audit(1783674531.071:175): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=5305 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:09:51 2026] audit: type=1400 audit(1783674591.987:176): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=5497 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:10:52 2026] audit: type=1400 audit(1783674652.867:177): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=5735 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:11:53 2026] audit: type=1400 audit(1783674713.774:178): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=5912 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:12:54 2026] audit: type=1400 audit(1783674774.675:179): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=6155 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:12:55 2026] perf: interrupt took too long (2507 > 2500), lowering kernel.perf_event_max_sample_rate to 79000
+[Fri Jul 10 18:13:55 2026] audit: type=1400 audit(1783674835.573:180): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=6336 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:14:56 2026] audit: type=1400 audit(1783674896.449:181): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=6567 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:15:57 2026] audit: type=1400 audit(1783674957.014:182): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=6750 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:15:59 2026] perf: interrupt took too long (3155 > 3133), lowering kernel.perf_event_max_sample_rate to 63000
+[Fri Jul 10 18:16:57 2026] audit: type=1400 audit(1783675017.861:183): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=6983 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:17:58 2026] audit: type=1400 audit(1783675078.734:184): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=7163 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:18:59 2026] audit: type=1400 audit(1783675139.657:185): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=7401 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:19:43 2026] perf: interrupt took too long (3945 > 3943), lowering kernel.perf_event_max_sample_rate to 50000
+[Fri Jul 10 18:20:00 2026] audit: type=1400 audit(1783675200.601:186): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=7587 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:21:01 2026] audit: type=1400 audit(1783675261.490:187): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=7826 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:22:02 2026] audit: type=1400 audit(1783675322.358:188): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=8005 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:23:03 2026] audit: type=1400 audit(1783675383.234:189): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=8240 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:24:04 2026] audit: type=1400 audit(1783675444.126:190): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=8424 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:25:04 2026] audit: type=1400 audit(1783675504.691:191): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=8610 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:26:05 2026] audit: type=1400 audit(1783675565.252:192): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=8797 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:27:05 2026] audit: type=1400 audit(1783675625.816:193): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=8981 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:28:06 2026] audit: type=1400 audit(1783675686.360:194): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=9167 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:29:06 2026] audit: type=1400 audit(1783675746.912:195): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=9358 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:30:07 2026] audit: type=1400 audit(1783675807.448:196): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=9548 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:31:08 2026] audit: type=1400 audit(1783675868.125:197): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=9787 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:32:08 2026] audit: type=1400 audit(1783675928.899:198): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=10003 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:33:09 2026] audit: type=1400 audit(1783675989.638:199): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=10201 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:34:10 2026] audit: type=1400 audit(1783676050.495:200): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=10461 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:34:49 2026] perf: interrupt took too long (4955 > 4931), lowering kernel.perf_event_max_sample_rate to 40000
+[Fri Jul 10 18:35:11 2026] audit: type=1400 audit(1783676111.409:201): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=10724 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:36:12 2026] audit: type=1400 audit(1783676172.304:202): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=10903 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:37:13 2026] audit: type=1400 audit(1783676233.208:203): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=11135 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:38:14 2026] audit: type=1400 audit(1783676294.179:204): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=11316 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:39:15 2026] audit: type=1400 audit(1783676355.106:205): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=11556 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:40:16 2026] audit: type=1400 audit(1783676416.060:206): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=11738 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:41:16 2026] audit: type=1400 audit(1783676476.956:207): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=11974 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:42:17 2026] audit: type=1400 audit(1783676537.860:208): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=12154 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:43:18 2026] audit: type=1400 audit(1783676598.763:209): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=12392 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:44:19 2026] audit: type=1400 audit(1783676659.675:210): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=12568 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:45:20 2026] audit: type=1400 audit(1783676720.610:211): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=12811 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:46:21 2026] audit: type=1400 audit(1783676781.525:212): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=12988 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:47:22 2026] audit: type=1400 audit(1783676842.400:213): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=13230 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:48:23 2026] audit: type=1400 audit(1783676903.292:214): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=13411 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:49:24 2026] audit: type=1400 audit(1783676964.225:215): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=13653 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:50:25 2026] audit: type=1400 audit(1783677025.142:216): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=13835 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:51:25 2026] audit: type=1400 audit(1783677085.765:217): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=14015 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:52:26 2026] audit: type=1400 audit(1783677146.301:218): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=14201 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:53:26 2026] audit: type=1400 audit(1783677206.839:219): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=14384 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:54:27 2026] audit: type=1400 audit(1783677267.380:220): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=14570 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:55:27 2026] audit: type=1400 audit(1783677327.950:221): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=14757 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:56:28 2026] audit: type=1400 audit(1783677388.501:222): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=14943 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:57:29 2026] audit: type=1400 audit(1783677449.064:223): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=15127 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:58:29 2026] audit: type=1400 audit(1783677509.603:224): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=15313 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 18:59:30 2026] audit: type=1400 audit(1783677570.386:225): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=15581 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:00:30 2026] audit: type=1400 audit(1783677630.983:226): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=15783 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:00:46 2026] perf: interrupt took too long (6196 > 6193), lowering kernel.perf_event_max_sample_rate to 32000
+[Fri Jul 10 19:01:31 2026] audit: type=1400 audit(1783677691.669:227): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=16036 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:02:32 2026] audit: type=1400 audit(1783677752.514:228): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=16276 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:03:33 2026] audit: type=1400 audit(1783677813.368:229): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=16498 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:04:34 2026] audit: type=1400 audit(1783677874.190:230): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=16727 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:05:35 2026] audit: type=1400 audit(1783677935.033:231): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=16906 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:06:35 2026] audit: type=1400 audit(1783677995.881:232): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=17131 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:07:36 2026] audit: type=1400 audit(1783678056.746:233): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=17310 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:08:37 2026] audit: type=1400 audit(1783678117.602:234): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=17539 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:09:38 2026] audit: type=1400 audit(1783678178.443:235): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=17774 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:10:39 2026] audit: type=1400 audit(1783678239.294:236): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=17955 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:11:40 2026] audit: type=1400 audit(1783678300.188:237): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=18183 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:12:41 2026] audit: type=1400 audit(1783678361.054:238): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=18363 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:13:41 2026] audit: type=1400 audit(1783678421.923:239): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=18593 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:14:42 2026] audit: type=1400 audit(1783678482.785:240): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=18776 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:15:43 2026] audit: type=1400 audit(1783678543.633:241): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=19012 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:16:44 2026] audit: type=1400 audit(1783678604.485:242): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=19189 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:17:45 2026] audit: type=1400 audit(1783678665.113:243): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=19373 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:18:45 2026] audit: type=1400 audit(1783678725.680:244): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=19556 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:19:46 2026] audit: type=1400 audit(1783678786.232:245): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=19746 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:20:46 2026] audit: type=1400 audit(1783678846.798:246): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=19933 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:21:47 2026] audit: type=1400 audit(1783678907.343:247): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=20117 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:22:47 2026] audit: type=1400 audit(1783678967.897:248): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=20305 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:23:48 2026] audit: type=1400 audit(1783679028.437:249): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=20489 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:24:48 2026] audit: type=1400 audit(1783679088.972:250): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=20676 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:25:49 2026] audit: type=1400 audit(1783679149.560:251): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=20867 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:26:50 2026] audit: type=1400 audit(1783679210.224:252): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=21104 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:27:50 2026] audit: type=1400 audit(1783679270.806:253): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=21304 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:28:51 2026] audit: type=1400 audit(1783679331.532:254): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=21519 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:29:52 2026] audit: type=1400 audit(1783679392.359:255): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=21781 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:30:53 2026] audit: type=1400 audit(1783679453.186:256): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=22041 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:31:54 2026] audit: type=1400 audit(1783679514.094:257): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=22220 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:32:54 2026] audit: type=1400 audit(1783679574.925:258): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=22448 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:33:55 2026] audit: type=1400 audit(1783679635.787:259): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=22628 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:34:56 2026] audit: type=1400 audit(1783679696.656:260): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=22863 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:35:57 2026] audit: type=1400 audit(1783679757.491:261): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=23095 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:36:58 2026] audit: type=1400 audit(1783679818.368:262): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=23273 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:37:59 2026] audit: type=1400 audit(1783679879.197:263): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=23505 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:39:00 2026] audit: type=1400 audit(1783679940.025:264): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=23684 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:40:00 2026] audit: type=1400 audit(1783680000.682:265): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=23871 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:41:01 2026] audit: type=1400 audit(1783680061.248:266): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=24051 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:42:01 2026] audit: type=1400 audit(1783680121.818:267): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=24229 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:43:02 2026] audit: type=1400 audit(1783680182.377:268): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=24407 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:44:02 2026] audit: type=1400 audit(1783680242.930:269): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=24588 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:45:03 2026] audit: type=1400 audit(1783680303.481:270): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=24771 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:46:04 2026] audit: type=1400 audit(1783680364.011:271): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=24951 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0
+[Fri Jul 10 19:47:04 2026] audit: type=1400 audit(1783680424.557:272): apparmor="DENIED" operation="mkdir" class="file" profile="snap.firefox.firefox" name="/run/user/0/" pid=25131 comm="mkdir" requested_mask="c" denied_mask="c" fsuid=0 ouid=0

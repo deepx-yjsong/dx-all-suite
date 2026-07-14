@@ -1,0 +1,38 @@
+Runtime Framework Version: v3.4.0
+Device Driver Version: v2.5.1
+PCIe Driver Version: v2.4.1
+
+modelFile: /home/deepx/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/models/yolo26-l_224x224.dxnn
+inputFile: 
+outputFile: output.bin
+benchmark: 0
+loops: 30
+Device specification: 'all' (default)
+Run model target mode : Benchmark Mode
+Inference by time: duration=30(s)
+
+=== Model File: /home/deepx/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/models/yolo26-l_224x224.dxnn ===
+
+Model Input Tensors:
+  - images
+Model Output Tensors:
+  - output0
+
+Tasks:
+  [ ] -> npu_0 -> []
+  Task[0] npu_0, NPU, NPU memory usage 20,871,680 bytes (input 150,528 bytes, output 4,000 bytes), mem_usage:26,984,960 bytes
+  Inputs
+     -  images, UINT8, [1, 224, 224, 3 ]
+  Outputs
+    -  output0, FLOAT, [1, 1000 ]
+
+
+Performing 1 warmup run(s)...
+Warmup completed.
+Inference by time: total-inference-time=30.0099(s) total-loops=21042
+=============================================
+* Benchmark Result (21042 inputs)
+  - FPS : 701.17                             
+=============================================
+
+__CPU_PERCENT__=15%

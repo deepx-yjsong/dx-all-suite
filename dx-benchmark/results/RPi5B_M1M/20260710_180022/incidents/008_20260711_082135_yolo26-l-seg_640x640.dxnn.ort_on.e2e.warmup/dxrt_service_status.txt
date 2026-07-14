@@ -1,0 +1,19 @@
+● dxrt.service - DX-RT Service
+     Loaded: loaded (/etc/systemd/system/dxrt.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-07-10 17:50:44 KST; 14h ago
+   Main PID: 646 (dxrtd)
+      Tasks: 15 (limit: 9572)
+        CPU: 38min 12.003s
+     CGroup: /system.slice/dxrt.service
+             └─646 /usr/local/bin/dxrtd
+
+Jul 11 08:14:19 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=4566)
+Jul 11 08:14:19 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=4567)
+Jul 11 08:14:24 raspberrypi dxrtd[646]: [DXRT_SVC][EventLoop] [EventLoop] Device 0: Process returned event_type=2 (loopCnt=4568)
+Jul 11 08:21:35 raspberrypi dxrtd[646]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=377, bytes=-104, errno=104
+Jul 11 08:21:35 raspberrypi dxrtd[646]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=377
+Jul 11 08:21:35 raspberrypi dxrtd[646]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=15777
+Jul 11 08:21:35 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=15777, deviceId=0
+Jul 11 08:21:35 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=15777, deviceId=0, runningTaskIds count=0
+Jul 11 08:21:35 raspberrypi dxrtd[646]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=15777, deviceId=0, taskId=0
+Jul 11 08:21:35 raspberrypi dxrtd[646]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 15777

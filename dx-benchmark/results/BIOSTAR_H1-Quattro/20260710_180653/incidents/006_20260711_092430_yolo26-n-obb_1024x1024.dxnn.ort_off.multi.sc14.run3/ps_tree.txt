@@ -1,0 +1,338 @@
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           2  0.0  0.0      0     0 ?        S     7월10   0:00 [kthreadd]
+root           3  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [pool_workqueue_release]
+root           4  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-rcu_g]
+root           5  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-rcu_p]
+root           6  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-slub_]
+root           7  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-netns]
+root          10  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/0:0H-events_highpri]
+root          12  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-mm_pe]
+root          13  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [rcu_tasks_kthread]
+root          14  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [rcu_tasks_rude_kthread]
+root          15  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [rcu_tasks_trace_kthread]
+root          16  0.0  0.0      0     0 ?        S     7월10   0:04  \_ [ksoftirqd/0]
+root          17  0.0  0.0      0     0 ?        I     7월10   1:00  \_ [rcu_preempt]
+root          18  0.0  0.0      0     0 ?        S     7월10   0:12  \_ [migration/0]
+root          19  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/0]
+root          20  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/0]
+root          21  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/1]
+root          22  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/1]
+root          23  0.0  0.0      0     0 ?        S     7월10   0:13  \_ [migration/1]
+root          24  0.0  0.0      0     0 ?        S     7월10   0:03  \_ [ksoftirqd/1]
+root          26  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/1:0H-events_highpri]
+root          27  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/2]
+root          28  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/2]
+root          29  0.0  0.0      0     0 ?        S     7월10   0:08  \_ [migration/2]
+root          30  0.0  0.0      0     0 ?        S     7월10   0:01  \_ [ksoftirqd/2]
+root          32  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/2:0H-events_highpri]
+root          33  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/3]
+root          34  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/3]
+root          35  0.0  0.0      0     0 ?        S     7월10   0:07  \_ [migration/3]
+root          36  0.0  0.0      0     0 ?        S     7월10   0:01  \_ [ksoftirqd/3]
+root          38  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/3:0H-events_highpri]
+root          39  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/4]
+root          40  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/4]
+root          41  0.0  0.0      0     0 ?        S     7월10   0:11  \_ [migration/4]
+root          42  0.0  0.0      0     0 ?        S     7월10   0:02  \_ [ksoftirqd/4]
+root          44  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/4:0H-events_highpri]
+root          45  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/5]
+root          46  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/5]
+root          47  0.0  0.0      0     0 ?        S     7월10   0:20  \_ [migration/5]
+root          48  0.0  0.0      0     0 ?        S     7월10   0:01  \_ [ksoftirqd/5]
+root          50  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/5:0H-events_highpri]
+root          51  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/6]
+root          52  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/6]
+root          53  0.0  0.0      0     0 ?        S     7월10   0:01  \_ [migration/6]
+root          54  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [ksoftirqd/6]
+root          56  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/6:0H-events_highpri]
+root          57  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/7]
+root          58  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/7]
+root          59  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [migration/7]
+root          60  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [ksoftirqd/7]
+root          62  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/7:0H-events_highpri]
+root          63  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/8]
+root          64  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/8]
+root          65  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [migration/8]
+root          66  0.0  0.0      0     0 ?        S     7월10   0:01  \_ [ksoftirqd/8]
+root          68  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/8:0H-events_highpri]
+root          69  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/9]
+root          70  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/9]
+root          71  0.0  0.0      0     0 ?        S     7월10   0:02  \_ [migration/9]
+root          72  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [ksoftirqd/9]
+root          74  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/9:0H-events_highpri]
+root          75  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/10]
+root          76  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/10]
+root          77  0.0  0.0      0     0 ?        S     7월10   0:06  \_ [migration/10]
+root          78  0.0  0.0      0     0 ?        S     7월10   0:01  \_ [ksoftirqd/10]
+root          80  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/10:0H-events_highpri]
+root          81  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [cpuhp/11]
+root          82  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [idle_inject/11]
+root          83  0.0  0.0      0     0 ?        S     7월10   0:15  \_ [migration/11]
+root          84  0.0  0.0      0     0 ?        S     7월10   0:01  \_ [ksoftirqd/11]
+root          86  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/11:0H-events_highpri]
+root          87  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [kdevtmpfs]
+root          88  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-inet_]
+root          89  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [kauditd]
+root          90  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [khungtaskd]
+root          92  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [oom_reaper]
+root          93  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-write]
+root          94  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [kcompactd0]
+root          95  0.0  0.0      0     0 ?        SN    7월10   0:00  \_ [ksmd]
+root          96  0.0  0.0      0     0 ?        SN    7월10   0:00  \_ [khugepaged]
+root          97  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-kinte]
+root          98  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-kbloc]
+root          99  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-blkcg]
+root         101  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [irq/9-acpi]
+root         103  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-tpm_d]
+root         104  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-ata_s]
+root         105  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-md]
+root         106  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-md_bi]
+root         107  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-edac-]
+root         108  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-devfr]
+root         109  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [watchdogd]
+root         110  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-quota]
+root         111  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/0:1H-kblockd]
+root         113  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [kswapd0]
+root         114  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [ecryptfs-kthread]
+root         115  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-kthro]
+root         119  0.0  0.0      0     0 ?        I     7월10   0:12  \_ [kworker/5:1-events]
+root         120  0.0  0.0      0     0 ?        I     7월10   0:11  \_ [kworker/7:1-events]
+root         121  0.0  0.0      0     0 ?        I     7월10   1:09  \_ [kworker/8:1-events]
+root         124  0.0  0.0      0     0 ?        I     7월10   0:03  \_ [kworker/11:1-events]
+root         125  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-acpi_]
+root         126  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-mld]
+root         127  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-ipv6_]
+root         141  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-kstrp]
+root         156  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-charg]
+root         157  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [irq/26-ACPI:Event]
+root         158  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [irq/27-ACPI:Event]
+root         180  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/9:1H-kblockd]
+root         181  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/5:1H-kblockd]
+root         192  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/7:1H-kblockd]
+root         193  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/8:1H-kblockd]
+root         194  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/2:1H-kblockd]
+root         195  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/6:1H-kblockd]
+root         196  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/10:1H-kblockd]
+root         197  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/11:1H-kblockd]
+root         198  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/3:1H-kblockd]
+root         199  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/1:1H-kblockd]
+root         200  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/4:1H-kblockd]
+root         222  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [scsi_eh_0]
+root         223  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-scsi_]
+root         224  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [scsi_eh_1]
+root         225  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-scsi_]
+root         226  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [scsi_eh_2]
+root         227  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-scsi_]
+root         228  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [scsi_eh_3]
+root         229  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-scsi_]
+root         230  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [scsi_eh_4]
+root         231  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-scsi_]
+root         232  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [scsi_eh_5]
+root         233  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-scsi_]
+root         293  0.0  0.0      0     0 ?        S     7월10   0:03  \_ [jbd2/sda2-8]
+root         294  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-ext4-]
+root         368  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-rpcio]
+root         369  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-xprti]
+root         467  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-crypt]
+root         574  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-amdgp]
+root         597  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-ttm]
+root         629  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-amdgp]
+root         630  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-amdgp]
+root         631  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-amdgp]
+root         632  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-amdgp]
+root         633  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-amdgp]
+root         634  0.0  0.0      0     0 ?        I<    7월10   0:00  \_ [kworker/R-dm_vb]
+root         635  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [card0-crtc0]
+root         636  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [card0-crtc1]
+root         637  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [card0-crtc2]
+root         638  0.0  0.0      0     0 ?        S     7월10   0:00  \_ [card0-crtc3]
+root        1663  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [lockd]
+root        1703  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [nfsd]
+root        1704  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [nfsd]
+root        1705  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [nfsd]
+root        1706  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [nfsd]
+root        1707  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [nfsd]
+root        1708  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [nfsd]
+root        1709  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [nfsd]
+root        1710  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [nfsd]
+root       25949  0.0  0.0      0     0 ?        I     7월10   0:51  \_ [kworker/1:0-events]
+root      165147  0.0  0.0      0     0 ?        I     7월10   0:02  \_ [kworker/6:2-events]
+root      166246  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [kworker/8:2-pm]
+root      174272  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [kworker/2:1-events]
+root      174273  0.0  0.0      0     0 ?        I     7월10   0:01  \_ [kworker/2:3-events]
+root      240198  0.0  0.0      0     0 ?        I     7월10   0:02  \_ [kworker/3:1-events]
+root      380195  0.1  0.0      0     0 ?        I     7월10   1:01  \_ [kworker/0:1-events]
+root      393857  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [kworker/0:2-events]
+root      402409  0.0  0.0      0     0 ?        I     7월10   0:02  \_ [kworker/9:1-events]
+root      424889  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [kworker/5:0-events]
+root      426201  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [kworker/3:0]
+root      449986  0.0  0.0      0     0 ?        I     7월10   0:00  \_ [kworker/1:1-events]
+root      461000  0.0  0.0      0     0 ?        I     7월10   0:01  \_ [kworker/10:2-events]
+root      463372  0.0  0.0      0     0 ?        I     7월10   0:32  \_ [kworker/4:1-events]
+root      472445  0.0  0.0      0     0 ?        I    00:00   0:00  \_ [kworker/7:2]
+root      474468  0.0  0.0      0     0 ?        I    00:04   0:00  \_ [kworker/11:2]
+root      522131  0.0  0.0      0     0 ?        I    03:58   0:00  \_ [kworker/9:2]
+root      549847  0.0  0.0      0     0 ?        I    06:54   0:00  \_ [kworker/10:1]
+root      562961  0.2  0.0      0     0 ?        I    08:31   0:08  \_ [kworker/u24:0-flush-8:0]
+root      563351  0.0  0.0      0     0 ?        I    08:32   0:00  \_ [kworker/6:1]
+root      568461  0.2  0.0      0     0 ?        I    08:55   0:03  \_ [kworker/u24:5-gfx_0.0.0]
+root      569957  0.0  0.0      0     0 ?        I<   09:08   0:00  \_ [kworker/u25:24-ttm]
+root      569969  0.0  0.0      0     0 ?        I<   09:08   0:00  \_ [kworker/u25:37-ttm]
+root      570028  0.1  0.0      0     0 ?        I    09:08   0:01  \_ [kworker/u24:4-sdma0]
+root      571419  0.0  0.0      0     0 ?        I    09:13   0:00  \_ [kworker/u24:2-events_power_efficient]
+root      571783  0.0  0.0      0     0 ?        I    09:15   0:00  \_ [kworker/4:0]
+root      572005  0.0  0.0      0     0 ?        I    09:19   0:00  \_ [kworker/u24:1-ext4-rsv-conversion]
+root      572221  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:0-ttm]
+root      572222  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:1-ttm]
+root      572223  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:2-ttm]
+root      572224  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:3-ttm]
+root      572225  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:4-ttm]
+root      572226  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:5-ttm]
+root      572227  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:6-ttm]
+root      572228  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:7-ttm]
+root      572229  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:8-ttm]
+root      572230  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:9-ttm]
+root      572231  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:10-ttm]
+root      572232  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:11-ttm]
+root      572233  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:12-ttm]
+root      572234  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:13-ttm]
+root      572235  0.0  0.0      0     0 ?        I<   09:24   0:00  \_ [kworker/u25:14]
+root           1  0.0  0.0 167024 12428 ?        Ss    7월10   0:06 /sbin/init splash
+root         341  0.0  0.0  73300 26616 ?        S<s   7월10   0:58 /lib/systemd/systemd-journald
+root         398  0.0  0.0  27428  7632 ?        Ss    7월10   0:00 /lib/systemd/systemd-udevd
+_rpc         615  0.0  0.0   8108  4204 ?        Ss    7월10   0:00 /sbin/rpcbind -f -w
+systemd+     617  0.0  0.0  14836  6916 ?        Ss    7월10   0:46 /lib/systemd/systemd-oomd
+systemd+     618  0.0  0.0  25944 14212 ?        Ss    7월10   0:02 /lib/systemd/systemd-resolved
+systemd+     619  0.0  0.0  89388  7496 ?        Ssl   7월10   0:00 /lib/systemd/systemd-timesyncd
+root         628  0.0  0.0   5128  1892 ?        Ss    7월10   0:00 /usr/sbin/blkmapd
+root         639  0.0  0.0   3108  2304 ?        Ss    7월10   0:00 /usr/sbin/rpc.idmapd
+root         640  0.0  0.0   5464  2688 ?        Ss    7월10   0:00 /usr/sbin/nfsdcld
+root         777  0.0  0.0 241784  8692 ?        Ssl   7월10   0:07 /usr/libexec/accounts-daemon
+root         778  0.0  0.0   2816  2128 ?        Ss    7월10   0:00 /usr/sbin/acpid
+avahi        780  0.0  0.0   7964  4608 ?        Ss    7월10   0:49 avahi-daemon: running [deepx-B650MT.local]
+avahi        816  0.0  0.0   7452  1468 ?        S     7월10   0:00  \_ avahi-daemon: chroot helper
+root         781  0.0  0.0  10808  3344 ?        Ss    7월10   0:00 /usr/sbin/cron -f -P
+cvedia       782  0.0  0.0  11284  3912 ?        Ss    7월10   0:00 /bin/bash /usr/bin/rtservice
+cvedia       854  0.8  0.3 1107252 110388 ?      Sl    7월10  11:38  \_ ./rtservice
+message+     783  0.0  0.0  10928  6520 ?        Ss    7월10   0:01 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+root         784  0.0  0.0 336324 19736 ?        Ssl   7월10   0:03 /usr/sbin/NetworkManager --no-daemon
+root         786  8.3  0.0 3273740 8508 ?        Ssl   7월10 121:05 /usr/local/bin/dxrtd
+root         791  0.0  0.0  82812  4144 ?        Ssl   7월10   0:02 /usr/sbin/irqbalance --foreground
+root         792  0.0  0.0  42496 21600 ?        Ss    7월10   0:00 /usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers
+root         793  0.0  0.0 244304 12148 ?        Ssl   7월10   0:01 /usr/libexec/polkitd --no-debug
+root         794  0.0  0.0 241380  7872 ?        Ssl   7월10   0:00 /usr/libexec/power-profiles-daemon
+syslog       795  0.0  0.0 222436  6608 ?        Ssl   7월10   0:21 /usr/sbin/rsyslogd -n -iNONE
+root         797  0.0  0.1 2516952 44972 ?       Ssl   7월10   0:09 /snap/snapd/current/usr/lib/snapd/snapd
+root         798  0.0  0.0 237820  7172 ?        Ssl   7월10   0:00 /usr/libexec/switcheroo-control
+root         799  0.0  0.0  48256  8276 ?        Ss    7월10   0:00 /lib/systemd/systemd-logind
+root         801  0.0  0.0 393260 14436 ?        Ssl   7월10   0:03 /usr/libexec/udisks2/udisksd
+root         802  0.0  0.0  16504  6740 ?        Ss    7월10   0:00 /sbin/wpa_supplicant -u -s -O /run/wpa_supplicant
+root         923  0.0  0.0 322816 12384 ?        Ssl   7월10   0:03 /opt/networkoptix/mediaserver/bin/root-tool
+root         929  0.0  0.0 119488 23728 ?        Ssl   7월10   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root         931  0.0  0.0 244252 12600 ?        Ssl   7월10   0:00 /usr/sbin/ModemManager
+network+     939  0.8  0.7 5696904 226244 ?      Ssl   7월10  12:50 /opt/networkoptix/mediaserver/bin/mediaserver -e --crash-directory=/opt/networkoptix/mediaserver/var/crash
+root         967  0.0  0.0  15436  9216 ?        Ss    7월10   0:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups
+colord       999  0.0  0.0 247056 14076 ?        Ssl   7월10   0:00 /usr/libexec/colord
+root        1048  0.7  0.9 7375612 303496 ?      S<sl  7월10  11:16 /opt/networkoptix-metavms/mediaserver/bin/mediaserver -e
+root        1649  2.2  0.0 3189996 26208 ?       Sl    7월10  32:52 /usr/lib/pclient/thinpclient.0.1
+kernoops    1651  0.0  0.0  13100  2332 ?        Ss    7월10   0:00 /usr/sbin/kerneloops --test
+kernoops    1653  0.0  0.0  13100  2376 ?        Ss    7월10   0:00 /usr/sbin/kerneloops
+statd       1654  0.0  0.0   4776  2412 ?        Ss    7월10   0:00 /sbin/rpc.statd
+root        1655  0.0  0.0   5136  2008 ?        Ss    7월10   0:00 /usr/sbin/rpc.mountd
+root        1684  0.0  0.0 242548  9800 ?        Ssl   7월10   0:00 /usr/sbin/gdm3
+root        1695  0.0  0.0 171768 11092 ?        Sl    7월10   0:00  \_ gdm-session-worker [pam/gdm-autologin]
+deepx       1750  0.0  0.0 163756  6516 tty2     Ssl+  7월10   0:00      \_ /usr/libexec/gdm-x-session --run-script env GNOME_SHELL_SESSION_MODE=ubuntu /usr/bin/gnome-session --session=ubuntu
+deepx       1755  0.0  0.4 781528 130388 tty2    Sl+   7월10   1:08          \_ /usr/lib/xorg/Xorg vt2 -displayfd 3 -auth /run/user/1000/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+deepx       1935  0.0  0.0 224368 16228 tty2     Sl+   7월10   0:00          \_ /usr/libexec/gnome-session-binary --session=ubuntu
+root        1699  0.5  0.0 596576 23372 ?        Ssl   7월10   8:07 /usr/lib/pclient/authserviced
+deepx       1713  0.0  0.0  19268 12312 ?        Ss    7월10   0:00 /lib/systemd/systemd --user
+deepx       1714  0.0  0.0 170068  5884 ?        S     7월10   0:00  \_ (sd-pam)
+deepx       1721  0.0  0.0  40884  6904 ?        S<sl  7월10   0:00  \_ /usr/bin/pipewire
+deepx       1722  0.0  0.0  24772  6912 ?        Ssl   7월10   0:00  \_ /usr/bin/pipewire-media-session
+deepx       1723  0.0  0.0 1426704 29980 ?       S<sl  7월10   0:00  \_ /usr/bin/pulseaudio --daemonize=no --log-target=journal
+deepx       1767  0.0  0.0   9604  5780 ?        Ss    7월10   0:02  \_ /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+deepx       1770  0.0  0.0 539260  8012 ?        Ssl   7월10   0:00  \_ /usr/libexec/xdg-document-portal
+root        1780  0.0  0.0   2796  2036 ?        Ss    7월10   0:00  |   \_ fusermount3 -o rw,nosuid,nodev,fsname=portal,auto_unmount,subtype=portal -- /run/user/1000/doc
+deepx       1774  0.0  0.0 237472  6644 ?        Ssl   7월10   0:00  \_ /usr/libexec/xdg-permission-store
+deepx       2012  0.0  0.0 309732  8524 ?        Ssl   7월10   0:00  \_ /usr/libexec/at-spi-bus-launcher
+deepx       2018  0.0  0.0   8432  4656 ?        S     7월10   0:00  |   \_ /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 11 --address=unix:path=/run/user/1000/at-spi/bus_0
+deepx       2033  0.0  0.0  93232  5936 ?        Ssl   7월10   0:00  \_ /usr/libexec/gnome-session-ctl --monitor
+deepx       2043  0.0  0.0 242100  8680 ?        Ssl   7월10   0:00  \_ /usr/libexec/gvfsd
+deepx       2202  0.0  0.0 316188  9616 ?        Sl    7월10   0:00  |   \_ /usr/libexec/gvfsd-trash --spawner :1.22 /org/gtk/gvfs/exec_spaw/0
+deepx       2051  0.0  0.0 380904  7068 ?        Sl    7월10   0:00  \_ /usr/libexec/gvfsd-fuse /run/user/1000/gvfs -f
+deepx       2053  0.0  0.0 446916 18112 ?        Ssl   7월10   0:00  \_ /usr/libexec/gnome-session-binary --systemd-service --session=ubuntu
+deepx       2270  0.0  0.1 362140 42908 ?        Sl    7월10   0:00  |   \_ /usr/bin/python3 /usr/bin/indicator-stickynotes
+deepx       2279  0.0  0.0 232288  7912 ?        Sl    7월10   0:00  |   \_ /usr/libexec/gsd-disk-utility-notify
+deepx       2288  0.0  0.2 836712 67780 ?        Sl    7월10   0:00  |   \_ /usr/libexec/evolution-data-server/evolution-alarm-notify
+deepx       2727  0.0  0.0 492996 30748 ?        Sl    7월10   0:00  |   \_ update-notifier
+deepx       2080  0.1  0.9 5156716 293452 ?      Ssl   7월10   1:45  \_ /usr/bin/gnome-shell
+deepx       2110  0.0  0.0 582688 18636 ?        Sl    7월10   0:00  \_ /usr/libexec/gnome-shell-calendar-server
+deepx       2120  0.0  0.0 1073496 26500 ?       Ssl   7월10   0:00  \_ /usr/libexec/evolution-source-registry
+deepx       2126  0.0  0.0 317344 11236 ?        Ssl   7월10   0:00  \_ /usr/libexec/gvfs-udisks2-volume-monitor
+deepx       2134  0.0  0.0 237784  7176 ?        Ssl   7월10   0:00  \_ /usr/libexec/gvfs-mtp-volume-monitor
+deepx       2140  0.0  0.1 597808 41488 ?        Sl    7월10   0:00  \_ /usr/libexec/goa-daemon
+deepx       2144  0.0  0.0 237968  7104 ?        Ssl   7월10   0:00  \_ /usr/libexec/gvfs-goa-volume-monitor
+deepx       2149  0.0  0.0 841796 31660 ?        Ssl   7월10   0:00  \_ /usr/libexec/evolution-calendar-factory
+deepx       2158  0.0  0.0 339728 16200 ?        Sl    7월10   0:04  \_ /usr/libexec/goa-identity-service
+deepx       2160  0.0  0.0 238872  7612 ?        Ssl   7월10   0:00  \_ /usr/libexec/gvfs-gphoto2-volume-monitor
+deepx       2170  0.0  0.0 156968  6000 ?        Ssl   7월10   0:00  \_ /usr/libexec/dconf-service
+deepx       2174  0.0  0.0 673576 29324 ?        Ssl   7월10   0:00  \_ /usr/libexec/evolution-addressbook-factory
+deepx       2180  0.0  0.0 316544  8608 ?        Ssl   7월10   0:01  \_ /usr/libexec/gvfs-afc-volume-monitor
+deepx       2209  0.0  0.0 2932592 28496 ?       Sl    7월10   0:00  \_ /usr/bin/gjs /usr/share/gnome-shell/org.gnome.Shell.Notifications
+deepx       2222  0.0  0.0 162764  8280 ?        Sl    7월10   0:00  \_ /usr/libexec/at-spi2-registryd --use-gnome-session
+deepx       2236  0.0  0.0   2892  1800 ?        Ss    7월10   0:00  \_ sh -c /usr/bin/ibus-daemon --panel disable $([ "$XDG_SESSION_TYPE" = "x11" ] && echo "--xim")
+deepx       2240  0.0  0.0 390520 12780 ?        Sl    7월10   0:00  |   \_ /usr/bin/ibus-daemon --panel disable --xim
+deepx       2330  0.0  0.0 164816  7756 ?        Sl    7월10   0:00  |       \_ /usr/libexec/ibus-memconf
+deepx       2336  0.0  0.0 273864 30396 ?        Sl    7월10   0:00  |       \_ /usr/libexec/ibus-extension-gtk3
+deepx       2429  0.0  0.0 164808  7872 ?        Sl    7월10   0:00  |       \_ /usr/libexec/ibus-engine-simple
+deepx       2238  0.0  0.0 311720  7392 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-a11y-settings
+deepx       2241  0.0  0.0 465016 29672 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-color
+deepx       2242  0.0  0.0 376764 16756 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-datetime
+deepx       2244  0.0  0.0 313208  8564 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-housekeeping
+deepx       2246  0.0  0.0 342788 25136 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-keyboard
+deepx       2247  0.0  0.0 866468 30508 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-media-keys
+deepx       2248  0.0  0.0 379020 28560 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-power
+deepx       2250  0.0  0.0 251320 11904 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-print-notifications
+deepx       2251  0.0  0.0 459180  7380 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-rfkill
+deepx       2253  0.0  0.0 237612  6948 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-screensaver-proxy
+deepx       2254  0.0  0.0 467248 11268 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-sharing
+deepx       2255  0.0  0.0 387332  8796 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-smartcard
+deepx       2256  0.0  0.0 320636 10220 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-sound
+deepx       2257  0.0  0.0 343128 25592 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-wacom
+deepx       2258  0.0  0.0 344644 27720 ?        Ssl   7월10   0:00  \_ /usr/libexec/gsd-xsettings
+deepx       2350  0.0  0.0 195568 25316 ?        Sl    7월10   0:00  \_ /usr/libexec/ibus-x11 --kill-daemon
+deepx       2360  0.0  0.0 477640 14152 ?        Ssl   7월10   0:00  \_ /usr/libexec/xdg-desktop-portal
+deepx       2362  0.0  0.0 238596  7908 ?        Sl    7월10   0:00  \_ /usr/libexec/ibus-portal
+deepx       2388  0.0  0.0 2875304 28060 ?       Sl    7월10   0:00  \_ /usr/bin/gjs /usr/share/gnome-shell/org.gnome.ScreenSaver
+deepx       2414  0.0  0.0 343700 15488 ?        Sl    7월10   0:00  \_ /usr/libexec/gsd-printer
+deepx       2448  0.0  0.1 651960 35780 ?        SNsl  7월10   0:00  \_ /usr/libexec/tracker-miner-fs-3
+deepx       2453  0.0  0.2 1333032 91960 ?       Ssl   7월10   0:00  \_ /usr/libexec/xdg-desktop-portal-gnome
+deepx       2506  0.0  0.1 461420 49352 ?        Ssl   7월10   0:59  \_ /usr/lib/pclient/pclient
+deepx       2536  0.0  0.0 343504 26648 ?        Ssl   7월10   0:00  \_ /usr/libexec/xdg-desktop-portal-gtk
+deepx       2554  0.0  0.0 303920  6552 ?        Ssl   7월10   0:00  \_ /snap/snapd-desktop-integration/387/usr/bin/user-session-helper /snap/snapd-desktop-integration/387/usr/bin/snapd-desktop-integration
+deepx       2629  0.0  0.3 1411660 104336 ?      Sl    7월10   0:00  |   \_ /snap/snapd-desktop-integration/387/usr/bin/snapd-desktop-integration
+deepx       2722  0.0  0.0 167376 11868 ?        Ssl   7월10   0:27  \_ /usr/libexec/gvfsd-metadata
+deepx       4532  0.0  0.0  37220 19404 ?        S     7월10   0:00  \_ /usr/bin/python3 /usr/bin/gnome-terminal --wait
+deepx       4535  0.0  0.0 308960 28644 ?        Sl    7월10   0:00  |   \_ /usr/bin/gnome-terminal.real --wait
+deepx       4538  0.0  0.1 895412 58040 ?        Ssl   7월10   1:05  \_ /usr/libexec/gnome-terminal-server
+deepx       4561  0.0  0.0  12724  5876 pts/0    Ss    7월10   0:00  |   \_ bash
+deepx     395734  0.2  0.0  29392  7796 pts/0    S+    7월10   1:55  |   |   \_ dxtop
+deepx     395468  0.0  0.0  12724  5920 pts/5    Ss    7월10   0:00  |   \_ bash
+deepx     395598  0.0  0.0  40004 29224 pts/5    S+    7월10   0:10  |       \_ python3 -m benchmark run --product-name BIOSTAR
+deepx     571460  0.0  0.0   9700  2712 ?        Ss   09:14   0:00  |           \_ script -q -f -c stty rows 50 cols 200 2>/dev/null; exec dxtop /tmp/tmppk57sbt_.dxtop.log
+deepx     571461  0.0  0.0  29248  7680 pts/1    Ss+  09:14   0:00  |           |   \_ dxtop
+deepx     572244  0.0  0.0  14532  4436 pts/5    R+   09:24   0:00  |           \_ ps auxf
+deepx     370460  0.0  0.3 1067556 111500 ?      Sl    7월10   0:12  \_ /usr/bin/nautilus --gapplication-service
+deepx       1742  0.0  0.0 242224  6972 ?        Sl    7월10   0:00 /usr/bin/gnome-keyring-daemon --daemonize --login
+rtkit       1745  0.0  0.0 154004  3528 ?        SNsl  7월10   0:00 /usr/libexec/rtkit-daemon
+root        2114  0.0  0.0 243548  9376 ?        Ssl   7월10   0:00 /usr/libexec/upowerd
+root        2192  0.0  0.0 299600 20784 ?        Ssl   7월10   0:00 /usr/libexec/packagekitd
+deepx       4707  0.0  0.0  60728 18568 ?        Ssl   7월10   0:00 /home/deepx/.vscode-server/code-4fe60c8b1cdac1c4c174f2fb180d0d758272d713 --cli-data-dir /home/deepx/.vscode-server/cli agent host
+deepx     180821 99.9  0.0 184748 17512 ?        Ssl   7월10 1119:14 gst-launch-1.0 -q videotestsrc ! fakesink
+deepx     183661 99.9  0.0 184748 17536 ?        Ssl   7월10 1118:25 gst-launch-1.0 -q videotestsrc ! fakesink
+deepx     383898  0.0  0.2 2513440 80128 ?       Sl    7월10   0:01 ./.venv/bin/python dx_app/server.py --port 8091 --no-browser
+deepx     387115  0.0  0.2 2513440 80268 ?       Sl    7월10   0:01 ./.venv/bin/python dx_app/server.py --port 8092 --no-browser
+root      472361  0.0  0.0  75056 14808 ?        Ss   00:00   0:00 /usr/sbin/cupsd -l
+lp        472433  0.0  0.0  16296  6528 ?        S    00:00   0:00  \_ /usr/lib/cups/notifier/dbus dbus://
+lp        472434  0.0  0.0  16296  6716 ?        S    00:00   0:00  \_ /usr/lib/cups/notifier/dbus dbus://
+root      472399  0.0  0.0 173284 13076 ?        Ssl  00:00   0:00 /usr/sbin/cups-browsed

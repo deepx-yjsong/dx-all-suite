@@ -1,0 +1,100 @@
+ 7월 10 20:17:00.237660 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9c5d000 for PID 426685
+ 7월 10 20:17:00.238291 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 426685
+ 7월 10 20:17:00.239800 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9b0d000 for PID 426685
+ 7월 10 20:17:00.240109 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9c5d000 for PID 426685
+ 7월 10 20:17:00.240707 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 426685
+ 7월 10 20:17:00.242205 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9b0d000 for PID 426685
+ 7월 10 20:17:00.242505 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9c5d000 for PID 426685
+ 7월 10 20:17:00.254988 deepx-B650MT dxrtd[786]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=187, bytes=-104, errno=104
+ 7월 10 20:17:00.254988 deepx-B650MT dxrtd[786]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=187
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=426685
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426685, deviceId=0
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426685, deviceId=0, runningTaskIds count=0
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426685, deviceId=1
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426685, deviceId=1, runningTaskIds count=0
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426685, deviceId=2
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426685, deviceId=2, runningTaskIds count=0
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426685, deviceId=3
+ 7월 10 20:17:00.255070 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426685, deviceId=3, runningTaskIds count=0
+ 7월 10 20:17:02.856318 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 20588480 for Task 0, PID 426812
+ 7월 10 20:17:02.856318 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9c5d000 of size 20588480 for Task 0, PID 426812
+ 7월 10 20:17:02.856566 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1373760 for Task 0, PID 426812
+ 7월 10 20:17:02.856566 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9b0d000 of size 1373760 for Task 0, PID 426812
+ 7월 10 20:17:02.876551 deepx-B650MT dxrtd[786]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+ 7월 10 20:17:02.876579 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 20588480 for Task 0, PID 426812
+ 7월 10 20:17:02.876579 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9c5d000 of size 20588480 for Task 0, PID 426812
+ 7월 10 20:17:02.876598 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1373760 for Task 0, PID 426812
+ 7월 10 20:17:02.876598 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9b0d000 of size 1373760 for Task 0, PID 426812
+ 7월 10 20:17:02.896445 deepx-B650MT dxrtd[786]: [DXRT_SVC][AddBound] Device 1 ADD bound 0
+ 7월 10 20:17:02.896475 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 20588480 for Task 0, PID 426812
+ 7월 10 20:17:02.896475 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9c5d000 of size 20588480 for Task 0, PID 426812
+ 7월 10 20:17:02.896509 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1373760 for Task 0, PID 426812
+ 7월 10 20:17:02.896509 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9b0d000 of size 1373760 for Task 0, PID 426812
+ 7월 10 20:17:02.916059 deepx-B650MT dxrtd[786]: [DXRT_SVC][AddBound] Device 2 ADD bound 0
+ 7월 10 20:17:02.916098 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 20588480 for Task 0, PID 426812
+ 7월 10 20:17:02.916098 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9c5d000 of size 20588480 for Task 0, PID 426812
+ 7월 10 20:17:02.916098 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1373760 for Task 0, PID 426812
+ 7월 10 20:17:02.916098 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9b0d000 of size 1373760 for Task 0, PID 426812
+ 7월 10 20:17:02.935751 deepx-B650MT dxrtd[786]: [DXRT_SVC][AddBound] Device 3 ADD bound 0
+ 7월 10 20:18:49.229061 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 426812
+ 7월 10 20:18:49.230771 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9b0d000 for PID 426812
+ 7월 10 20:18:49.231090 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9c5d000 for PID 426812
+ 7월 10 20:18:49.231758 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 426812
+ 7월 10 20:18:49.233453 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9b0d000 for PID 426812
+ 7월 10 20:18:49.233760 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9c5d000 for PID 426812
+ 7월 10 20:18:49.234470 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 426812
+ 7월 10 20:18:49.236240 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9b0d000 for PID 426812
+ 7월 10 20:18:49.236547 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9c5d000 for PID 426812
+ 7월 10 20:18:49.237209 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address 1000 for PID 426812
+ 7월 10 20:18:49.239018 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9b0d000 for PID 426812
+ 7월 10 20:18:49.239320 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateAddress] Requesting deallocation of address f9c5d000 for PID 426812
+ 7월 10 20:18:49.315822 deepx-B650MT dxrtd[786]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=188, bytes=-104, errno=104
+ 7월 10 20:18:49.315822 deepx-B650MT dxrtd[786]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=188
+ 7월 10 20:18:49.315822 deepx-B650MT dxrtd[786]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=426812
+ 7월 10 20:18:49.315822 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426812, deviceId=0
+ 7월 10 20:18:49.315822 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426812, deviceId=0, runningTaskIds count=0
+ 7월 10 20:18:49.315822 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426812, deviceId=1
+ 7월 10 20:18:49.316061 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426812, deviceId=1, runningTaskIds count=0
+ 7월 10 20:18:49.316061 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426812, deviceId=2
+ 7월 10 20:18:49.316061 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426812, deviceId=2, runningTaskIds count=0
+ 7월 10 20:18:49.316061 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426812, deviceId=3
+ 7월 10 20:18:49.316061 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=426812, deviceId=3, runningTaskIds count=0
+ 7월 10 20:18:50.386155 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 20588480 for Task 0, PID 427312
+ 7월 10 20:18:50.386155 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9c5d000 of size 20588480 for Task 0, PID 427312
+ 7월 10 20:18:50.386480 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1373760 for Task 0, PID 427312
+ 7월 10 20:18:50.386480 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9b0d000 of size 1373760 for Task 0, PID 427312
+ 7월 10 20:18:50.406219 deepx-B650MT dxrtd[786]: [DXRT_SVC][AddBound] Device 0 ADD bound 0
+ 7월 10 20:18:50.406243 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 20588480 for Task 0, PID 427312
+ 7월 10 20:18:50.406243 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9c5d000 of size 20588480 for Task 0, PID 427312
+ 7월 10 20:18:50.406262 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1373760 for Task 0, PID 427312
+ 7월 10 20:18:50.406262 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9b0d000 of size 1373760 for Task 0, PID 427312
+ 7월 10 20:18:50.425875 deepx-B650MT dxrtd[786]: [DXRT_SVC][AddBound] Device 1 ADD bound 0
+ 7월 10 20:18:50.425898 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 20588480 for Task 0, PID 427312
+ 7월 10 20:18:50.425898 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9c5d000 of size 20588480 for Task 0, PID 427312
+ 7월 10 20:18:50.425921 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1373760 for Task 0, PID 427312
+ 7월 10 20:18:50.425921 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9b0d000 of size 1373760 for Task 0, PID 427312
+ 7월 10 20:18:50.445645 deepx-B650MT dxrtd[786]: [DXRT_SVC][AddBound] Device 2 ADD bound 0
+ 7월 10 20:18:50.445669 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 20588480 for Task 0, PID 427312
+ 7월 10 20:18:50.445669 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9c5d000 of size 20588480 for Task 0, PID 427312
+ 7월 10 20:18:50.445698 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Requesting backward allocation of size 1373760 for Task 0, PID 427312
+ 7월 10 20:18:50.445698 deepx-B650MT dxrtd[786]: [DXRT_SVC][BackwardAllocateForTask] Backward allocated address f9b0d000 of size 1373760 for Task 0, PID 427312
+ 7월 10 20:18:50.465630 deepx-B650MT dxrtd[786]: [DXRT_SVC][AddBound] Device 3 ADD bound 0
+ 7월 10 20:28:50.394409 deepx-B650MT dxrtd[786]: [DXRT_SVC][processClientMessage] IPCServerEndpoint::processClientMessage receive failed clientFd=189, bytes=-104, errno=104
+ 7월 10 20:28:50.394409 deepx-B650MT dxrtd[786]: [DXRT_SVC][removeClient] IPCServerEndpoint::removeClient clientFd=189
+ 7월 10 20:28:50.394409 deepx-B650MT dxrtd[786]: [DXRT_SVC][onClientDisconnected] Client disconnected: pid=427312
+ 7월 10 20:28:50.394409 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=427312, deviceId=0
+ 7월 10 20:28:50.394409 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=427312, deviceId=0, runningTaskIds count=0
+ 7월 10 20:28:50.394739 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=427312, deviceId=0, taskId=0
+ 7월 10 20:28:50.394739 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 427312
+ 7월 10 20:28:50.395823 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=427312, deviceId=1
+ 7월 10 20:28:50.395823 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=427312, deviceId=1, runningTaskIds count=0
+ 7월 10 20:28:50.395823 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=427312, deviceId=1, taskId=0
+ 7월 10 20:28:50.395823 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 427312
+ 7월 10 20:28:50.397232 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=427312, deviceId=2
+ 7월 10 20:28:50.397232 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=427312, deviceId=2, runningTaskIds count=0
+ 7월 10 20:28:50.397232 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=427312, deviceId=2, taskId=0
+ 7월 10 20:28:50.397232 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 427312
+ 7월 10 20:28:50.398629 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=427312, deviceId=3
+ 7월 10 20:28:50.398629 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit: pid=427312, deviceId=3, runningTaskIds count=0
+ 7월 10 20:28:50.398629 deepx-B650MT dxrtd[786]: [DXRT_SVC][HandleProcessDeInit] HandleProcessDeInit mem clear: pid=427312, deviceId=3, taskId=0
+ 7월 10 20:28:50.398629 deepx-B650MT dxrtd[786]: [DXRT_SVC][DeallocateTask] Requesting deallocation of memory for Task 0, PID 427312
