@@ -17,6 +17,10 @@ from typing import Optional
 # ANSI escape + bracket-only sequences left by the `script` PTY around dxtop output.
 _ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\[\??[0-9;]*[A-Za-z]")
 
+# Nominal (rated) NPU clock in MHz. DX-M1 / M1M / H1 all run at 1000 MHz at full
+# speed; a min clock below this during a run means DVFS throttled it down.
+NOMINAL_CLOCK_MHZ = 1000
+
 
 @dataclass
 class NpuStats:
@@ -32,7 +36,8 @@ class NpuStats:
     sample_count: int = 0
     raw_log: str = ""
 
-    def as_dict(self, core_ids: list[int]) -> dict:
+    def as_dict(self, core_ids: list[int],
+                nominal_clock_mhz: float = NOMINAL_CLOCK_MHZ) -> dict:
         """Flat dict with explicit core columns."""
         d: dict = {}
         for cid in core_ids:
@@ -50,9 +55,14 @@ class NpuStats:
         if self.core_clock_min_mhz and self.core_clock_max_mhz:
             all_mins = list(self.core_clock_min_mhz.values())
             all_maxes = list(self.core_clock_max_mhz.values())
-            d["npu_clock_mhz_min"] = round(min(all_mins), 0)
+            clock_min = round(min(all_mins), 0)
+            d["npu_clock_mhz_min"] = clock_min
             d["npu_clock_mhz_max"] = round(max(all_maxes), 0)
-            d["npu_throttled"] = min(all_mins) < max(all_maxes) * 0.95 if max(all_maxes) > 0 else False
+            # Throttled iff the clock dropped below the nominal rated clock at
+            # any point — referenced to nominal, not the run's own peak, so a
+            # run pinned at a low clock is still flagged. Matches the min-clock
+            # value reported above (and the dashboard's clock<nominal badge).
+            d["npu_throttled"] = clock_min < nominal_clock_mhz
         else:
             d["npu_clock_mhz_min"] = None
             d["npu_clock_mhz_max"] = None
