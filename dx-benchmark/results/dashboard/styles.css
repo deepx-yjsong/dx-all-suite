@@ -89,7 +89,6 @@ select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .task-section h3 { margin-top: 0; }
 .detail-table { table-layout: auto; width: 100%; }
 .cell-best { font-weight: 700; }
-.cell-warn { color: #b45309; font-weight: 600; }
 .empty-state { padding: 20px; color: var(--muted); border: 1px dashed var(--border); border-radius: 12px; text-align: center; }
 /* Detailed Data tab — one card (.panel) per metric, mirroring REPORT.md */
 .detail-metric-title { margin: 0 0 10px; font-size: 15px; color: var(--ink); font-weight: 700; }
@@ -98,16 +97,6 @@ select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .detail-std { color: var(--muted); font-weight: 400; font-size: 12px; }
 .table-scroll { overflow-x: auto; }
 .detail-metric .detail-table { min-width: 640px; }
-/* Metric family pills (segmented control): NPU=green, Pipeline=blue */
-.metric-pills { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.mpill { padding: 6px 12px; border: 1px solid var(--border); background: #fff; color: var(--muted); font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
-.mpill-div { width: 1px; align-self: stretch; background: var(--border); margin: 3px 5px; }
-.mpill--all:hover { background: #ececec; color: var(--ink); }
-.mpill--npu:hover { background: var(--accent-soft); color: var(--accent); }
-.mpill--pipe:hover { background: #e6eef5; color: #35617f; }
-.mpill--all.active { background: var(--ink); border-color: var(--ink); color: #fff; }
-.mpill--npu.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.mpill--pipe.active { background: #3d6f96; border-color: #3d6f96; color: #fff; }
 /* Metric family groups — reuse Version Trend's .trend-group chrome (defined below). Cards stack
    in a single-column padded body (wide tables, unlike the trend tab's 2-col chart grid). */
 #detailTables .trend-group { margin-bottom: 20px; }
@@ -234,7 +223,7 @@ tbody tr:nth-child(even) { background: var(--table-stripe); }
 .trend-group--npu .trend-group-head { background: var(--accent-soft); }
 .trend-group--npu .trend-group-label { color: var(--accent); }
 /* Group B — host + NPU end-to-end pipeline: slate-blue chrome (matches the dashboard-wide
-   Pipeline colour used by .mpill--pipe / .jl--pipe / .detail-sub--env). */
+   Pipeline colour used by .jl--pipe / .detail-sub--env). */
 .trend-group--pipe { border-left-color: #3d6f96; background: rgba(61, 111, 150, 0.05); }
 .trend-group--pipe .trend-group-head { background: #e6eef5; }
 .trend-group--pipe .trend-group-label { color: #35617f; }

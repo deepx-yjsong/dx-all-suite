@@ -77,6 +77,8 @@ function formatInputShape(shape) {
 }
 function formatMemMB(mb) { if (mb == null) return '-'; return Number(mb).toFixed(1); }
 function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+// Status pill shared by all result tables (E2E overview + Detailed Data) for consistent styling.
+function _statusBadge(s){var st=s||'-';var sc=st==='ok'?'ok':(st==='-'?'':(st==='partial'?'warn':'bad'));return sc?'<span class="status status--'+sc+'">'+escHtml(st)+'</span>':escHtml(st);}
 function _fmtTemp(lo,hi){if(lo==null&&hi==null)return'-';var a=lo!=null?Math.round(lo):'?';var b=hi!=null?Math.round(hi):'?';return a===b?String(a):a+'~'+b;}
 function _fmtClock(lo,hi){if(lo==null&&hi==null)return'\u2014';var a=lo!=null?Math.round(lo):'?';var b=hi!=null?Math.round(hi):'?';return a===b?String(a):a+'~'+b;}
 function stripAnsi(s) { return typeof s === 'string' ? s.replace(/\x1b\[[0-9;]*m/g, '') : s; }
@@ -265,14 +267,12 @@ function renderE2eTable(container, envId, task, useOrt, runId) {
 
   html += '<table class="summary-table"><thead><tr><th>Model</th><th>E2E FPS</th><th>CPU%</th><th>NPU Avg%</th><th>NPU Max%</th><th>NPU Temp \u00b0C</th><th>NPU MHz</th><th>Host RSS (MiB)</th><th>Runs</th><th>Status</th></tr></thead><tbody>';
   rows.forEach(function(r) {
-    var fpsS=fmt(r.avg_e2e_fps,1);if(r.fps_std!=null)fpsS+=' \u00b1'+fmt(r.fps_std,1);
+    var fpsS=fmt(r.avg_e2e_fps,1);if(r.fps_std!=null)fpsS+=' <span class="detail-std">\u00b1'+fmt(r.fps_std,1)+'</span>';
     var tempS=_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c);
     var clkS=_fmtClock(r.npu_clock_mhz_min,r.npu_clock_mhz_max);
     /* throttle badge: min clock below nominal */
     if(r.npu_clock_mhz_min!=null&&r.npu_clock_mhz_min<_nomClk)clkS='<span class="clk-throttled" title="Thermal throttle">'+clkS+'</span>';
-    var _st=r.status||'-';var _sc=_st==='ok'?'ok':(_st==='partial'?'warn':(_st==='-'?'':'bad'));
-    var _stTd=_sc?'<span class="status status--'+_sc+'">'+escHtml(_st)+'</span>':escHtml(_st);
-    html += '<tr><td>'+escHtml(r.model)+'</td><td class="metric-primary">'+fpsS+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+tempS+'</td><td>'+clkS+'</td><td>'+fmt(r.max_rss_mib,0)+'</td><td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td><td>'+_stTd+'</td></tr>';
+    html += '<tr><td>'+escHtml(r.model)+'</td><td class="metric-primary">'+fpsS+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+tempS+'</td><td>'+clkS+'</td><td>'+fmt(r.max_rss_mib,0)+'</td><td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td><td>'+_statusBadge(r.status)+'</td></tr>';
   });
   html += '</tbody></table>';
   container.innerHTML = html;
@@ -569,11 +569,6 @@ function initDetailTab() {
   sel.addEventListener('change',function(){state.detailEnvId=this.value;state.detailVersion=null;syncDetailVersionFilter();syncDetailRunFilter();renderDetailTables();});
   if(verSel)verSel.addEventListener('change',function(){state.detailVersion=this.value||null;syncDetailRunFilter();renderDetailTables();});
   runSel.addEventListener('change',function(){if(state.detailEnvId)_handleRunSelectionChange(state.detailEnvId,this.value);});
-  var pills=document.getElementById('detailMetricPills');
-  if(pills){pills.querySelectorAll('.mpill').forEach(function(b){
-    if(b.dataset.metric===state.detailMetric)b.classList.add('active');
-    b.addEventListener('click',function(){state.detailMetric=this.dataset.metric;pills.querySelectorAll('.mpill').forEach(function(x){x.classList.remove('active');});this.classList.add('active');renderDetailTables();});
-  });}
   document.getElementById('detailTaskFilter').value=state.detailTask;
   document.getElementById('detailOrtFilter').value=state.detailOrt;
   document.getElementById('detailTaskFilter').addEventListener('change',function(){state.detailTask=this.value;renderDetailTables();});
@@ -598,7 +593,7 @@ function renderDetailTables() {
   function sortRows(rows){return rows.slice().sort(function(a,b){var d=sizeOrd(sizeOf(a))-sizeOrd(sizeOf(b));return d!==0?d:(a.use_ort?1:0)-(b.use_ort?1:0);});}
   function stdSpan(v,s,d){var b=fmt(v,d);if(v!=null&&s!=null)b+=' <span class="detail-std">±'+fmt(s,d)+'</span>';return b;}
   function mhzTd(r){var lo=r.npu_clock_mhz_min,hi=r.npu_clock_mhz_max,s=_fmtClock(lo,hi);if(lo!=null&&lo<nom)s='<span class="clk-throttled" title="Thermal throttle">'+s+'</span>';return '<td>'+s+'</td>';}
-  function stTd(s){return '<td'+(s&&s!=='ok'&&s!=='-'?' class="cell-warn"':'')+'>'+escHtml(s||'-')+'</td>';}
+  function stTd(s){return '<td>'+_statusBadge(s)+'</td>';}
   function msOrt(r){return '<td>'+escHtml(r.model)+'</td><td>'+((sizeOf(r)||'-')+'').toUpperCase()+'</td><td>'+(r.use_ort?'ON':'OFF')+'</td>';}
   function section(title,sub,by,head,rowFn,preHtml,key){var tasks=Object.keys(by).sort(taskOrd);if(!tasks.length)return '';var inner=tasks.map(function(t){var body=sortRows(by[t]).map(rowFn).join('');return '<h4 class="detail-task">'+(TASK_MAP[t]?TASK_MAP[t].label:t)+'</h4><div class="table-scroll"><table class="summary-table detail-table"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div>';}).join('');return '<section class="detail-metric" id="dm-'+key+'"><h2 class="detail-metric-title">'+title+(sub?' <span class="detail-metric-sub">'+sub+'</span>':'')+'</h2>'+(preHtml||'')+inner+'</section>';}
 
