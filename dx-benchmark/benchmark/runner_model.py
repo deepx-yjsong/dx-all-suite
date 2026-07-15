@@ -31,6 +31,55 @@ def _stdev(values: list[float]) -> Optional[float]:
     return statistics.stdev(values) if len(values) >= 2 else None
 
 
+def select_buffer_count(probe, start=3, improve_eps=0.01, decline_eps=0.02, max_probe=16):
+    """Adaptive knee-search over run_model ``--buffer-count``.
+
+    ``probe(c)`` runs a short throughput probe at buffer-count ``c`` and returns FPS.
+    Throughput vs buffer-count is a unimodal saturation curve (rise -> knee -> slight
+    decline); we ascend by 1 from ``start`` (the per-chip core-count floor, 3 — below
+    it cores cannot all be fed) and stop at the knee: a decline >= decline_eps past the
+    running peak, a confirmed plateau (< improve_eps gain twice), or ``max_probe``.
+    Winner = the SMALLEST buffer-count within improve_eps of the best FPS (low edge of
+    the plateau -> less memory/latency). If the winner is the start floor, probe one
+    below in case the true peak is lower.
+
+    Returns ``(winner, curve{c: fps}, edge_hit)``.
+    """
+    curve: dict[int, float] = {}
+    best = -1.0
+    plateau = 0
+    edge = False
+    c = start
+    while True:
+        fps = float(probe(c))
+        curve[c] = fps
+        if best < 0:
+            best = fps
+        else:
+            if fps <= best * (1 - decline_eps):
+                break                                      # declined past the peak
+            gain = (fps - best) / best if best > 0 else 1.0
+            best = max(best, fps)
+            plateau = plateau + 1 if gain < improve_eps else 0
+            if plateau >= 2:
+                break                                      # plateau confirmed
+        if c >= max_probe:
+            edge = True
+            break
+        c += 1
+
+    def _winner(cv: dict[int, float]) -> int:
+        top = max(cv.values())
+        return min(k for k, v in cv.items() if v >= top * (1 - improve_eps))
+
+    win = _winner(curve)
+    if win == start and start > 1:                          # peak may be below the floor
+        below = start - 1
+        curve[below] = float(probe(below))
+        win = _winner(curve)
+    return win, curve, edge
+
+
 def _cleanup_run_model(incident_context: str = "") -> None:
     """Kill any lingering run_model processes and recover NPU after timeout.
 
@@ -94,6 +143,7 @@ class ModelResult:
     cpu_0_ms: Optional[float] = None
     cpu_pct: Optional[float] = None
     fps_std: Optional[float] = None
+    buffer_count: Optional[int] = None   # run_model --buffer-count chosen by the probe (throughput)
     npu_stats: Optional[dict] = None
     input_tensor: Optional[dict] = None
     status: str = "ok"
@@ -112,6 +162,7 @@ class ModelResult:
             "npu_task_ms": self.npu_task_ms,
             "cpu_0_ms": self.cpu_0_ms,
             "cpu_pct": self.cpu_pct,
+            "buffer_count": self.buffer_count,
             "status": self.status,
             "reason": self.reason,
         }
@@ -220,13 +271,43 @@ def run_throughput(
     num_runs = max(1, cfg.model_throughput_runs)
     ort_tag = "ort_on" if use_ort else "ort_off"
 
+    # ── buffer-count probe: find the knee for THIS model×HW, then measure there ──
+    def _bc_probe(c: int) -> float:
+        pcmd = ["run_model", "-m", str(model.path),
+                "-t", str(cfg.buffer_count_probe_sec), "--buffer-count", str(c)]
+        if use_ort:
+            pcmd.append("--use-ort")
+        try:
+            p = subprocess.run(pcmd, capture_output=True, text=True,
+                               timeout=cfg.buffer_count_probe_sec + 120)
+        except subprocess.TimeoutExpired:
+            _cleanup_run_model(f"{model.name}.{ort_tag}.bufprobe.c{c}")
+            return 0.0
+        fps = _parse_fps_from_log(p.stdout + "\n" + p.stderr)
+        return fps if fps is not None else 0.0
+
+    buffer_count, bc_curve, bc_edge = select_buffer_count(
+        _bc_probe,
+        start=cfg.buffer_count_probe_start,
+        improve_eps=cfg.buffer_count_improve_eps,
+        decline_eps=cfg.buffer_count_decline_eps,
+        max_probe=cfg.buffer_count_max_probe,
+    )
+    print(f"    [buffer-count] winner={buffer_count} "
+          f"(probe {cfg.buffer_count_probe_sec}s: "
+          + ", ".join(f"{k}:{v:.0f}" for k, v in sorted(bc_curve.items())) + ")", flush=True)
+    if bc_edge:
+        print(f"    [WARN] buffer-count still rising at probe cap {cfg.buffer_count_max_probe} "
+              f"(winner={buffer_count}); consider raising buffer_count_max_probe", flush=True)
+    cmd += ["--buffer-count", str(buffer_count)]
+
     # Warmup run (discard result); retry on transient timeout before giving up the cell
     print(f"    [throughput warmup] (-t {cfg.model_time_sec}s)", flush=True)
     if not _warmup_with_retries(cmd, cfg, f"{model.name}.{ort_tag}.throughput.warmup"):
         return ModelResult(
             model=model.name, task=model.task, size=model.size,
             use_ort=use_ort, family="throughput",
-            status="timeout",
+            status="timeout", buffer_count=buffer_count,
             reason=f"warmup exceeded 600s on all {1 + max(0, cfg.model_warmup_retries)} attempt(s)",
         )
 
@@ -296,7 +377,8 @@ def run_throughput(
         return ModelResult(
             model=model.name, task=model.task, size=model.size,
             use_ort=use_ort, family="throughput",
-            status="no_fps", reason="Could not parse FPS from any run",
+            status="no_fps", buffer_count=buffer_count,
+            reason="Could not parse FPS from any run",
         )
 
     avg_fps = sum(fps_values) / len(fps_values)
@@ -322,6 +404,7 @@ def run_throughput(
         fps=avg_fps,
         fps_std=fps_std,
         cpu_pct=avg_cpu,
+        buffer_count=buffer_count,
         npu_stats=npu_dict,
         input_tensor=input_tensor,
         status=status,
