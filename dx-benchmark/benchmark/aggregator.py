@@ -257,6 +257,25 @@ def _flatten_pipeline_results(run_id: str, env_id: str, result_dir: Path, rows: 
     return flattened
 
 
+_STATUS_RANK = {"ok": 0, "partial": 1, "timeout": 2, "error": 3, "fail": 4}
+
+
+def _worst_status(rows: list[dict]) -> str:
+    """Worst status across a model's multi-stream rows (ok < partial < timeout < error < fail).
+
+    Capacity is taken from the best *ok* stream count, so a valid channel number
+    can hide failed rows (e.g. an unparsable sc=1 baseline). Surfacing the worst
+    status lets the dashboard flag such runs instead of showing a clean number.
+    """
+    worst, worst_rank = "ok", 0
+    for row in rows:
+        s = (row.get("status") or "ok")
+        rank = _STATUS_RANK.get(s, _STATUS_RANK["error"])  # unknown → treat as error
+        if rank > worst_rank:
+            worst, worst_rank = s, rank
+    return worst
+
+
 def _build_capacity_summary(run_id: str, env_id: str, rows: list[dict], fps_threshold: float) -> list[dict]:
     grouped: dict[tuple[str, bool], list[dict]] = {}
     for row in rows:
@@ -283,6 +302,7 @@ def _build_capacity_summary(run_id: str, env_id: str, rows: list[dict], fps_thre
                 "capacity_streams": best.get("stream_count"),
                 "capacity_per_channel_fps": best.get("avg_per_channel_fps"),
                 "fps_threshold": fps_threshold,
+                "status": _worst_status(group),
             })
         elif group:
             # No stream count met the threshold (or all multi runs failed) —
@@ -299,6 +319,7 @@ def _build_capacity_summary(run_id: str, env_id: str, rows: list[dict], fps_thre
                 "capacity_streams": 0,
                 "capacity_per_channel_fps": None,
                 "fps_threshold": fps_threshold,
+                "status": _worst_status(group),
             })
     return summaries
 
