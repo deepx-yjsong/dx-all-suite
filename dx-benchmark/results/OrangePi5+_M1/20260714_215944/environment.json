@@ -1,13 +1,16 @@
 {
-  "timestamp": "2026-07-13T02:55:36.236648+00:00",
+  "timestamp": "2026-07-14T12:59:44.503756+00:00",
   "host": {
-    "hostname": "raspberrypi",
+    "hostname": "orangepi5plus",
     "os": "Debian GNU/Linux 12 (bookworm)",
-    "kernel": "6.12.93+rpt-rpi-2712",
+    "kernel": "6.1.43-rockchip-rk3588",
     "arch": "aarch64",
-    "cpu": "Cortex-A76",
-    "cpu_count": 4,
-    "ram_gb": 7.9
+    "cpu": "Cortex-A55",
+    "cpu_count": 8,
+    "ram_gb": 15.6,
+    "cpu_governors": {
+      "ondemand": 8
+    }
   },
   "npu": {
     "sku": "M1",
@@ -17,14 +20,14 @@
     "firmware": "v2.7.1",
     "memory": "LPDDR5 5600 Mbps, 3.92GiB",
     "board": "M.2, Rev 1.0",
-    "pcie": "Gen3 X1 [01:00:00]",
+    "pcie": "Gen3 X4 [01:00:00]",
     "cores": [
-      "NPU 0: voltage 750 mV, clock 1000 MHz, temperature 33'C",
-      "NPU 1: voltage 750 mV, clock 1000 MHz, temperature 34'C",
-      "NPU 2: voltage 750 mV, clock 1000 MHz, temperature 34'C"
+      "NPU 0: voltage 750 mV, clock 1000 MHz, temperature 39'C",
+      "NPU 1: voltage 750 mV, clock 1000 MHz, temperature 39'C",
+      "NPU 2: voltage 750 mV, clock 1000 MHz, temperature 39'C"
     ],
-    "rt_version_raw": "v3.4.0+9ef3f4c-dirty",
-    "raw": "DXRT v3.4.0+9ef3f4c-dirty\n=======================================================\n * Device 0: M1, Accelerator type\n---------------------   Version   ---------------------\n * RT Driver version   : v2.5.1\n * PCIe Driver version : v2.4.1\n-------------------------------------------------------\n * FW version          : v2.7.1\n--------------------- Device Info ---------------------\n * Memory : LPDDR5 5600 Mbps, 3.92GiB\n * Board  : M.2, Rev 1.0\n * Chip Offset : 0\n * PCIe   : Gen3 X1 [01:00:00]\n\nNPU 0: voltage 750 mV, clock 1000 MHz, temperature 33'C\nNPU 1: voltage 750 mV, clock 1000 MHz, temperature 34'C\nNPU 2: voltage 750 mV, clock 1000 MHz, temperature 34'C\n=======================================================",
+    "rt_version_raw": "v3.4.0+ed51532",
+    "raw": "DXRT v3.4.0+ed51532\n=======================================================\n * Device 0: M1, Accelerator type\n---------------------   Version   ---------------------\n * RT Driver version   : v2.5.1\n * PCIe Driver version : v2.4.1\n-------------------------------------------------------\n * FW version          : v2.7.1\n--------------------- Device Info ---------------------\n * Memory : LPDDR5 5600 Mbps, 3.92GiB\n * Board  : M.2, Rev 1.0\n * Chip Offset : 0\n * PCIe   : Gen3 X4 [01:00:00]\n\nNPU 0: voltage 750 mV, clock 1000 MHz, temperature 39'C\nNPU 1: voltage 750 mV, clock 1000 MHz, temperature 39'C\nNPU 2: voltage 750 mV, clock 1000 MHz, temperature 39'C\n=======================================================",
     "device_count": 1,
     "modules": [
       {
@@ -61,16 +64,29 @@
     },
     "ffprobe": {
       "path": "/usr/bin/ffprobe",
-      "version": "ffprobe version 5.1.9-0+deb12u1+rpt1 Copyright (c) 2007-2026 the FFmpeg developers",
+      "version": "ffprobe version 5.1.3-4 Copyright (c) 2007-2022 the FFmpeg developers",
       "available": true
     }
   },
   "missing_required": [],
-  "product_name": "RPi5B",
+  "product_name": "OrangePi5+",
   "dx_all_suite_version": "v2.4.0",
   "video_infos": {
+    "obb": {
+      "path": "/home/orangepi/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/obb_benchmark_video.mp4",
+      "filename": "obb_benchmark_video.mp4",
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "pix_fmt": "yuv420p",
+      "fps": 30.0,
+      "nb_frames": 2640,
+      "duration_sec": 88.0,
+      "format": "QuickTime / MOV",
+      "bitrate_mbps": 4.87
+    },
     "od_pose_seg": {
-      "path": "/home/deepx/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
+      "path": "/home/orangepi/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
       "filename": "od_benchmark_video.mp4",
       "codec": "h264",
       "width": 1920,
@@ -83,7 +99,7 @@
       "bitrate_mbps": 4.47
     },
     "cls": {
-      "path": "/home/deepx/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
+      "path": "/home/orangepi/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
       "filename": "od_benchmark_video.mp4",
       "codec": "h264",
       "width": 1920,
@@ -94,19 +110,6 @@
       "duration_sec": 115.281833,
       "format": "QuickTime / MOV",
       "bitrate_mbps": 4.47
-    },
-    "obb": {
-      "path": "/home/deepx/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/obb_benchmark_video.mp4",
-      "filename": "obb_benchmark_video.mp4",
-      "codec": "h264",
-      "width": 1920,
-      "height": 1080,
-      "pix_fmt": "yuv420p",
-      "fps": 30.0,
-      "nb_frames": 2640,
-      "duration_sec": 88.0,
-      "format": "QuickTime / MOV",
-      "bitrate_mbps": 4.87
     }
   },
   "benchmark_params": {
@@ -137,6 +140,8 @@
     "model_latency_runs": 1,
     "model_throughput_runs": 3,
     "e2e_runs": 3,
+    "e2e_stall_timeout": 90.0,
+    "e2e_hard_cap": 1800.0,
     "fps_threshold": 30.0,
     "multi_stream_search": "single-stream-estimate-linear-boundary",
     "stable_capacity_rule": "status_ok_and_all_runs_success_and_avg_per_channel_fps_ge_threshold",
@@ -629,16 +634,16 @@
     }
   ],
   "timing": {
-    "start": "2026-07-13 11:55:36",
-    "end": "2026-07-14 08:13:19",
-    "duration_sec": 73063.8
+    "start": "2026-07-14 21:59:44",
+    "end": "2026-07-15 17:15:40",
+    "duration_sec": 69356.0
   },
   "timing_history": [
     {
       "mode": "run",
-      "start": "2026-07-13 11:55:36",
-      "end": "2026-07-14 08:13:19",
-      "duration_sec": 73063.5,
+      "start": "2026-07-14 21:59:44",
+      "end": "2026-07-15 17:15:40",
+      "duration_sec": 69355.5,
       "families": [
         "all"
       ],

@@ -1,13 +1,16 @@
 {
-  "timestamp": "2026-07-13T04:26:57.057927+00:00",
+  "timestamp": "2026-07-14T13:04:03.723652+00:00",
   "host": {
-    "hostname": "orangepi5plus",
+    "hostname": "raspberrypi",
     "os": "Debian GNU/Linux 12 (bookworm)",
-    "kernel": "6.1.43-rockchip-rk3588",
+    "kernel": "6.12.93+rpt-rpi-2712",
     "arch": "aarch64",
-    "cpu": "Cortex-A55",
-    "cpu_count": 8,
-    "ram_gb": 15.6
+    "cpu": "Cortex-A76",
+    "cpu_count": 4,
+    "ram_gb": 7.9,
+    "cpu_governors": {
+      "ondemand": 4
+    }
   },
   "npu": {
     "sku": "M1",
@@ -17,14 +20,14 @@
     "firmware": "v2.7.1",
     "memory": "LPDDR5 5600 Mbps, 3.92GiB",
     "board": "M.2, Rev 1.0",
-    "pcie": "Gen1 X4 [01:00:00]",
+    "pcie": "Gen3 X1 [01:00:00]",
     "cores": [
-      "NPU 0: voltage 750 mV, clock 1000 MHz, temperature 41'C",
-      "NPU 1: voltage 750 mV, clock 1000 MHz, temperature 41'C",
-      "NPU 2: voltage 750 mV, clock 1000 MHz, temperature 41'C"
+      "NPU 0: voltage 750 mV, clock 1000 MHz, temperature 35'C",
+      "NPU 1: voltage 750 mV, clock 1000 MHz, temperature 35'C",
+      "NPU 2: voltage 750 mV, clock 1000 MHz, temperature 35'C"
     ],
-    "rt_version_raw": "v3.4.0+9ef3f4c",
-    "raw": "DXRT v3.4.0+9ef3f4c\n=======================================================\n * Device 0: M1, Accelerator type\n---------------------   Version   ---------------------\n * RT Driver version   : v2.5.1\n * PCIe Driver version : v2.4.1\n-------------------------------------------------------\n * FW version          : v2.7.1\n--------------------- Device Info ---------------------\n * Memory : LPDDR5 5600 Mbps, 3.92GiB\n * Board  : M.2, Rev 1.0\n * Chip Offset : 0\n * PCIe   : Gen1 X4 [01:00:00]\n\nNPU 0: voltage 750 mV, clock 1000 MHz, temperature 41'C\nNPU 1: voltage 750 mV, clock 1000 MHz, temperature 41'C\nNPU 2: voltage 750 mV, clock 1000 MHz, temperature 41'C\n=======================================================",
+    "rt_version_raw": "v3.4.0+9ef3f4c-dirty",
+    "raw": "DXRT v3.4.0+9ef3f4c-dirty\n=======================================================\n * Device 0: M1, Accelerator type\n---------------------   Version   ---------------------\n * RT Driver version   : v2.5.1\n * PCIe Driver version : v2.4.1\n-------------------------------------------------------\n * FW version          : v2.7.1\n--------------------- Device Info ---------------------\n * Memory : LPDDR5 5600 Mbps, 3.92GiB\n * Board  : M.2, Rev 1.0\n * Chip Offset : 0\n * PCIe   : Gen3 X1 [01:00:00]\n\nNPU 0: voltage 750 mV, clock 1000 MHz, temperature 35'C\nNPU 1: voltage 750 mV, clock 1000 MHz, temperature 35'C\nNPU 2: voltage 750 mV, clock 1000 MHz, temperature 35'C\n=======================================================",
     "device_count": 1,
     "modules": [
       {
@@ -61,16 +64,42 @@
     },
     "ffprobe": {
       "path": "/usr/bin/ffprobe",
-      "version": "ffprobe version 5.1.3-4 Copyright (c) 2007-2022 the FFmpeg developers",
+      "version": "ffprobe version 5.1.9-0+deb12u1+rpt1 Copyright (c) 2007-2026 the FFmpeg developers",
       "available": true
     }
   },
   "missing_required": [],
-  "product_name": "OrangePi5+",
+  "product_name": "RPi5B",
   "dx_all_suite_version": "v2.4.0",
   "video_infos": {
+    "od_pose_seg": {
+      "path": "/home/deepx/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
+      "filename": "od_benchmark_video.mp4",
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "pix_fmt": "yuv420p",
+      "fps": 30.0,
+      "nb_frames": 3455,
+      "duration_sec": 115.281833,
+      "format": "QuickTime / MOV",
+      "bitrate_mbps": 4.47
+    },
+    "cls": {
+      "path": "/home/deepx/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
+      "filename": "od_benchmark_video.mp4",
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "pix_fmt": "yuv420p",
+      "fps": 30.0,
+      "nb_frames": 3455,
+      "duration_sec": 115.281833,
+      "format": "QuickTime / MOV",
+      "bitrate_mbps": 4.47
+    },
     "obb": {
-      "path": "/home/orangepi/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/obb_benchmark_video.mp4",
+      "path": "/home/deepx/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/obb_benchmark_video.mp4",
       "filename": "obb_benchmark_video.mp4",
       "codec": "h264",
       "width": 1920,
@@ -81,32 +110,6 @@
       "duration_sec": 88.0,
       "format": "QuickTime / MOV",
       "bitrate_mbps": 4.87
-    },
-    "cls": {
-      "path": "/home/orangepi/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
-      "filename": "od_benchmark_video.mp4",
-      "codec": "h264",
-      "width": 1920,
-      "height": 1080,
-      "pix_fmt": "yuv420p",
-      "fps": 30.0,
-      "nb_frames": 3455,
-      "duration_sec": 115.281833,
-      "format": "QuickTime / MOV",
-      "bitrate_mbps": 4.47
-    },
-    "od_pose_seg": {
-      "path": "/home/orangepi/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
-      "filename": "od_benchmark_video.mp4",
-      "codec": "h264",
-      "width": 1920,
-      "height": 1080,
-      "pix_fmt": "yuv420p",
-      "fps": 30.0,
-      "nb_frames": 3455,
-      "duration_sec": 115.281833,
-      "format": "QuickTime / MOV",
-      "bitrate_mbps": 4.47
     }
   },
   "benchmark_params": {
@@ -137,6 +140,8 @@
     "model_latency_runs": 1,
     "model_throughput_runs": 3,
     "e2e_runs": 3,
+    "e2e_stall_timeout": 90.0,
+    "e2e_hard_cap": 1800.0,
     "fps_threshold": 30.0,
     "multi_stream_search": "single-stream-estimate-linear-boundary",
     "stable_capacity_rule": "status_ok_and_all_runs_success_and_avg_per_channel_fps_ge_threshold",
@@ -629,16 +634,16 @@
     }
   ],
   "timing": {
-    "start": "2026-07-13 13:26:57",
-    "end": "2026-07-14 08:34:10",
-    "duration_sec": 68833.4
+    "start": "2026-07-14 22:04:03",
+    "end": "2026-07-15 16:31:50",
+    "duration_sec": 66467.8
   },
   "timing_history": [
     {
       "mode": "run",
-      "start": "2026-07-13 13:26:57",
-      "end": "2026-07-14 08:34:10",
-      "duration_sec": 68833.4,
+      "start": "2026-07-14 22:04:03",
+      "end": "2026-07-15 16:31:50",
+      "duration_sec": 66467.0,
       "families": [
         "all"
       ],

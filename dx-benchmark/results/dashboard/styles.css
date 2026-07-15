@@ -251,7 +251,6 @@ tbody tr:nth-child(even) { background: var(--table-stripe); }
 .ubar .run-inline-item select { flex: 1 1 auto; min-width: 0; width: 100%; padding: 5px 8px; font-size: 12px; }
 .ubar .run-inline-item.run-inline-missing .run-inline-name { color: var(--muted); font-weight: 500; font-style: italic; }
 .ubar .run-inline-name { flex: 0 0 150px; color: var(--ink); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ubar .run-badge { font-size: 10px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 1px 6px; }
 @media (max-width: 980px) {
   .ubar .ubar-field select, .ubar .run-inline-item select { min-width: 0; width: 100%; }
   .ubar .run-inline { grid-template-columns: 1fr; }

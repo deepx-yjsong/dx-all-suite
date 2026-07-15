@@ -180,8 +180,7 @@ function renderRunSelectors(targetId){
     }
     var cur=_getSelectedRunId(env.env_id);
     var opts=runs.map(function(r){return '<option value="'+escHtml(r.run_id)+'"'+(r.run_id===cur?' selected':'')+'>'+escHtml(r.run_id)+'</option>';}).join('');
-    var badge=runs.length>1?'<span class="run-badge">'+runs.length+' runs</span>':'';
-    return '<label class="run-inline-item"><span class="run-inline-name">'+name+'</span>'+badge+'<select class="env-run-select" data-run-env="'+escHtml(env.env_id)+'">'+opts+'</select></label>';
+    return '<label class="run-inline-item"><span class="run-inline-name">'+name+'</span><select class="env-run-select" data-run-env="'+escHtml(env.env_id)+'">'+opts+'</select></label>';
   }).join('');
   target.innerHTML='<label class="ubar-field"><span>dx-all-suite version</span><select data-version-select>'+verOpts+'</select></label><span class="run-inline-label">Run per environment</span><div class="run-inline">'+items+'</div>';
   var vsel=target.querySelector('select[data-version-select]');
@@ -613,8 +612,8 @@ function renderDetailTables() {
     function(r){var tot=r.avg_e2e_fps?1000/r.avg_e2e_fps:null;return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.avg_e2e_fps,r.fps_std,1)+'</td><td>'+fmt(tot,2)+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+'<td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td>'+stTd(r.status)+'</tr>';},
     _decodePathSummary(e2eRows),'e2e');
   var secMul=section('Max Channel Capacity','max channels ≥ threshold',cap,
-    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>Max Channels</th><th>Per-Ch FPS</th><th>FPS Threshold</th>',
-    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+(r.capacity_streams!=null?r.capacity_streams:'-')+'</td><td>'+fmt(r.capacity_per_channel_fps,1)+'</td><td>'+fmt(r.fps_threshold,0)+'</td></tr>';},'','multi');
+    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>Max Channels</th><th>Per-Ch FPS</th><th>FPS Threshold</th><th>Status</th>',
+    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+(r.capacity_streams!=null?r.capacity_streams:'-')+'</td><td>'+fmt(r.capacity_per_channel_fps,1)+'</td><td>'+fmt(r.fps_threshold,0)+'</td>'+stTd(r.status)+'</tr>';},'','multi');
 
   // Two metric families surfaced as color-coded groups so users grasp each metric's character:
   //  · NPU Performance    — model inference (Throughput + Latency)          → green
@@ -787,8 +786,7 @@ function renderTrendRunSelectors(){
     var runs=_trendRunsForVersion(hwId,v);if(!runs.length)return '';
     var cur=(state.trendRunByVersion&&state.trendRunByVersion[v])||runs[0].run_id;
     var opts=runs.map(function(s){return '<option value="'+escHtml(s.run_id)+'"'+(s.run_id===cur?' selected':'')+'>'+escHtml(s.run_id)+'</option>';}).join('');
-    var badge=runs.length>1?'<span class="run-badge">'+runs.length+' runs</span>':'';
-    return '<label class="run-inline-item"><span class="run-inline-name">dx-all-suite '+escHtml(v)+'</span>'+badge+'<select data-trend-run-ver="'+escHtml(v)+'">'+opts+'</select></label>';
+    return '<label class="run-inline-item"><span class="run-inline-name">dx-all-suite '+escHtml(v)+'</span><select data-trend-run-ver="'+escHtml(v)+'">'+opts+'</select></label>';
   }).join('');
   el.querySelectorAll('select[data-trend-run-ver]').forEach(function(sel){
     sel.addEventListener('change',function(){state.trendRunByVersion[this.dataset.trendRunVer]=this.value;refreshTrend();});
