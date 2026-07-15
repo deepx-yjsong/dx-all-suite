@@ -28,11 +28,20 @@ def test_picks_knee_and_stops_on_decline_large_model():
     assert edge is False
 
 
-def test_plateau_prefers_smaller():
-    # nano-ish plateau: within 1% from c=6 up → prefer 6 (smallest within eps of best).
+def test_winner_is_highest_throughput_bc():
+    # The winner is the buffer-count with the HIGHEST measured throughput (the ceiling),
+    # NOT a smaller near-tie value — this benchmark reports max achievable throughput.
     p = _curve({3: 219.0, 4: 282.0, 5: 298.0, 6: 302.0, 7: 304.0, 8: 305.0})
     win, curve, edge = select_buffer_count(p, start=3, improve_eps=0.01)
-    assert win == 6
+    assert win == 8
+
+
+def test_winner_breaks_exact_ties_with_smaller():
+    # Only on an EXACT throughput tie is the smaller buffer-count preferred.
+    # (6 declines so the search stops with the 4==5 tie in hand.)
+    p = _curve({3: 200.0, 4: 305.0, 5: 305.0, 6: 290.0})
+    win, curve, edge = select_buffer_count(p, start=3, improve_eps=0.01)
+    assert win == 4
 
 
 def test_edge_flag_when_still_rising_at_cap():

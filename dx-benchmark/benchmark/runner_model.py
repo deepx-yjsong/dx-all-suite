@@ -39,9 +39,10 @@ def select_buffer_count(probe, start=3, improve_eps=0.01, decline_eps=0.02, max_
     decline); we ascend by 1 from ``start`` (the per-chip core-count floor, 3 — below
     it cores cannot all be fed) and stop at the knee: a decline >= decline_eps past the
     running peak, a confirmed plateau (< improve_eps gain twice), or ``max_probe``.
-    Winner = the SMALLEST buffer-count within improve_eps of the best FPS (low edge of
-    the plateau -> less memory/latency). If the winner is the start floor, probe one
-    below in case the true peak is lower.
+    Winner = the buffer-count with the HIGHEST measured throughput (the device ceiling);
+    a smaller buffer-count wins only on an exact tie. If the winner is the start floor,
+    probe one below in case the true peak is lower. (improve_eps governs only the plateau
+    early-stop, not winner selection.)
 
     Returns ``(winner, curve{c: fps}, edge_hit)``.
     """
@@ -69,8 +70,9 @@ def select_buffer_count(probe, start=3, improve_eps=0.01, decline_eps=0.02, max_
         c += 1
 
     def _winner(cv: dict[int, float]) -> int:
-        top = max(cv.values())
-        return min(k for k, v in cv.items() if v >= top * (1 - improve_eps))
+        # Highest measured throughput wins (this benchmark reports the ceiling); a
+        # smaller buffer-count only wins on an EXACT tie.
+        return min(cv, key=lambda k: (-cv[k], k))
 
     win = _winner(curve)
     if win == start and start > 1:                          # peak may be below the floor
