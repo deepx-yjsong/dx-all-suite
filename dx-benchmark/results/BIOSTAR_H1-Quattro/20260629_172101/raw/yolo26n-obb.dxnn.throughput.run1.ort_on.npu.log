@@ -1,9 +1,0 @@
-Script started on 2026-06-30 05:09:41+09:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="-1" LINES="-1"]
-Error: dxrt.service is not running
-This build of dxtop requires dxrt.service.
-Please start the service with one of the following:
-  sudo systemctl start dxrt.service
-  sudo service dxrt start
-Alternatively, rebuild dxtop without USE_SERVICE for standalone mode:
-  cmake -DUSE_SERVICE=OFF ..
-Script done on 2026-06-30 05:09:41+09:00 [COMMAND_EXIT_CODE="1"]

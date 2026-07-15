@@ -1,5 +1,0 @@
-incident: 001_20260629_184250_yolo26s.dxnn.ort_on.multi.sc5.warmup
-context: yolo26s.dxnn.ort_on.multi.sc5.warmup
-timestamp: 20260629_184250
-npu_temp_c: 59.0
-npu_clock_mhz: 1000.0

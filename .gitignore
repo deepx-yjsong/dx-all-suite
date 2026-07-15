@@ -1,10 +1,20 @@
-# dx-benchmark — ignore generated/large artifacts; per-run raw results ARE tracked
+# dx-benchmark — ignore generated/large artifacts
 # downloaded models/videos (large binaries)
 dx-benchmark/benchmark/assets/
 dx-benchmark/venv/
-# generated aggregate — rebuild with `run.sh dashboard`
-dx-benchmark/results/dashboard/
+# per-run raw logs + timeout diagnostics — huge, not needed for distribution
+dx-benchmark/results/**/raw/
+dx-benchmark/results/**/incidents/
+# CSV mirrors of *_results.json — tool consumes JSON only; JSON is lossless
+dx-benchmark/results/**/*.csv
+# stale single-file dashboard export (not produced by `run.sh dashboard`)
+dx-benchmark/results/dashboard/dashboard_standalone.html
+# internal-only quality review (배포 금지)
+dx-benchmark/docs/QUALITY_REVIEW_2026-07-14_KOR.md
+# NOTE: results/dashboard/ build artifacts ARE tracked (consumed by suite features)
 
 # Python bytecode
 __pycache__/
 *.pyc
+# pytest cache
+.pytest_cache/

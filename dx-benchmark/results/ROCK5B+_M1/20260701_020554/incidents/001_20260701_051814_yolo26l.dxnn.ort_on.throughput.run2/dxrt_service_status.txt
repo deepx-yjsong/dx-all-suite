@@ -1,9 +1,0 @@
-● dxrt.service - DX-RT Service
-     Loaded: loaded (/etc/systemd/system/dxrt.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2026-07-01 01:58:55 UTC; 3h 19min ago
-   Main PID: 38671 (dxrtd)
-      Tasks: 6 (limit: 9192)
-     Memory: 856.0K
-        CPU: 2min 18.638s
-     CGroup: /system.slice/dxrt.service
-             └─38671 /usr/local/bin/dxrtd

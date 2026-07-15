@@ -39,12 +39,21 @@ dx-benchmark/
 ├── setup.sh        # data setup: download models + videos (no sudo)
 ├── setup_env.sh    # one-time host provisioning (sudo): dxrt sudoers + journal
 ├── README.md
-├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md
+├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md (performance analysis)
 ├── benchmark/      # python package (python3 -m benchmark)
 │   ├── __main__.py, config.py, model_list.json, ...
 │   └── assets/{models,videos}/   # downloaded (gitignored)
-└── results/        # per-run raw data (tracked); results/dashboard/ (gitignored)
+└── results/        # per-run results
+    ├── <hw_id>/<run_id>/   # tracked: *_results.json + environment.json + REPORT.md
+    │                       # gitignored (local-only): raw/, incidents/, *.csv
+    └── dashboard/          # tracked build artifacts (index.html/app.js/styles.css/dataset.json)
 ```
+
+> **What ships in git:** the compact per-run JSON summaries + `REPORT.md`, plus the
+> built dashboard. The large `raw/` logs, `incidents/` diagnostics, and the `*.csv`
+> mirrors of the JSON are regenerated locally by `run`/`report` and are **git-ignored**
+> — they are not needed to read results or rebuild the dashboard. The `*_results.json`
+> files are the lossless source of truth (the CSVs carry identical columns).
 
 ## Prerequisites
 
@@ -94,17 +103,17 @@ cd /path/to/dx-benchmark
 ./run.sh run --sizes n,s --family model --model-time 30
 
 # Resume interrupted run
-./run.sh run --resume results/BIOSTAR_H1/20260421_201621
+./run.sh run --resume results/BIOSTAR_H1-Quattro/20260710_180653
 
 # Retry failed conditions only
-./run.sh run --resume results/BIOSTAR_H1/20260421_201621 --retry-failed
+./run.sh run --resume results/BIOSTAR_H1-Quattro/20260710_180653 --retry-failed
 ```
 
 ### 4. Regenerate Report
 
 ```bash
 # Specify a {hw_id}/{run_id} result directory path
-./run.sh report results/BIOSTAR_H1/20260421_201621
+./run.sh report results/BIOSTAR_H1-Quattro/20260710_180653
 ```
 
 ### 5. Aggregate Results
@@ -160,24 +169,26 @@ Compare benchmark results before and after dx-all-suite releases using the same 
 Results always follow the `results/{hw_id}/{run_id}/` structure. HW_ID is automatically computed from the `environment.json` fingerprint during `run`.
 
 - With `--product-name`: `{product_name}_{hw_config}` (e.g., `DX-AIPlayer-N97_M1`)
-- Without: `{hostname}_{hw_config}` (e.g., `RPi_M1`)
+- Without: `{hostname}_{hw_config}` (e.g., `RPi5B_M1`)
 
 **Result Directory Structure:**
 
 ```
 results/
 ├── DX-AIPlayer-N97_M1/          # When --product-name is used
-│   ├── 20260403_174607/
-│   │   └── (result files)
-│   └── 20260409_165331/
-│       └── (result files)
-├── BIOSTAR_H1/                   # Hostname-based (default)
-│   └── 20260409_170451/
-│       └── (result files)
-├── RPi_M1/
-│   └── 20260410_120000/
-│       └── (result files)
-└── dashboard/                    # Static dashboard files
+│   ├── 20260629_172308/         # one run per (env, dx-all-suite version)
+│   │   ├── environment.json           # tracked
+│   │   ├── {model,pipeline,multi_stream}_results.json   # tracked (source of truth)
+│   │   ├── REPORT.md                   # tracked
+│   │   ├── {model,pipeline,multi_stream}_results.csv    # git-ignored (CSV mirror)
+│   │   ├── raw/                        # git-ignored (raw logs)
+│   │   └── incidents/                  # git-ignored (timeout diagnostics)
+│   └── 20260710_180416/
+│       └── (same layout)
+├── RPi5B_M1/                     # Hostname-based (default)
+│   └── 20260713_115536/
+│       └── (same layout)
+└── dashboard/                    # tracked build artifacts (consumed by suite tooling)
     ├── index.html
     ├── app.js
     ├── styles.css
@@ -252,14 +263,19 @@ Runs left unstamped group under `unknown`.
 
 ```
 results/{hw_id}/{run_id}/
-├── environment.json              # Environment fingerprint + timing + timing_history
-├── model_results.csv/json        # Model-level results (throughput + latency)
-├── pipeline_results.csv/json     # E2E single-stream results
-├── multi_stream_results.csv/json # Multi-stream boundary search results
-├── REPORT.md                     # Comprehensive Markdown report
-├── raw/                          # Raw logs (.log + .npu.log + profiler.json)
-└── incidents/                    # Timeout diagnostic snapshots (when applicable)
+├── environment.json              # tracked — environment fingerprint + timing + timing_history
+├── model_results.json            # tracked — model-level results (throughput + latency)
+├── pipeline_results.json         # tracked — E2E single-stream results
+├── multi_stream_results.json     # tracked — multi-stream boundary search results
+├── REPORT.md                     # tracked — comprehensive Markdown report
+├── *_results.csv                 # git-ignored — CSV mirror of the JSON above (identical columns)
+├── raw/                          # git-ignored — raw logs (.log + .npu.log + profiler.json)
+└── incidents/                    # git-ignored — timeout diagnostic snapshots (when applicable)
 ```
+
+Every command reads the **JSON** files (`aggregate`, `dashboard`, `report`, and
+`--resume` all consume `*_results.json`), so the git-ignored CSVs and raw logs are
+never required to view results or rebuild the dashboard from a fresh clone.
 
 ## Resume vs Retry-Failed
 

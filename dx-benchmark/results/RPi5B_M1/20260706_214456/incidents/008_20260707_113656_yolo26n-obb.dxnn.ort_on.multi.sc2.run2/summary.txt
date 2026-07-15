@@ -1,5 +1,0 @@
-incident: 008_20260707_113656_yolo26n-obb.dxnn.ort_on.multi.sc2.run2
-context: yolo26n-obb.dxnn.ort_on.multi.sc2.run2
-timestamp: 20260707_113656
-npu_temp_c: 44.0
-npu_clock_mhz: 1000.0

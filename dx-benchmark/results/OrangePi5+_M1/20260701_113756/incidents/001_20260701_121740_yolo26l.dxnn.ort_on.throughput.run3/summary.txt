@@ -1,5 +1,0 @@
-incident: 001_20260701_121740_yolo26l.dxnn.ort_on.throughput.run3
-context: yolo26l.dxnn.ort_on.throughput.run3
-timestamp: 20260701_121740
-npu_temp_c: 42.0
-npu_clock_mhz: 1000.0

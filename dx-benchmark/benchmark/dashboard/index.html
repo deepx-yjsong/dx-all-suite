@@ -38,7 +38,7 @@
               <option value="classification">Cls (Classification)</option>
             </select>
           </label>
-          <label class="ubar-field">ORT
+          <label class="ubar-field">ONNX Runtime (ORT) <span class="ort-info" title="ORT (ONNX Runtime)&#10;- ON: model's CPU part offloaded to host CPU via ONNX Runtime → output matches the source ONNX (standard post-processing).&#10;- OFF: NPU-only output → needs a model-specific post-processor.">ⓘ</span>
             <select id="fpsOrtFilter">
               <option value="on">ON</option>
               <option value="off">OFF</option>
@@ -106,7 +106,7 @@
               <option value="x">X (Extra-Large)</option>
             </select>
           </label>
-          <label class="ubar-field">ORT
+          <label class="ubar-field">ONNX Runtime (ORT) <span class="ort-info" title="ORT (ONNX Runtime)&#10;- ON: model's CPU part offloaded to host CPU via ONNX Runtime → output matches the source ONNX (standard post-processing).&#10;- OFF: NPU-only output → needs a model-specific post-processor.">ⓘ</span>
             <select id="ortFilter">
               <option value="on">ON</option>
               <option value="off">OFF</option>
@@ -151,13 +151,6 @@
     <div id="tab-detail" class="tab-content">
       <section class="controls ubar">
         <div class="ubar-row">
-          <span class="ubar-zone">Data source</span>
-          <label class="ubar-field">Environment <select id="detailEnvFilter"></select></label>
-          <label class="ubar-field">dx-all-suite version <select id="detailVersionFilter"></select></label>
-          <label class="ubar-field">Run ID <select id="detailRunFilter"></select></label>
-        </div>
-        <div class="ubar-sep"></div>
-        <div class="ubar-row">
           <span class="ubar-zone">View</span>
           <div class="ubar-field ubar-field--pills">Metric
             <div class="metric-pills" id="detailMetricPills">
@@ -180,13 +173,20 @@
               <option value="classification">Cls (Classification)</option>
             </select>
           </label>
-          <label class="ubar-field">ORT
+          <label class="ubar-field">ONNX Runtime (ORT) <span class="ort-info" title="ORT (ONNX Runtime)&#10;- ON: model's CPU part offloaded to host CPU via ONNX Runtime → output matches the source ONNX (standard post-processing).&#10;- OFF: NPU-only output → needs a model-specific post-processor.">ⓘ</span>
             <select id="detailOrtFilter">
               <option value="all">All</option>
               <option value="on">ON</option>
               <option value="off">OFF</option>
             </select>
           </label>
+        </div>
+        <div class="ubar-sep"></div>
+        <div class="ubar-row">
+          <span class="ubar-zone">Data source</span>
+          <label class="ubar-field">Environment <select id="detailEnvFilter"></select></label>
+          <label class="ubar-field">dx-all-suite version <select id="detailVersionFilter"></select></label>
+          <label class="ubar-field">Run ID <select id="detailRunFilter"></select></label>
         </div>
       </section>
 
@@ -207,7 +207,7 @@
               <option value="classification">Cls (Classification)</option>
             </select>
           </label>
-          <label class="ubar-field">ORT
+          <label class="ubar-field">ONNX Runtime (ORT) <span class="ort-info" title="ORT (ONNX Runtime)&#10;- ON: model's CPU part offloaded to host CPU via ONNX Runtime → output matches the source ONNX (standard post-processing).&#10;- OFF: NPU-only output → needs a model-specific post-processor.">ⓘ</span>
             <select id="trendOrtFilter">
               <option value="on">ON</option>
               <option value="off">OFF</option>

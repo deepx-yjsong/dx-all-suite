@@ -1,5 +1,0 @@
-incident: 004_20260702_030740_yolo26s-obb.dxnn.ort_on.multi.sc2.run2.retry
-context: yolo26s-obb.dxnn.ort_on.multi.sc2.run2.retry
-timestamp: 20260702_030740
-npu_temp_c: 47.0
-npu_clock_mhz: 1000.0

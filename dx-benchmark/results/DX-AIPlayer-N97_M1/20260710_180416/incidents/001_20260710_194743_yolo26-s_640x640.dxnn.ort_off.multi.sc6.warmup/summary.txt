@@ -1,5 +1,0 @@
-incident: 001_20260710_194743_yolo26-s_640x640.dxnn.ort_off.multi.sc6.warmup
-context: yolo26-s_640x640.dxnn.ort_off.multi.sc6.warmup
-timestamp: 20260710_194743
-npu_temp_c: 59.0
-npu_clock_mhz: 1000.0

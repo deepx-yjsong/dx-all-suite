@@ -1,5 +1,0 @@
-incident: 002_20260702_120551_yolo26s.dxnn.ort_off.multi.sc3.warmup
-context: yolo26s.dxnn.ort_off.multi.sc3.warmup
-timestamp: 20260702_120551
-npu_temp_c: 42.0
-npu_clock_mhz: 1000.0

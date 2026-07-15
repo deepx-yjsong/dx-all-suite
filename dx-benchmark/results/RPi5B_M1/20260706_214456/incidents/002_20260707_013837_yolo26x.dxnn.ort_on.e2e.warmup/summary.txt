@@ -1,5 +1,0 @@
-incident: 002_20260707_013837_yolo26x.dxnn.ort_on.e2e.warmup
-context: yolo26x.dxnn.ort_on.e2e.warmup
-timestamp: 20260707_013837
-npu_temp_c: 48.0
-npu_clock_mhz: 1000.0

@@ -1,5 +1,0 @@
-incident: 007_20260702_144918_yolo26x.dxnn.ort_on.e2e.run3
-context: yolo26x.dxnn.ort_on.e2e.run3
-timestamp: 20260702_144918
-npu_temp_c: 42.0
-npu_clock_mhz: 1000.0

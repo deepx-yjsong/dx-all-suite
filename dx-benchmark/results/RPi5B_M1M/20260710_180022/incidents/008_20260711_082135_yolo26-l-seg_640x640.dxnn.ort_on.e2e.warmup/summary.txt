@@ -1,5 +1,0 @@
-incident: 008_20260711_082135_yolo26-l-seg_640x640.dxnn.ort_on.e2e.warmup
-context: yolo26-l-seg_640x640.dxnn.ort_on.e2e.warmup
-timestamp: 20260711_082135
-npu_temp_c: 57.0
-npu_clock_mhz: 200.0
