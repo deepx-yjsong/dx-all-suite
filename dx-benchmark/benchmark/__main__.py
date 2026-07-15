@@ -447,6 +447,25 @@ def cmd_run(args: argparse.Namespace) -> int:
                     print(f"  [SKIP] model-level all timed out → skipping e2e/multi ({remaining} steps)")
                 continue
 
+            # Cooldown before the E2E phase (protocol v3): shed the throughput phase's
+            # residual heat so E2E/multi measure their OWN sustained steady-state, not a
+            # state inflated by the preceding throughput burst. Non-fatal: the model-level
+            # ① cooldown already aborts on a persistent thermal problem; here we just warn.
+            e2e_cooldown_meta: dict = {}
+            if run_e2e or run_multi:
+                try:
+                    _e2e_temp, _e2e_wait = wait_until_cool(cfg)
+                    cooldown_total_wait += _e2e_wait
+                    e2e_cooldown_meta = {
+                        "cooldown_wait_sec": round(_e2e_wait, 1),
+                        "cooldown_temp_c": _e2e_temp if _e2e_temp > 0 else None,
+                    }
+                    if _e2e_temp > 0:
+                        print(f"  [cooldown/e2e] ready: {_e2e_temp:.1f}°C (waited {_e2e_wait:.0f}s)", flush=True)
+                except RuntimeError as _e2e_err:
+                    cooldown_timeouts += 1
+                    print(f"  [cooldown/e2e] FAILED: {_e2e_err} — proceeding (E2E measured hot)", flush=True)
+
             # ④ E2E Single-Stream
             if run_e2e and m.task in E2E_SUPPORTED_TASKS:
                 key = (m.name, use_ort)
@@ -467,6 +486,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                         continue
                     elapsed = time.monotonic() - t0
                     r_dict = r.as_dict()
+                    r_dict.update(e2e_cooldown_meta)
                     _upsert_result(
                         pipeline_results, r_dict,
                         lambda item: (item.get("model"), bool(item.get("use_ort"))),

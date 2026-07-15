@@ -47,3 +47,11 @@ def test_winner_equals_start_probes_below_once():
     win, curve, edge = select_buffer_count(p, start=3, decline_eps=0.02)
     assert 2 in p.seen
     assert win == 2
+
+
+def test_aggregator_flattens_buffer_count():
+    """Task 5 regression guard: buffer_count flows into the flattened dataset row."""
+    from benchmark.aggregator import _flatten_model_results
+    rows = [{"task": "object_detection", "size": "n", "model": "m", "use_ort": False,
+             "family": "throughput", "fps": 300.0, "buffer_count": 5, "status": "ok"}]
+    assert _flatten_model_results("r", "e", rows)[0]["buffer_count"] == 5

@@ -139,6 +139,7 @@ def _flatten_model_results(run_id: str, env_id: str, rows: list[dict]) -> list[d
             "family": row.get("family"),
             "fps": row.get("fps"),
             "fps_std": row.get("fps_std"),
+            "buffer_count": row.get("buffer_count"),
             "latency_ms": row.get("total_ms"),
             "cpu_pct": row.get("cpu_pct"),
             "npu_total_avg_pct": row.get("npu_total_avg_pct"),
