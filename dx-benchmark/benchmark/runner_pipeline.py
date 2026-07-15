@@ -9,6 +9,7 @@ Uses gst-launch-1.0 to run full inference pipelines with:
 """
 
 import enum
+import json
 import logging
 import os
 import re
@@ -651,7 +652,15 @@ def collect_timeout_incident(context: str) -> Optional[Path]:
     ps_out = _run_diagnostic_cmd(["ps", "auxf"], timeout=5)
     (inc_dir / "ps_tree.txt").write_text(ps_out)
 
-    # 6. NPU temperature + clock at the moment of timeout
+    # 6. Host power / PCIe link health at the moment of the incident (G5)
+    try:
+        from .env_fingerprint import collect_host_health
+        (inc_dir / "host_health.txt").write_text(
+            json.dumps(collect_host_health(), indent=2) + "\n")
+    except Exception as e:  # diagnostics must never break incident capture
+        (inc_dir / "host_health.txt").write_text(f"<host health capture failed: {e}>\n")
+
+    # 7. NPU temperature + clock at the moment of timeout
     npu_temp = read_npu_temp_c()
     npu_clock = read_npu_clock_mhz()
     summary_lines = [
@@ -664,6 +673,51 @@ def collect_timeout_incident(context: str) -> Optional[Path]:
     (inc_dir / "summary.txt").write_text("\n".join(summary_lines) + "\n")
 
     print(f"    [incident] saved: {incident_name}", flush=True)
+    return inc_dir
+
+
+# ── DXRT runtime-error incident capture ───────────────────────────────────
+# dxrt service exceptions and device recoveries COMPLETE (with bad output)
+# instead of hanging, so they never reach the timeout-based capture above.
+
+DXRT_ERROR_PATTERNS = [
+    re.compile(r"\[dxrt-exception\]"),
+    re.compile(r"Device recovery was performed"),
+    re.compile(r"Fail to read output"),
+    re.compile(r"error-code=\d+"),
+    re.compile(r"RuntimeEventDispatcher"),
+]
+
+# Cap per run: a flapping device must not flood incidents/ with hundreds of
+# bundles (each bundle shells out for dmesg/journalctl).
+_MAX_DXRT_INCIDENTS = 20
+_dxrt_incident_count = 0
+
+
+def maybe_collect_dxrt_incident(output: str, context: str) -> Optional[Path]:
+    """Capture an incident bundle when run output shows a dxrt runtime error.
+
+    Args:
+        output: Combined stdout+stderr of the completed (non-timeout) attempt.
+        context: Incident label prefix, e.g. "<model>.<ort>.<family>.run<N>";
+                 ".dxrt_error" is appended.
+
+    Returns:
+        The incident directory, or None (no match / cap reached / no incident dir).
+    """
+    global _dxrt_incident_count
+    if not output or not any(p.search(output) for p in DXRT_ERROR_PATTERNS):
+        return None
+    if _dxrt_incident_count >= _MAX_DXRT_INCIDENTS:
+        return None
+    _dxrt_incident_count += 1
+    if _dxrt_incident_count == _MAX_DXRT_INCIDENTS:
+        print(f"    [incident] dxrt-error cap ({_MAX_DXRT_INCIDENTS}) reached — "
+              f"further captures suppressed", flush=True)
+    inc_dir = collect_timeout_incident(f"{context}.dxrt_error")
+    if inc_dir is not None:
+        tail = "\n".join(output.splitlines()[-200:])
+        (inc_dir / "trigger_output.log").write_text(tail + "\n")
     return inc_dir
 
 
@@ -715,10 +769,12 @@ def _save_pipeline_log(
 _thermal_logger = logging.getLogger(__name__)
 
 
-def wait_until_cool(cfg: BenchmarkConfig) -> float:
+def wait_until_cool(cfg: BenchmarkConfig) -> tuple[float, float]:
     """Wait for NPU temperature to drop below min(T_idle + delta, abs_cap).
 
-    Returns the final temperature (°C), or -1 if temp reading is unavailable.
+    Returns ``(final_temp_c, waited_sec)``; final temp is -1 if temp reading
+    is unavailable. Raises RuntimeError when the target is not reached within
+    ``thermal_cooldown_max_sec``.
     """
     idle_temp = cfg.thermal_idle_temp_c
     if idle_temp is None:
@@ -729,16 +785,17 @@ def wait_until_cool(cfg: BenchmarkConfig) -> float:
         idle_temp + cfg.thermal_cooldown_target_delta_c,
         cfg.thermal_cooldown_abs_cap_c,
     )
-    deadline = time.monotonic() + cfg.thermal_cooldown_max_sec
+    start = time.monotonic()
+    deadline = start + cfg.thermal_cooldown_max_sec
 
     _first_poll = True
     while time.monotonic() < deadline:
         temp = read_npu_temp_c()
         if temp is None:
-            return -1.0
+            return -1.0, time.monotonic() - start
         if temp <= target_temp:
             _thermal_logger.debug("Cooldown complete: %.1f°C <= %.1f°C target", temp, target_temp)
-            return temp
+            return temp, time.monotonic() - start
         remaining = deadline - time.monotonic()
         if _first_poll:
             print(f"    [cooldown] {temp:.1f}°C → target ≤{target_temp:.1f}°C "
@@ -753,7 +810,7 @@ def wait_until_cool(cfg: BenchmarkConfig) -> float:
     temp = read_npu_temp_c()
     if temp is not None and temp <= target_temp:
         _thermal_logger.debug("Cooldown complete (at deadline): %.1f°C <= %.1f°C target", temp, target_temp)
-        return temp
+        return temp, time.monotonic() - start
 
     print(f"    [cooldown] TIMEOUT — {(temp or -1):.1f}°C still above {target_temp:.1f}°C "
           f"after {cfg.thermal_cooldown_max_sec:.0f}s", flush=True)

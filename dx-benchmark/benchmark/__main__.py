@@ -25,7 +25,7 @@ from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
 from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, TASK_GROUP_VIDEOS, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
 from .dashboard_builder import build_static_dashboard
-from .env_fingerprint import collect_fingerprint, check_preflight, check_cpu_governor, save_fingerprint, get_video_info, resolve_dx_all_suite_version
+from .env_fingerprint import collect_fingerprint, check_preflight, check_cpu_governor, collect_host_health, save_fingerprint, get_video_info, resolve_dx_all_suite_version
 from .model_catalog import discover_models, filter_models
 from .npu_monitor import parse_npu_log_temp_clock
 from .reporter import (
@@ -306,6 +306,10 @@ def cmd_run(args: argparse.Namespace) -> int:
     # (a persistent thermal problem); a one-off cooldown miss just skips its cell.
     _MAX_COOLDOWN_FAILURES = 3
     cooldown_consecutive_failures = 0
+    # Run-level cooldown accounting → fp["thermal_summary"] at finalize
+    cooldown_total_wait = 0.0
+    cooldown_timeouts = 0
+    cooldown_skipped_cells: list[list[str]] = []
 
     # ── Per-model sequential execution ───────────────────────────
     # Order per model (steady mode):
@@ -325,12 +329,20 @@ def cmd_run(args: argparse.Namespace) -> int:
             print(f"\n── [{m_idx}/{total_models}] {m.name}  ORT={ort_s}  ({m.task}) ──", flush=True)
 
             # ① Cooldown — steady-state, model-level runs present
+            cooldown_meta: dict = {}
             if run_model_level:
                 try:
-                    temp = wait_until_cool(cfg)
+                    temp, cooldown_waited = wait_until_cool(cfg)
                     cooldown_consecutive_failures = 0
+                    cooldown_total_wait += cooldown_waited
+                    cooldown_meta = {
+                        "cooldown_wait_sec": round(cooldown_waited, 1),
+                        "cooldown_temp_c": temp if temp > 0 else None,
+                    }
                 except RuntimeError as error:
                     cooldown_consecutive_failures += 1
+                    cooldown_timeouts += 1
+                    cooldown_skipped_cells.append([m.name, ort_s])
                     print(f"  [cooldown] FAILED ({cooldown_consecutive_failures}/{_MAX_COOLDOWN_FAILURES}): {error}", flush=True)
                     if cooldown_consecutive_failures >= _MAX_COOLDOWN_FAILURES:
                         print(f"  [cooldown] {_MAX_COOLDOWN_FAILURES} consecutive failures → aborting run (persistent thermal issue)", flush=True)
@@ -344,7 +356,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                     print("  [cooldown] skipping this cell, continuing to next", flush=True)
                     continue
                 if temp > 0:
-                    print(f"  [cooldown] ready: {temp:.1f}°C", flush=True)
+                    print(f"  [cooldown] ready: {temp:.1f}°C (waited {cooldown_waited:.0f}s)", flush=True)
 
             if failure_context:
                 break
@@ -369,6 +381,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                         continue
                     elapsed = time.monotonic() - t0
                     r_dict = r.as_dict()
+                    r_dict.update(cooldown_meta)
                     _upsert_result(
                         model_results, r_dict,
                         lambda item: (item.get("model"), bool(item.get("use_ort")), item.get("family")),
@@ -400,6 +413,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                         continue
                     elapsed = time.monotonic() - t0
                     r_dict = r.as_dict()
+                    r_dict.update(cooldown_meta)
                     _upsert_result(
                         model_results, r_dict,
                         lambda item: (item.get("model"), bool(item.get("use_ort")), item.get("family")),
@@ -548,6 +562,18 @@ def cmd_run(args: argparse.Namespace) -> int:
         failure_reason=failure_context.get("failure_reason") if failure_context else None,
     ))
     fp["timing_history"] = timing_history
+
+    # End-of-run host health snapshot — pairs with the run-start "host_health"
+    # so undervoltage/PCIe-link degradation during the run is visible.
+    fp["host_health_end"] = collect_host_health()
+
+    # Run-level cooldown accounting — for cooling-limited boards this shows
+    # whether the thermal budget (not the NPU) dominated the run.
+    fp["thermal_summary"] = {
+        "cooldown_total_wait_sec": round(cooldown_total_wait, 1),
+        "cooldown_timeouts": cooldown_timeouts,
+        "cooldown_skipped_cells": cooldown_skipped_cells,
+    }
 
     # ── Save updated fingerprint with timing ──────────────────────
     env_path = out_dir / "environment.json"

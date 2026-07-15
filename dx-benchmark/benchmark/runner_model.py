@@ -23,6 +23,7 @@ from .npu_monitor import NpuMonitor, NpuStats
 from .npu_stats_util import merge_npu_stats as _merge_npu_stats
 from .runner_pipeline import cleanup_after_timeout as _cleanup_after_timeout
 from .runner_pipeline import collect_timeout_incident as _collect_timeout_incident
+from .runner_pipeline import maybe_collect_dxrt_incident as _maybe_collect_dxrt_incident
 
 
 def _stdev(values: list[float]) -> Optional[float]:
@@ -271,6 +272,8 @@ def run_throughput(
             _save_raw(save_dir, model.name, f"throughput.{label}", use_ort, combined, npu_stats.raw_log)
 
         fps = _parse_fps_from_log(combined)
+        if not fps or proc.returncode != 0:
+            _maybe_collect_dxrt_incident(combined, f"{model.name}.{ort_tag}.throughput.{label}")
         if not fps:
             parse_fail_runs += 1
             print("no fps parsed", flush=True)
@@ -438,6 +441,10 @@ def run_latency(
                         run_ok = False
                         parse_fail_runs += 1
                         print("parse failed", flush=True)
+
+                if not run_ok or proc.returncode != 0:
+                    _maybe_collect_dxrt_incident(
+                        combined, f"{model.name}.{ort_tag}.latency.{label}")
 
                 if run_ok:
                     npu_stats_accum.append(npu_stats)

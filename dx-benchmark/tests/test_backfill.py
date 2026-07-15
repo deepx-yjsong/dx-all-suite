@@ -17,6 +17,7 @@ from benchmark.runner_pipeline import PipeOutcome
 class _FakeProc:
     stdout = "fake-stdout"
     stderr = "fake-stderr"
+    returncode = 0
 
 
 class _FakeStats:

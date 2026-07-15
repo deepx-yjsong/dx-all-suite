@@ -6,7 +6,9 @@
 #   1. Passwordless sudo for dxrt.service restart (crash recovery)
 #   2. Passwordless sudo for dmesg (kernel log collection on incidents)
 #   3. Passwordless sudo for journalctl (dxrt service log collection on incidents)
-#   4. systemd-journal group membership (journal access without sudo)
+#   4. Passwordless sudo for lspci -vv (PCIe LnkCap/LnkSta capture — host_health)
+#   5. systemd-journal group membership (journal access without sudo)
+#   6. video group membership (vcgencmd power/throttle capture — Raspberry Pi only)
 #
 # Data (models/videos) needs no sudo — use ./setup.sh for that.
 set -euo pipefail
@@ -41,18 +43,22 @@ echo "[setup] Target user: ${TARGET_USER}"
 SYSTEMCTL_BIN="$(command -v systemctl 2>/dev/null || echo /usr/bin/systemctl)"
 DMESG_BIN="$(command -v dmesg 2>/dev/null || echo /usr/bin/dmesg)"
 JOURNALCTL_BIN="$(command -v journalctl 2>/dev/null || echo /usr/bin/journalctl)"
+LSPCI_BIN="$(command -v lspci 2>/dev/null || echo /usr/bin/lspci)"
 
 # ── Install sudoers rules ─────────────────────────────────────────────────
+# The lspci rule matches env_fingerprint's exact call: sudo -n lspci -vv -s <bdf>
 SUDOERS_CONTENT="# Benchmark automation: passwordless sudo for dxrt crash recovery and incident log collection
 ${TARGET_USER} ALL=(ALL) NOPASSWD: ${SYSTEMCTL_BIN} restart dxrt.service
 ${TARGET_USER} ALL=(ALL) NOPASSWD: ${DMESG_BIN} --time-format=iso -T
-${TARGET_USER} ALL=(ALL) NOPASSWD: ${JOURNALCTL_BIN} -u dxrt.service *"
+${TARGET_USER} ALL=(ALL) NOPASSWD: ${JOURNALCTL_BIN} -u dxrt.service *
+${TARGET_USER} ALL=(ALL) NOPASSWD: ${LSPCI_BIN} -vv -s *"
 
-# Check if already fully configured
+# Check if already fully configured (older installs lack the lspci rule → rewrite)
 if [[ -f "${SUDOERS_FILE}" ]] && \
    grep -qF "restart dxrt.service" "${SUDOERS_FILE}" && \
    grep -qF "${DMESG_BIN}" "${SUDOERS_FILE}" && \
-   grep -qF "${JOURNALCTL_BIN}" "${SUDOERS_FILE}"; then
+   grep -qF "${JOURNALCTL_BIN}" "${SUDOERS_FILE}" && \
+   grep -qF "${LSPCI_BIN} -vv -s" "${SUDOERS_FILE}"; then
     echo "[setup] Sudoers rules already configured. Skipping."
 else
     echo "${SUDOERS_CONTENT}" > "${SUDOERS_FILE}"
@@ -64,6 +70,7 @@ else
         echo "        - systemctl restart dxrt.service"
         echo "        - dmesg (kernel log for incident collection)"
         echo "        - journalctl (service log for incident collection)"
+        echo "        - lspci -vv (PCIe LnkCap/LnkSta for host_health)"
     else
         echo "ERROR: Sudoers validation failed. Removing broken file."
         rm -f "${SUDOERS_FILE}"
@@ -84,6 +91,25 @@ else
     echo "[setup] systemd-journal group not found. Skipping group membership."
 fi
 
+# ── video group for vcgencmd (Raspberry Pi power/throttle capture) ────────
+# host_health reads `vcgencmd get_throttled` / `pmic_read_adc` without sudo;
+# on Raspberry Pi OS that requires membership in the 'video' group.
+if command -v vcgencmd &>/dev/null; then
+    if getent group video &>/dev/null; then
+        if id -nG "${TARGET_USER}" | grep -qw video; then
+            echo "[setup] User '${TARGET_USER}' already in video group (vcgencmd OK)."
+        else
+            usermod -aG video "${TARGET_USER}"
+            echo "[setup] Added '${TARGET_USER}' to video group for vcgencmd."
+            echo "        (re-login required for group to take effect)"
+        fi
+    else
+        echo "[setup] video group not found. Skipping vcgencmd group membership."
+    fi
+else
+    echo "[setup] vcgencmd not present (not a Raspberry Pi). Skipping video group."
+fi
+
 # ── Verify passwordless sudo works ────────────────────────────────────────
 echo ""
 echo "[setup] Verifying passwordless sudo ..."
@@ -102,6 +128,22 @@ else
     echo "  sudo -n journalctl     — installed (cannot verify as ${TARGET_USER})"
 fi
 
+# Test lspci (host_health LnkSta capture)
+if sudo -n -u "${TARGET_USER}" -- sudo -n "${LSPCI_BIN}" -vv -s 00:00.0 &>/dev/null 2>&1; then
+    echo "  sudo -n lspci -vv -s   — OK"
+else
+    echo "  sudo -n lspci -vv -s   — installed (cannot verify as ${TARGET_USER})"
+fi
+
+# Test vcgencmd (Raspberry Pi only; group takes effect after re-login)
+if command -v vcgencmd &>/dev/null; then
+    if sudo -n -u "${TARGET_USER}" -- vcgencmd get_throttled &>/dev/null 2>&1; then
+        echo "  vcgencmd get_throttled — OK"
+    else
+        echo "  vcgencmd get_throttled — group added (re-login required to verify)"
+    fi
+fi
+
 # Test systemctl
 echo "  sudo -n systemctl restart dxrt.service — rule installed"
 
@@ -116,6 +158,10 @@ echo "  Passwordless sudo enabled for:"
 echo "    - systemctl restart dxrt.service  (crash recovery)"
 echo "    - dmesg                           (kernel log collection)"
 echo "    - journalctl                      (service log collection)"
+echo "    - lspci -vv -s                    (PCIe LnkCap/LnkSta capture)"
+if command -v vcgencmd &>/dev/null; then
+    echo "  Group membership: video (vcgencmd power/throttle capture)"
+fi
 echo ""
 echo "To remove this configuration later:"
 echo "  sudo rm ${SUDOERS_FILE}"

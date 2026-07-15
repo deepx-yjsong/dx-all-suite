@@ -131,6 +131,7 @@ def collect_fingerprint() -> dict[str, Any]:
             "ram_gb": _get_ram_gb(),
             "cpu_governors": _get_cpu_governors(),
         },
+        "host_health": collect_host_health(),
         "npu": _get_npu_info(),
         "software": {
             "dx_stream": _get_dx_stream_version(),
@@ -242,6 +243,93 @@ def check_cpu_governor(fingerprint: dict) -> Optional[str]:
     return (f"CPU governor not all 'performance' ({summary}). Host-bound metrics "
             f"(latency, small-model throughput, E2E) may be depressed and noisy. "
             f"Set: sudo cpupower frequency-set -g performance")
+
+
+# ── Host power / PCIe link health (G5) ─────────────────────────────────────
+
+# `vcgencmd get_throttled` bit map (Raspberry Pi firmware): bits 0-3 report the
+# current state, bits 16-19 whether the condition occurred since boot.
+_THROTTLED_BITS = {
+    0: "under_voltage_now",
+    1: "freq_capped_now",
+    2: "throttled_now",
+    3: "soft_temp_limit_now",
+    16: "under_voltage_occurred",
+    17: "freq_capped_occurred",
+    18: "throttled_occurred",
+    19: "soft_temp_limit_occurred",
+}
+
+
+def _decode_throttled(raw: str) -> Optional[dict]:
+    """Decode `vcgencmd get_throttled` output into named boolean flags."""
+    m = re.search(r"throttled=0x([0-9a-fA-F]+)", raw or "")
+    if not m:
+        return None
+    val = int(m.group(1), 16)
+    return {name: bool(val >> bit & 1) for bit, name in _THROTTLED_BITS.items()}
+
+
+def _parse_pmic_volts(raw: str, channel: str = "EXT5V_V") -> Optional[float]:
+    """Parse one channel's voltage from `vcgencmd pmic_read_adc` output.
+
+    Matches lines like ``EXT5V_V volt(24)=5.10370000V`` (RPi5 PMIC supply rail).
+    """
+    m = re.search(rf"{re.escape(channel)}\s+volt\([^)]*\)=([\d.]+)V", raw or "")
+    return float(m.group(1)) if m else None
+
+
+def _get_pcie_links() -> list[dict]:
+    """LnkCap/LnkSta of NPU-looking PCI devices (DEEPX / accelerator class).
+
+    Kernel-side view of the negotiated link, independent of dxrt-cli's report —
+    lets a downgraded or retrained link be spotted after the fact.
+    """
+    if not shutil.which("lspci"):
+        return []
+    links: list[dict] = []
+    for line in _run(["lspci", "-D"], default="").splitlines():
+        if not re.search(r"deepx|accelerat", line, re.IGNORECASE):
+            continue
+        bdf = line.split()[0]
+        # PCIe capability registers (LnkCap/LnkSta) need root; try passwordless
+        # sudo first (same convention as incident diagnostics), fall back to bare.
+        detail = _run(["sudo", "-n", "lspci", "-vv", "-s", bdf], default="")
+        if "LnkSta" not in detail:
+            detail = _run(["lspci", "-vv", "-s", bdf], default="")
+        entry: dict[str, Any] = {"bdf": bdf, "device": line.strip()}
+        for field in ("LnkCap", "LnkSta"):
+            m = re.search(rf"{field}:\s*(.+)", detail)
+            entry[field.lower()] = m.group(1).strip() if m else None
+        links.append(entry)
+    return links
+
+
+def collect_host_health() -> dict[str, Any]:
+    """Host power / PCIe link health snapshot (G5).
+
+    Best-effort: every probe degrades to None/empty on non-RPi hosts or
+    missing tools; never raises. Recorded at run start (``host_health``),
+    run end (``host_health_end``), and in incident bundles.
+    """
+    health: dict[str, Any] = {
+        "throttled": None,
+        "throttled_flags": None,
+        "pmic_ext5v_v": None,
+        "pcie_links": [],
+    }
+    if shutil.which("vcgencmd"):
+        raw = _run(["vcgencmd", "get_throttled"], default="")
+        if "throttled=" in raw:
+            health["throttled"] = raw.strip()
+            health["throttled_flags"] = _decode_throttled(raw)
+        health["pmic_ext5v_v"] = _parse_pmic_volts(
+            _run(["vcgencmd", "pmic_read_adc"], default=""))
+    health["pcie_links"] = _get_pcie_links()
+    health["available"] = bool(
+        health["throttled"] or health["pmic_ext5v_v"] is not None
+        or health["pcie_links"])
+    return health
 
 
 def _get_npu_info() -> dict[str, Any]:
