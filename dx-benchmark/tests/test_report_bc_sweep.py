@@ -26,9 +26,9 @@ def test_throughput_section_has_sweep_curve_with_bolded_winner():
     _add_model_throughput_section(lines, rows)
     out = "\n".join(lines)
     assert "Buffer-count sweep" in out       # dedicated sub-table below throughput
-    assert "3:215" in out and "8:297" in out  # curve endpoints
+    assert "[3]:215" in out and "[8]:297" in out  # curve endpoints, bracketed bc
     assert " · " in out                       # pairs clearly separated
-    assert "**5:322" in out                   # winner bolded
+    assert "**[5]:322" in out                 # winner bolded
     assert "★" in out                         # winner marked
 
 

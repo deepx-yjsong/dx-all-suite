@@ -694,7 +694,7 @@ def _bc_sweep_cell(curve_str: str, winner) -> str:
             bc, fps = int(bc_s), float(fps_s)
         except ValueError:
             continue
-        cell = f"{bc}:{fps:.0f}"
+        cell = f"[{bc}]:{fps:.0f}"
         if winner is not None and bc == int(winner):
             cell = f"**{cell} ★**"
         parts.append(cell)
@@ -710,7 +710,7 @@ def _add_bc_sweep_subtable(lines: list[str], results: list[dict]) -> None:
     lines.append("")
     lines.append("_Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):")
     lines.append("")
-    lines.append("| Model | BC ★ | Sweep (bc:fps) |")
+    lines.append("| Model | BC ★ | Sweep ([bc]:fps) |")
     lines.append("|-------|------|----------------|")
     for r in sweeps:
         bc = r.get("buffer_count")
