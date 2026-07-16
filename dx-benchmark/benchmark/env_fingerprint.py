@@ -99,6 +99,54 @@ REQUIRED_TOOLS = ["run_model", "gst-launch-1.0", "gst-inspect-1.0"]
 OPTIONAL_TOOLS = ["dxtop", "ffprobe"]
 
 
+def _git_provenance(repo_dir) -> Optional[dict]:
+    """Git branch/commit/describe for a checkout, or None if not a git repo.
+
+    Records WHICH source produced the run. Note: this reflects the source tree,
+    which matches the installed binaries only if they were built/installed from it.
+    """
+    def g(*args) -> Optional[str]:
+        try:
+            r = subprocess.run(["git", "-C", str(repo_dir), *args],
+                               capture_output=True, text=True, timeout=5)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        out = r.stdout.strip()
+        return out if r.returncode == 0 and out else None
+
+    commit = g("rev-parse", "HEAD")
+    if not commit:
+        return None
+    return {
+        "branch": g("rev-parse", "--abbrev-ref", "HEAD"),   # "HEAD" if detached
+        "commit": commit,
+        "describe": g("describe", "--always", "--tags", "--dirty"),
+    }
+
+
+def _get_source_provenance() -> dict:
+    """Best-effort git provenance of the suite source checkouts (dx-runtime,
+    dx-compiler, and the benchmark repo). Complements the installed-binary version
+    strings so a run traces back to a branch/commit. Empty if not a git checkout."""
+    here = Path(__file__).resolve()
+    root = None
+    for parent in here.parents:
+        if (parent / "dx-runtime").is_dir() and (parent / "dx-compiler").is_dir():
+            root = parent
+            break
+    if root:
+        candidates = {"suite": root, "dx_runtime": root / "dx-runtime",
+                      "dx_compiler": root / "dx-compiler"}
+    else:
+        candidates = {"benchmark": here.parents[1]}
+    prov: dict = {}
+    for name, d in candidates.items():
+        p = _git_provenance(d)
+        if p:
+            prov[name] = p
+    return prov
+
+
 def _get_dx_stream_version() -> str:
     """Get installed dxstream plugin version via gst-inspect-1.0."""
     if not shutil.which("gst-inspect-1.0"):
@@ -136,6 +184,7 @@ def collect_fingerprint() -> dict[str, Any]:
         "software": {
             "dx_stream": _get_dx_stream_version(),
         },
+        "source_provenance": _get_source_provenance(),
         "tools": {},
     }
 

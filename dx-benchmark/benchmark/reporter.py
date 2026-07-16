@@ -599,6 +599,8 @@ def _add_environment_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| RAM | {host.get('ram_gb', 'N/A')} GB |")
     lines.append(f"| NPU SKU | {npu.get('sku', 'N/A')} |")
     lines.append(f"| NPU RT | {npu.get('rt_version', 'N/A')} |")
+    if npu.get("rt_version_raw") and npu.get("rt_version_raw") != npu.get("rt_version"):
+        lines.append(f"| NPU RT (commit) | {npu.get('rt_version_raw')} |")
     lines.append(f"| NPU Driver (RT) | {npu.get('driver', 'N/A')} |")
     lines.append(f"| NPU Driver (PCIe) | {npu.get('pcie_driver', 'N/A')} |")
     lines.append(f"| NPU Firmware | {npu.get('firmware', 'N/A')} |")
@@ -606,6 +608,20 @@ def _add_environment_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| NPU Board | {npu.get('board', 'N/A')} |")
     lines.append(f"| NPU PCIe | {npu.get('pcie', 'N/A')} |")
     lines.append("")
+
+    prov = fingerprint.get("source_provenance") or {}
+    if prov:
+        lines.append("### Source Provenance (git)")
+        lines.append("")
+        lines.append("> Source checkout that produced this run (complements the installed-binary")
+        lines.append("> versions above; matches them if the binaries were built from this source).")
+        lines.append("")
+        lines.append("| Repo | Branch | Commit | Describe |")
+        lines.append("|------|--------|--------|----------|")
+        for name, p in prov.items():
+            commit = (p.get("commit") or "?")[:12]
+            lines.append(f"| {name} | {p.get('branch', '?')} | {commit} | {p.get('describe', '?')} |")
+        lines.append("")
 
     tools = fingerprint.get("tools", {})
     lines.append("### Tools")
