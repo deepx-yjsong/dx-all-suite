@@ -207,6 +207,7 @@ class BenchmarkConfig:
     # Throughput vs run_model --buffer-count is a unimodal saturation curve; probe
     # ascending from the per-chip core-count floor and measure at the knee.
     buffer_count_probe_start: int = 3      # M1/M1M/H1 = 3 cores per chip
+    buffer_count_probe_floor_max: int = 8  # always probe start..8 (covers default 6 + margin)
     buffer_count_probe_sec: int = 10       # per-probe duration (-t)
     buffer_count_improve_eps: float = 0.01
     buffer_count_decline_eps: float = 0.02
@@ -270,6 +271,7 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "model_latency_runs": cfg.model_latency_runs,
         "model_throughput_runs": cfg.model_throughput_runs,
         "buffer_count_probe_start": cfg.buffer_count_probe_start,
+        "buffer_count_probe_floor_max": cfg.buffer_count_probe_floor_max,
         "buffer_count_probe_sec": cfg.buffer_count_probe_sec,
         "buffer_count_max_probe": cfg.buffer_count_max_probe,
         "e2e_runs": cfg.e2e_runs,

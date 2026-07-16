@@ -31,32 +31,43 @@ def _stdev(values: list[float]) -> Optional[float]:
     return statistics.stdev(values) if len(values) >= 2 else None
 
 
-def select_buffer_count(probe, start=3, improve_eps=0.01, decline_eps=0.02, max_probe=16):
-    """Adaptive knee-search over run_model ``--buffer-count``.
+def select_buffer_count(probe, start=3, floor_max=8, improve_eps=0.01,
+                        decline_eps=0.02, max_probe=16):
+    """Adaptive sweep over run_model ``--buffer-count``.
 
     ``probe(c)`` runs a short throughput probe at buffer-count ``c`` and returns FPS.
     Throughput vs buffer-count is a unimodal saturation curve (rise -> knee -> slight
-    decline); we ascend by 1 from ``start`` (the per-chip core-count floor, 3 — below
-    it cores cannot all be fed) and stop at the knee: a decline >= decline_eps past the
-    running peak, a confirmed plateau (< improve_eps gain twice), or ``max_probe``.
+    decline).
+
+    Phase 1 — always probe the floor range ``start..floor_max`` (default 3..8) so the
+    default buffer-count (6) and its neighborhood are ALWAYS measured, even if an early
+    knee would otherwise have stopped sooner.
+    Phase 2 — only if throughput is still highest at ``floor_max`` (still rising), keep
+    incrementing by 1, stopping at the knee: a decline >= decline_eps past the running
+    peak, a confirmed plateau (< improve_eps gain twice), or ``max_probe``.
+
     Winner = the buffer-count with the HIGHEST measured throughput (the device ceiling);
     a smaller buffer-count wins only on an exact tie. If the winner is the start floor,
-    probe one below in case the true peak is lower. (improve_eps governs only the plateau
-    early-stop, not winner selection.)
+    probe one below in case the true peak is lower.
 
     Returns ``(winner, curve{c: fps}, edge_hit)``.
     """
+    floor_max = max(floor_max, start)
     curve: dict[int, float] = {}
-    best = -1.0
-    plateau = 0
     edge = False
-    c = start
-    while True:
-        fps = float(probe(c))
-        curve[c] = fps
-        if best < 0:
-            best = fps
-        else:
+
+    # Phase 1: unconditional floor sweep (covers the default buffer-count + margin).
+    for c in range(start, floor_max + 1):
+        curve[c] = float(probe(c))
+
+    # Phase 2: continue only while the top of the floor is still the max (rising).
+    if curve.get(floor_max, -1.0) >= max(curve.values()):
+        best = max(curve.values())
+        plateau = 0
+        c = floor_max + 1
+        while c <= max_probe:
+            fps = float(probe(c))
+            curve[c] = fps
             if fps <= best * (1 - decline_eps):
                 break                                      # declined past the peak
             gain = (fps - best) / best if best > 0 else 1.0
@@ -64,10 +75,9 @@ def select_buffer_count(probe, start=3, improve_eps=0.01, decline_eps=0.02, max_
             plateau = plateau + 1 if gain < improve_eps else 0
             if plateau >= 2:
                 break                                      # plateau confirmed
-        if c >= max_probe:
-            edge = True
-            break
-        c += 1
+            c += 1
+        else:
+            edge = True                                    # hit max_probe still rising
 
     def _winner(cv: dict[int, float]) -> int:
         # Highest measured throughput wins (this benchmark reports the ceiling); a
@@ -291,6 +301,7 @@ def run_throughput(
     buffer_count, bc_curve, bc_edge = select_buffer_count(
         _bc_probe,
         start=cfg.buffer_count_probe_start,
+        floor_max=cfg.buffer_count_probe_floor_max,
         improve_eps=cfg.buffer_count_improve_eps,
         decline_eps=cfg.buffer_count_decline_eps,
         max_probe=cfg.buffer_count_max_probe,

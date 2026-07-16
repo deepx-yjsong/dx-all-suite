@@ -1,65 +1,73 @@
-"""Adaptive buffer-count knee-search (protocol v2, Task 1).
+"""Adaptive buffer-count sweep (protocol v3).
 
-Throughput vs --buffer-count is a unimodal saturation curve (rise → knee →
-slight decline). We ascend from a core-count floor (3), stop at the knee, and
-pick the smallest buffer-count on the plateau. See spec 2026-07-15-benchmark-
-protocol-v2-design.md.
+Phase 1 always probes the floor range start..floor_max (default 3..8) so the
+default buffer-count (6) and its neighborhood are ALWAYS measured. Phase 2
+continues by +1 only while throughput is still highest at floor_max (still
+rising), stopping at the knee (decline / plateau / cap). Winner = the buffer-count
+with the highest measured throughput; a smaller one wins only on an EXACT tie.
 """
 from benchmark.runner_model import select_buffer_count
 
 
 def _curve(mapping):
-    seen = {}
+    seen = []
 
     def probe(c):
-        seen[c] = mapping[c]
+        seen.append(c)
         return mapping[c]
 
     probe.seen = seen
     return probe
 
 
-def test_picks_knee_and_stops_on_decline_large_model():
-    # x-large shape: rises to 4, declines at 5 → winner 4, never probes high.
-    p = _curve({3: 45.0, 4: 49.0, 5: 47.0})
-    win, curve, edge = select_buffer_count(p, start=3, decline_eps=0.02)
-    assert win == 4
-    assert 6 not in p.seen and 16 not in p.seen
+def test_floor_always_probed_covers_default_6():
+    # Peak is at 5, but the floor (3..8) is still fully probed → default 6 measured.
+    p = _curve({3: 200.0, 4: 250.0, 5: 255.0, 6: 254.0, 7: 253.0, 8: 252.0})
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8)
+    assert {3, 4, 5, 6, 7, 8}.issubset(set(p.seen))   # whole floor probed
+    assert 6 in curve                                  # default covered
+    assert win == 5                                    # argmax
     assert edge is False
 
 
-def test_winner_is_highest_throughput_bc():
-    # The winner is the buffer-count with the HIGHEST measured throughput (the ceiling),
-    # NOT a smaller near-tie value — this benchmark reports max achievable throughput.
-    p = _curve({3: 219.0, 4: 282.0, 5: 298.0, 6: 302.0, 7: 304.0, 8: 305.0})
-    win, curve, edge = select_buffer_count(p, start=3, improve_eps=0.01)
-    assert win == 8
+def test_continues_past_floor_when_still_rising():
+    # Still rising at 8 → keep going; 10 declines → stop. Winner = 9 (max).
+    p = _curve({3: 200.0, 4: 250.0, 5: 280.0, 6: 300.0, 7: 315.0, 8: 325.0,
+                9: 330.0, 10: 320.0})
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8, decline_eps=0.02)
+    assert 9 in p.seen and win == 9
+    assert edge is False
 
 
-def test_winner_breaks_exact_ties_with_smaller():
-    # Only on an EXACT throughput tie is the smaller buffer-count preferred.
-    # (6 declines so the search stops with the 4==5 tie in hand.)
-    p = _curve({3: 200.0, 4: 305.0, 5: 305.0, 6: 290.0})
-    win, curve, edge = select_buffer_count(p, start=3, improve_eps=0.01)
+def test_no_continue_when_floor_already_peaked():
+    # Peak within the floor (7); 8 lower → do NOT probe past 8.
+    p = _curve({3: 200.0, 4: 260.0, 5: 300.0, 6: 320.0, 7: 330.0, 8: 325.0})
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8)
+    assert 9 not in p.seen
+    assert win == 7
+
+
+def test_winner_exact_tie_prefers_smaller():
+    p = _curve({3: 200.0, 4: 305.0, 5: 305.0, 6: 300.0, 7: 299.0, 8: 298.0})
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8)
     assert win == 4
 
 
-def test_edge_flag_when_still_rising_at_cap():
-    p = _curve({3: 10.0, 4: 20.0, 5: 30.0})
-    win, curve, edge = select_buffer_count(p, start=3, max_probe=5)
-    assert win == 5 and edge is True
+def test_edge_flag_when_rising_at_cap():
+    p = _curve({c: c * 10.0 for c in range(2, 17)})   # monotonic rise
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8, max_probe=16)
+    assert win == 16 and edge is True
 
 
 def test_winner_equals_start_probes_below_once():
-    # peak lies below the floor: 3 wins the ascent but 2 is actually better.
-    p = _curve({3: 40.0, 4: 38.0, 2: 41.0})
-    win, curve, edge = select_buffer_count(p, start=3, decline_eps=0.02)
-    assert 2 in p.seen
-    assert win == 2
+    # Highest across the floor is the start floor → probe one below; 2 is better.
+    p = _curve({3: 300.0, 4: 298.0, 5: 297.0, 6: 296.0, 7: 295.0, 8: 294.0, 2: 305.0})
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8)
+    assert 2 in p.seen and win == 2
 
 
 def test_aggregator_flattens_buffer_count():
-    """Task 5 regression guard: buffer_count flows into the flattened dataset row."""
+    """buffer_count flows into the flattened dataset row."""
     from benchmark.aggregator import _flatten_model_results
     rows = [{"task": "object_detection", "size": "n", "model": "m", "use_ort": False,
              "family": "throughput", "fps": 300.0, "buffer_count": 5, "status": "ok"}]
