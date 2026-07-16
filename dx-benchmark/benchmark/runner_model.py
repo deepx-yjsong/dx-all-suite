@@ -156,6 +156,7 @@ class ModelResult:
     cpu_pct: Optional[float] = None
     fps_std: Optional[float] = None
     buffer_count: Optional[int] = None   # run_model --buffer-count chosen by the probe (throughput)
+    buffer_count_curve: Optional[str] = None  # "bc:fps bc:fps …" probe curve (throughput)
     npu_stats: Optional[dict] = None
     input_tensor: Optional[dict] = None
     status: str = "ok"
@@ -175,6 +176,7 @@ class ModelResult:
             "cpu_0_ms": self.cpu_0_ms,
             "cpu_pct": self.cpu_pct,
             "buffer_count": self.buffer_count,
+            "buffer_count_curve": self.buffer_count_curve,
             "status": self.status,
             "reason": self.reason,
         }
@@ -306,6 +308,7 @@ def run_throughput(
         decline_eps=cfg.buffer_count_decline_eps,
         max_probe=cfg.buffer_count_max_probe,
     )
+    bc_curve_str = " ".join(f"{k}:{v:.1f}" for k, v in sorted(bc_curve.items()))
     print(f"    [buffer-count] winner={buffer_count} "
           f"(probe {cfg.buffer_count_probe_sec}s: "
           + ", ".join(f"{k}:{v:.0f}" for k, v in sorted(bc_curve.items())) + ")", flush=True)
@@ -320,7 +323,7 @@ def run_throughput(
         return ModelResult(
             model=model.name, task=model.task, size=model.size,
             use_ort=use_ort, family="throughput",
-            status="timeout", buffer_count=buffer_count,
+            status="timeout", buffer_count=buffer_count, buffer_count_curve=bc_curve_str,
             reason=f"warmup exceeded 600s on all {1 + max(0, cfg.model_warmup_retries)} attempt(s)",
         )
 
@@ -390,7 +393,7 @@ def run_throughput(
         return ModelResult(
             model=model.name, task=model.task, size=model.size,
             use_ort=use_ort, family="throughput",
-            status="no_fps", buffer_count=buffer_count,
+            status="no_fps", buffer_count=buffer_count, buffer_count_curve=bc_curve_str,
             reason="Could not parse FPS from any run",
         )
 
@@ -418,6 +421,7 @@ def run_throughput(
         fps_std=fps_std,
         cpu_pct=avg_cpu,
         buffer_count=buffer_count,
+        buffer_count_curve=bc_curve_str,
         npu_stats=npu_dict,
         input_tensor=input_tensor,
         status=status,

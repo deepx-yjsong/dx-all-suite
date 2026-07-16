@@ -682,6 +682,42 @@ def _format_temp(temp_min: float | None, temp_max: float | None) -> str:
 
 # ── Model Throughput section ─────────────────────────────────────────────
 
+def _bc_sweep_cell(curve_str: str, winner) -> str:
+    """Format a stored "bc:fps bc:fps …" curve as "bc:fps · bc:fps …" with the
+    winner bolded + ★. Handles any probe range (2..N) — it's a single string cell."""
+    parts = []
+    for tok in str(curve_str).split():
+        if ":" not in tok:
+            continue
+        bc_s, fps_s = tok.split(":", 1)
+        try:
+            bc, fps = int(bc_s), float(fps_s)
+        except ValueError:
+            continue
+        cell = f"{bc}:{fps:.0f}"
+        if winner is not None and bc == int(winner):
+            cell = f"**{cell} ★**"
+        parts.append(cell)
+    return " · ".join(parts)
+
+
+def _add_bc_sweep_subtable(lines: list[str], results: list[dict]) -> None:
+    """Below a throughput table: per-model buffer-count sweep curve (bc:fps), winner
+    bolded. One string cell per model absorbs any probe range without widening the table."""
+    sweeps = [r for r in results if r.get("buffer_count_curve")]
+    if not sweeps:
+        return
+    lines.append("")
+    lines.append("_Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):")
+    lines.append("")
+    lines.append("| Model | BC ★ | Sweep (bc:fps) |")
+    lines.append("|-------|------|----------------|")
+    for r in sweeps:
+        bc = r.get("buffer_count")
+        lines.append(f"| {r.get('model', '?')} | {bc if bc is not None else '—'} | "
+                     f"{_bc_sweep_cell(r.get('buffer_count_curve', ''), bc)} |")
+
+
 def _add_model_throughput_section(lines: list[str], throughput: list[dict]) -> None:
     lines.append("### Throughput (Multi-Core, Async)")
     lines.append("")
@@ -690,6 +726,7 @@ def _add_model_throughput_section(lines: list[str], throughput: list[dict]) -> N
 
     # Check if clock data is available in any result
     has_npu_clock = any(r.get("npu_clock_mhz_min") is not None or r.get("npu_clock_mhz_max") is not None for r in throughput)
+    has_bc = any(r.get("buffer_count") is not None for r in throughput)
 
     for task, task_results in task_groups.items():
         task_name = _TASK_DISPLAY_NAMES.get(task, task)
@@ -702,8 +739,13 @@ def _add_model_throughput_section(lines: list[str], throughput: list[dict]) -> N
             lines.append("")
 
         # Build dynamic header
-        hdr_cols = ["Model", "FPS", "CPU%", "NPU Avg%", "NPU Max%", "NPU Temp °C"]
-        sep_cols = ["-------", "-----", "------", "----------", "----------", "-------------"]
+        hdr_cols = ["Model", "FPS"]
+        sep_cols = ["-------", "-----"]
+        if has_bc:
+            hdr_cols.append("BC")
+            sep_cols.append("---")
+        hdr_cols += ["CPU%", "NPU Avg%", "NPU Max%", "NPU Temp °C"]
+        sep_cols += ["------", "----------", "----------", "-------------"]
         if has_npu_clock:
             hdr_cols.append("NPU MHz")
             sep_cols.append("---------")
@@ -733,11 +775,16 @@ def _add_model_throughput_section(lines: list[str], throughput: list[dict]) -> N
                 npu_max_val = r.get("npu_total_max_pct")
                 npu_max = f'{npu_max_val:.1f}' if npu_max_val is not None else "—"
                 temp_s = _format_temp(r.get("npu_temp_min_c"), r.get("npu_temp_max_c"))
-                row = f"| {r.get('model', '?')} | {fps} | {cpu} | {npu_avg} | {npu_max} | {temp_s}"
+                row = f"| {r.get('model', '?')} | {fps}"
+                if has_bc:
+                    bc = r.get("buffer_count")
+                    row += f" | {bc if bc is not None else '—'}"
+                row += f" | {cpu} | {npu_avg} | {npu_max} | {temp_s}"
                 if has_npu_clock:
                     row += f" | {_format_clock(r.get('npu_clock_mhz_min'), r.get('npu_clock_mhz_max'))}"
                 row += f" | {_status_cell(r)} |"
                 lines.append(row)
+            _add_bc_sweep_subtable(lines, ort_results)
             lines.append("")
 
 
