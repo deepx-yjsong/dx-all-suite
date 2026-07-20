@@ -593,6 +593,8 @@ function renderDetailTables() {
   function stdSpan(v,s,d){var b=fmt(v,d);if(v!=null&&s!=null)b+=' <span class="detail-std">±'+fmt(s,d)+'</span>';return b;}
   function mhzTd(r){var lo=r.npu_clock_mhz_min,hi=r.npu_clock_mhz_max,s=_fmtClock(lo,hi);if(lo!=null&&lo<nom)s='<span class="clk-throttled" title="Thermal throttle">'+s+'</span>';return '<td>'+s+'</td>';}
   function stTd(s){return '<td>'+_statusBadge(s)+'</td>';}
+  // Status cell with a tooltip explaining a non-ok flag (reason + which stream counts failed).
+  function stTdReason(r){var reason=r.status_reason,scs=r.failed_stream_counts;if(!reason&&!(scs&&scs.length))return stTd(r.status);var scPart=(scs&&scs.length)?(' @ sc=['+scs.join(',')+']'):'';var tip=(r.status||'-')+scPart+(reason?(': '+reason):'');return '<td title="'+escHtml(tip)+'">'+_statusBadge(r.status)+'</td>';}
   function msOrt(r){return '<td>'+escHtml(r.model)+'</td><td>'+((sizeOf(r)||'-')+'').toUpperCase()+'</td><td>'+(r.use_ort?'ON':'OFF')+'</td>';}
   function section(title,sub,by,head,rowFn,preHtml,key){var tasks=Object.keys(by).sort(taskOrd);if(!tasks.length)return '';var inner=tasks.map(function(t){var body=sortRows(by[t]).map(rowFn).join('');return '<h4 class="detail-task">'+(TASK_MAP[t]?TASK_MAP[t].label:t)+'</h4><div class="table-scroll"><table class="summary-table detail-table"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div>';}).join('');return '<section class="detail-metric" id="dm-'+key+'"><h2 class="detail-metric-title">'+title+(sub?' <span class="detail-metric-sub">'+sub+'</span>':'')+'</h2>'+(preHtml||'')+inner+'</section>';}
 
@@ -613,7 +615,7 @@ function renderDetailTables() {
     _decodePathSummary(e2eRows),'e2e');
   var secMul=section('Max Channel Capacity','max channels ≥ threshold',cap,
     '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>Max Channels</th><th>Per-Ch FPS</th><th>FPS Threshold</th><th>Status</th>',
-    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+(r.capacity_streams!=null?r.capacity_streams:'-')+'</td><td>'+fmt(r.capacity_per_channel_fps,1)+'</td><td>'+fmt(r.fps_threshold,0)+'</td>'+stTd(r.status)+'</tr>';},'','multi');
+    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+(r.capacity_streams!=null?r.capacity_streams:'-')+'</td><td>'+fmt(r.capacity_per_channel_fps,1)+'</td><td>'+fmt(r.fps_threshold,0)+'</td>'+stTdReason(r)+'</tr>';},'','multi');
 
   // Two metric families surfaced as color-coded groups so users grasp each metric's character:
   //  · NPU Performance    — model inference (Throughput + Latency)          → green

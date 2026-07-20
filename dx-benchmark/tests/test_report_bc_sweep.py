@@ -38,3 +38,29 @@ def test_bc_columns_absent_for_legacy_rows_without_buffer_count():
     _add_model_throughput_section(lines, rows)
     out = "\n".join(lines)
     assert "Buffer-count sweep" not in out    # no empty sweep table for legacy runs
+
+
+def test_sweep_curve_shows_one_decimal_not_integer_rounded():
+    # Stored curve keeps 1 decimal; the table must display that decimal so the
+    # winner's margin is visible instead of being hidden by integer rounding.
+    rows = [_row(buffer_count=5,
+                 buffer_count_curve="3:215.3 4:282.6 5:322.1 6:302.9 7:298.0 8:297.4")]
+    lines = []
+    _add_model_throughput_section(lines, rows)
+    out = "\n".join(lines)
+    assert "[3]:215.3" in out
+    assert "[4]:282.6" in out                  # would be 283 if integer-rounded
+    assert "**[5]:322.1 ★**" in out            # winner bolded, 1 decimal
+    assert "[8]:297.4" in out
+    assert "[4]:283" not in out                # no integer-rounded form
+
+
+def test_sweep_subtable_has_winner_policy_footnote():
+    rows = [_row(buffer_count=5,
+                 buffer_count_curve="3:215.0 4:282.0 5:322.0 6:302.0 7:298.0 8:297.0")]
+    lines = []
+    _add_model_throughput_section(lines, rows)
+    out = "\n".join(lines)
+    # footnote clarifies that ★ is decided on full precision and shown rounded
+    assert "highest measured throughput" in out
+    assert "1 decimal" in out

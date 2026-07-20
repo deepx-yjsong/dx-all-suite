@@ -710,7 +710,7 @@ def _bc_sweep_cell(curve_str: str, winner) -> str:
             bc, fps = int(bc_s), float(fps_s)
         except ValueError:
             continue
-        cell = f"[{bc}]:{fps:.0f}"
+        cell = f"[{bc}]:{fps:.1f}"
         if winner is not None and bc == int(winner):
             cell = f"**{cell} ★**"
         parts.append(cell)
@@ -732,6 +732,14 @@ def _add_bc_sweep_subtable(lines: list[str], results: list[dict]) -> None:
         bc = r.get("buffer_count")
         lines.append(f"| {r.get('model', '?')} | {bc if bc is not None else '—'} | "
                      f"{_bc_sweep_cell(r.get('buffer_count_curve', ''), bc)} |")
+    lines.append("")
+    lines.append(
+        "> ★ = winner: the buffer-count with the highest measured throughput "
+        "(chosen at full probe precision; fps shown rounded to 1 decimal). "
+        "A smaller buffer-count wins only on an exact tie. The goal of the sweep "
+        "is to find the throughput ceiling — the winning buffer-count value itself "
+        "is secondary, since tied buffer-counts deliver effectively equal throughput."
+    )
 
 
 def _add_model_throughput_section(lines: list[str], throughput: list[dict]) -> None:
@@ -997,6 +1005,27 @@ def _add_multi_stream_section(lines: list[str], multi_stream_results: list[dict]
 
         # Channel capacity summary for this task
         _add_capacity_summary(lines, multi_relevant, fps_threshold)
+
+        # Footnote: surface rows hidden from the tables above (sc=1 dropped when a
+        # higher sc passes) that are non-ok, so a hidden failure stays discoverable
+        # instead of vanishing behind a clean capacity number.
+        hidden_non_ok = [
+            r for r in task_results
+            if r.get("stream_count", 0) == 1
+            and (r.get("model", "?"), r.get("use_ort")) in _pass_above_1
+            and (r.get("status") or "ok") != "ok"
+        ]
+        if hidden_non_ok:
+            lines.append("> **Note — hidden non-ok measurements** (not shown above; capacity is "
+                         "taken from passing rows, so these did not affect the numbers):")
+            for r in sorted(hidden_non_ok,
+                            key=lambda r: (r.get("model", ""), not r.get("use_ort"))):
+                ort_s = "ON" if r.get("use_ort") else "OFF"
+                reason = (r.get("reason") or "").strip()
+                reason_s = f" — {reason}" if reason else ""
+                lines.append(f"> - {r.get('model', '?')} (ORT {ort_s}, sc="
+                             f"{r.get('stream_count', '?')}): {r.get('status')}{reason_s}")
+            lines.append("")
 
 
 # ── ORT comparison table ────────────────────────────────────────────────

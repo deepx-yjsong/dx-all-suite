@@ -277,6 +277,21 @@ def _worst_status(rows: list[dict]) -> str:
     return worst
 
 
+def _status_detail(rows: list[dict]) -> tuple[str | None, list[int]]:
+    """Explain a non-ok capacity status: (reason, sorted failed stream counts).
+
+    Pairs with ``_worst_status`` so the dashboard/report can show WHY a capacity
+    row is flagged (e.g. "error @ sc=[1]: <reason>") instead of an unexplained
+    badge. Returns (None, []) when every row is ok.
+    """
+    failed = [r for r in rows if (r.get("status") or "ok") != "ok"]
+    if not failed:
+        return None, []
+    failed_scs = sorted({int(r.get("stream_count", 0) or 0) for r in failed})
+    worst = max(failed, key=lambda r: _STATUS_RANK.get(r.get("status") or "ok", _STATUS_RANK["error"]))
+    return (worst.get("reason") or None), failed_scs
+
+
 def _build_capacity_summary(run_id: str, env_id: str, rows: list[dict], fps_threshold: float) -> list[dict]:
     grouped: dict[tuple[str, bool], list[dict]] = {}
     for row in rows:
@@ -291,6 +306,7 @@ def _build_capacity_summary(run_id: str, env_id: str, rows: list[dict], fps_thre
             and int(row.get("runs", 0) or 0) == int(row.get("requested_runs", row.get("runs", 0)) or 0)
             and float(row.get("avg_per_channel_fps", 0.0) or 0.0) >= fps_threshold
         ]
+        status_reason, failed_stream_counts = _status_detail(group)
         if stable:
             best = max(stable, key=lambda row: int(row.get("stream_count", 0) or 0))
             summaries.append({
@@ -304,6 +320,8 @@ def _build_capacity_summary(run_id: str, env_id: str, rows: list[dict], fps_thre
                 "capacity_per_channel_fps": best.get("avg_per_channel_fps"),
                 "fps_threshold": fps_threshold,
                 "status": _worst_status(group),
+                "status_reason": status_reason,
+                "failed_stream_counts": failed_stream_counts,
             })
         elif group:
             # No stream count met the threshold (or all multi runs failed) —
@@ -321,6 +339,8 @@ def _build_capacity_summary(run_id: str, env_id: str, rows: list[dict], fps_thre
                 "capacity_per_channel_fps": None,
                 "fps_threshold": fps_threshold,
                 "status": _worst_status(group),
+                "status_reason": status_reason,
+                "failed_stream_counts": failed_stream_counts,
             })
     return summaries
 

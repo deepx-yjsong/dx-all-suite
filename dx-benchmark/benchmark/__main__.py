@@ -76,6 +76,27 @@ def _make_run_id() -> str:
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
+def _start_from_run_dir(out_dir: Path) -> str | None:
+    """Recover the original run's start from the run-dir name (``run_id`` =
+    ``YYYYMMDD_HHMMSS``). Used when an interrupted original run never persisted
+    its ``timing`` block, so its start would otherwise be unrecoverable."""
+    try:
+        return datetime.strptime(out_dir.name, "%Y%m%d_%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+    except (ValueError, TypeError):
+        return None
+
+
+def _resolve_overall_start_iso(existing_fp: dict, out_dir: Path, session_start_iso: str) -> str:
+    """Overall run start across resumes: prefer the previously-recorded start,
+    else recover the original start encoded in the run-dir name, else fall back
+    to this session's start. Recovering from the dir name keeps ``timing.start``
+    aligned with the run directory even when the original run was interrupted
+    before it persisted its timing — a plain ``--resume`` would otherwise
+    overwrite it with the (later) resume session's start."""
+    prior = (existing_fp.get("timing") or {}) if existing_fp else {}
+    return prior.get("start") or _start_from_run_dir(out_dir) or session_start_iso
+
+
 def _resolve_resume_dir(resume_arg: str | None) -> Path | None:
     if not resume_arg:
         return None
@@ -235,10 +256,15 @@ def cmd_run(args: argparse.Namespace) -> int:
                   "'unknown' in the Version Trend tab.")
     fp["dx_all_suite_version"] = suite_ver
 
-    prior_timing = existing_fp.get("timing", {}) if existing_fp else {}
-    overall_start_iso = prior_timing.get("start") or session_start_iso
+    overall_start_iso = _resolve_overall_start_iso(existing_fp, out_dir, session_start_iso)
     overall_start_time = _parse_local_timestamp(overall_start_iso) or session_start_time
-    timing_history = _load_timing_history(existing_fp)
+    retry_failed_flag = bool(getattr(args, "retry_failed", False))
+    # Record a provisional entry for THIS attempt now and attach the history to fp,
+    # so EVERY environment.json write below persists a complete history — a resume
+    # can't drop prior attempts, and an interrupted run still leaves a Test Timing row.
+    timing_history, current_timing_idx = _init_timing_history(
+        existing_fp, cfg, families, resume_dir, retry_failed_flag, session_start_iso)
+    fp["timing_history"] = timing_history
 
     # Auto-detect NPU idle temperature for thermal steady-state
     if cfg.thermal_idle_temp_c is None:
@@ -665,11 +691,14 @@ def cmd_run(args: argparse.Namespace) -> int:
         "end": bench_end_iso,
         "duration_sec": round(elapsed_sec, 1),
     }
-    timing_history.append(_make_timing_history_entry(
+    # Upgrade the provisional entry (added by _init_timing_history) in place —
+    # do NOT append, or a resumed run would show two rows for one attempt.
+    _finalize_timing_entry(
+        timing_history, current_timing_idx,
         cfg=cfg,
         families=families,
         resume_dir=resume_dir,
-        retry_failed=bool(getattr(args, "retry_failed", False)),
+        retry_failed=retry_failed_flag,
         start_iso=session_start_iso,
         end_iso=bench_end_iso,
         duration_sec=session_elapsed_sec,
@@ -678,7 +707,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         failure_model=failure_context.get("failure_model") if failure_context else None,
         failure_ort=failure_context.get("failure_ort") if failure_context else None,
         failure_reason=failure_context.get("failure_reason") if failure_context else None,
-    ))
+    )
     fp["timing_history"] = timing_history
 
     # End-of-run host health snapshot — pairs with the run-start "host_health"
@@ -952,15 +981,24 @@ def _backfill_sc1_from_single_stream(
     multi_results: list[dict],
     pipeline_results: list[dict],
 ) -> int:
-    """Patch multi-stream sc=1 entries with data from single-stream results.
+    """Reconcile multi-stream sc=1 entries against single-stream results.
 
-    When multi-stream sc=1 entries were created by an older version of
-    ``_make_sc1_from_single_stream`` that didn't copy NPU stats, decoder,
-    etc., those fields are None/unknown.  This function fills them in from
-    the matching single-stream pipeline result so that the report shows
-    correct values without re-running the benchmark.
+    sc=1 IS the single-stream condition by design, so a multi-stream sc=1 row
+    must mirror the single-stream result. Two cases are handled:
 
-    Returns the number of records patched.
+    1. **Rescue a stale FAILED sc=1 row** (status not ok/partial, or 0 runs, or
+       0 fps) when the matching single-stream is ok/partial. This recovers the
+       "total e2e failure then ``resume --retry-failed``" case: the retry
+       boundary-search starts at sc>=2 for capacity>=2 models and never revisits
+       sc=1, so an attempt-1 ``sc=1 error`` survives even though single-stream is
+       now ok. The row is rebuilt via ``_make_sc1_from_single_stream`` (identical
+       to the in-sweep reuse), with NO re-measurement.
+
+    2. **Fill missing metadata** on an existing (ok) sc=1 row whose NPU stats /
+       decoder / caps are None — e.g. rows made by an older reuse path.
+
+    Never fabricates: a failed single-stream cannot rescue a failed sc=1, and an
+    already-ok sc=1 row is never overwritten. Returns the number of records patched.
     """
     # Build lookup: (model, use_ort) → single-stream result dict
     single_lookup: dict[tuple[str, bool], dict] = {}
@@ -970,7 +1008,7 @@ def _backfill_sc1_from_single_stream(
             single_lookup[key] = r
 
     patched = 0
-    for rec in multi_results:
+    for idx, rec in enumerate(multi_results):
         if rec.get("stream_count") != 1:
             continue
 
@@ -979,6 +1017,18 @@ def _backfill_sc1_from_single_stream(
         if single is None:
             continue
 
+        # Case 1: rescue a stale failed sc=1 from an ok/partial single-stream.
+        rec_failed = (
+            rec.get("status") not in ("ok", "partial")
+            or int(rec.get("runs", 0) or 0) == 0
+            or float(rec.get("avg_e2e_fps", 0.0) or 0.0) == 0.0
+        )
+        if rec_failed and single.get("status") in ("ok", "partial"):
+            multi_results[idx] = _make_sc1_from_single_stream(single).as_dict()
+            patched += 1
+            continue
+
+        # Case 2: fill only missing/placeholder metadata on an existing sc=1 row.
         changed = False
         for field in _SC1_BACKFILL_FIELDS:
             src_val = single.get(field)
@@ -1248,6 +1298,56 @@ def _load_timing_history(fingerprint: dict) -> list[dict]:
         "retry_failed": bool(params.get("retry_failed", False)),
         "outcome": "completed",
     }]
+
+
+def _init_timing_history(
+    existing_fp: dict,
+    cfg: BenchmarkConfig,
+    families: list[str],
+    resume_dir: Path | None,
+    retry_failed: bool,
+    start_iso: str,
+) -> tuple[list[dict], int]:
+    """Load prior timing history and append a PROVISIONAL entry for the current
+    attempt (``outcome="interrupted"``).
+
+    Persisting this at the start (and re-writing it in every environment.json
+    write, not only at finalization) means: (a) a resume never drops the prior
+    attempts' rows, and (b) an attempt killed before finalization still leaves a
+    Test Timing row. ``_finalize_timing_entry`` later upgrades this same entry
+    in place. Returns ``(history, current_index)``.
+    """
+    history = _load_timing_history(existing_fp)
+    history.append(_make_timing_history_entry(
+        cfg=cfg, families=families, resume_dir=resume_dir, retry_failed=retry_failed,
+        start_iso=start_iso, end_iso=start_iso, duration_sec=0.0, outcome="interrupted"))
+    return history, len(history) - 1
+
+
+def _finalize_timing_entry(
+    history: list[dict],
+    index: int,
+    *,
+    cfg: BenchmarkConfig,
+    families: list[str],
+    resume_dir: Path | None,
+    retry_failed: bool,
+    start_iso: str,
+    end_iso: str,
+    duration_sec: float,
+    outcome: str,
+    failure_stage: str | None = None,
+    failure_model: str | None = None,
+    failure_ort: str | None = None,
+    failure_reason: str | None = None,
+) -> None:
+    """Replace the provisional current-attempt entry (added by
+    ``_init_timing_history``) in place — never append a duplicate."""
+    history[index] = _make_timing_history_entry(
+        cfg=cfg, families=families, resume_dir=resume_dir, retry_failed=retry_failed,
+        start_iso=start_iso, end_iso=end_iso, duration_sec=duration_sec, outcome=outcome,
+        failure_stage=failure_stage, failure_model=failure_model,
+        failure_ort=failure_ort, failure_reason=failure_reason)
 
 
 def _is_failed_result(result: dict | None) -> bool:
