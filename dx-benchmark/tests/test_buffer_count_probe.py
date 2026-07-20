@@ -66,6 +66,52 @@ def test_winner_equals_start_probes_below_once():
     assert 2 in p.seen and win == 2
 
 
+def _flaky_curve(mapping, zero_on_first=()):
+    """Probe returns 0.0 on the FIRST call for c in *zero_on_first* (a transient
+    device stall), then the real value on any retry."""
+    calls = {}
+
+    def probe(c):
+        calls[c] = calls.get(c, 0) + 1
+        if c in zero_on_first and calls[c] == 1:
+            return 0.0
+        return mapping[c]
+
+    probe.calls = calls
+    return probe
+
+
+def test_transient_zero_probe_is_retried():
+    # c=7 stalls to 0 on the first probe, returns the real 315 on retry.
+    p = _flaky_curve({3: 200., 4: 250., 5: 280., 6: 300., 7: 315., 8: 325., 9: 330., 10: 320.},
+                     zero_on_first=(7,))
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8, zero_retries=1)
+    assert curve[7] == 315.0     # retry recovered the real value (no stray 0 in the curve)
+    assert p.calls[7] == 2       # probed twice: 0 then retry
+
+
+def test_all_zero_returns_none_winner():
+    # Every probe is 0 (device unresponsive) → no winner, so the caller can short-circuit
+    # instead of "picking" the smallest buffer-count.
+    p = _curve({c: 0.0 for c in range(1, 17)})
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8, zero_retries=1)
+    assert win is None
+
+
+def test_transient_zero_at_floor_max_still_continues():
+    # floor_max (8) stalls to 0 on first probe; retry recovers 325 → Phase 2 still continues.
+    p = _flaky_curve({3: 200., 4: 250., 5: 280., 6: 300., 7: 315., 8: 325., 9: 330., 10: 320.},
+                     zero_on_first=(8,))
+    win, curve, edge = select_buffer_count(p, start=3, floor_max=8, zero_retries=1)
+    assert curve[8] == 325.0
+    assert 9 in p.calls and win == 9
+
+
+def test_buffer_count_probe_retries_config_default():
+    from benchmark.config import BenchmarkConfig
+    assert BenchmarkConfig().buffer_count_probe_retries == 1
+
+
 def test_aggregator_flattens_buffer_count():
     """buffer_count flows into the flattened dataset row."""
     from benchmark.aggregator import _flatten_model_results

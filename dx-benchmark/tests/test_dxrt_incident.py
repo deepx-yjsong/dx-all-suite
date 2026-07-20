@@ -74,3 +74,29 @@ def test_trigger_output_truncated_to_tail(tmp_path, monkeypatch):
     lines = (inc / "trigger_output.log").read_text().splitlines()
     assert len(lines) <= 200
     assert any("error-code=264" in ln for ln in lines)
+
+
+# ── B6: total incident cap (hang incidents were previously uncapped) ──────
+def test_timeout_incident_total_cap(tmp_path, monkeypatch):
+    # Once the total cap is reached, further HANG captures are suppressed (no expensive
+    # shell-outs, no bundle dir) — a dead/flapping device can't flood incidents/.
+    monkeypatch.setattr(rp, "_incident_dir", tmp_path)
+    monkeypatch.setattr(rp, "_incident_seq", 0)
+    monkeypatch.setattr(rp, "_incident_captured", rp._MAX_INCIDENTS)
+    assert rp.collect_timeout_incident("e2e.run1.hang") is None
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_timeout_incident_under_cap_captures_and_counts(tmp_path, monkeypatch):
+    import benchmark.env_fingerprint as ef
+    monkeypatch.setattr(rp, "_incident_dir", tmp_path)
+    monkeypatch.setattr(rp, "_incident_seq", 0)
+    monkeypatch.setattr(rp, "_incident_captured", 0)
+    monkeypatch.setattr(rp, "_run_diagnostic_cmd", lambda cmd, timeout=10: "stub")
+    monkeypatch.setattr(rp, "_run_diagnostic_cmd_elevated", lambda cmd, timeout=10: "stub")
+    monkeypatch.setattr(rp, "read_npu_temp_c", lambda: None)
+    monkeypatch.setattr(rp, "read_npu_clock_mhz", lambda: None)
+    monkeypatch.setattr(ef, "collect_host_health", lambda: {})
+    d = rp.collect_timeout_incident("e2e.run1.hang")
+    assert d is not None and d.is_dir()
+    assert rp._incident_captured == 1

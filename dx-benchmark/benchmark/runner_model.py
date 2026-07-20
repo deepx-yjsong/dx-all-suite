@@ -32,7 +32,7 @@ def _stdev(values: list[float]) -> Optional[float]:
 
 
 def select_buffer_count(probe, start=3, floor_max=8, improve_eps=0.01,
-                        decline_eps=0.02, max_probe=16):
+                        decline_eps=0.02, max_probe=16, zero_retries=1):
     """Adaptive sweep over run_model ``--buffer-count``.
 
     ``probe(c)`` runs a short throughput probe at buffer-count ``c`` and returns FPS.
@@ -50,15 +50,33 @@ def select_buffer_count(probe, start=3, floor_max=8, improve_eps=0.01,
     a smaller buffer-count wins only on an exact tie. If the winner is the start floor,
     probe one below in case the true peak is lower.
 
-    Returns ``(winner, curve{c: fps}, edge_hit)``.
+    A probe that reads 0 fps is retried up to ``zero_retries`` times (a transient NPU
+    stall, not a real ceiling). If EVERY probe still reads 0 (device unresponsive), the
+    winner is ``None`` so the caller can short-circuit instead of "picking" the smallest
+    buffer-count off a meaningless all-zero curve.
+
+    Returns ``(winner, curve{c: fps}, edge_hit)`` — ``winner`` is ``None`` when all-zero.
     """
     floor_max = max(floor_max, start)
     curve: dict[int, float] = {}
     edge = False
 
+    def _probe(c: int) -> float:
+        """Probe once, retrying up to *zero_retries* times on a 0-fps (transient) read."""
+        v = float(probe(c))
+        tries = 0
+        while v <= 0.0 and tries < zero_retries:
+            tries += 1
+            v = float(probe(c))
+        return v
+
     # Phase 1: unconditional floor sweep (covers the default buffer-count + margin).
     for c in range(start, floor_max + 1):
-        curve[c] = float(probe(c))
+        curve[c] = _probe(c)
+
+    # All-zero after retries → device unresponsive; no winner (caller short-circuits).
+    if max(curve.values(), default=0.0) <= 0.0:
+        return None, curve, edge
 
     # Phase 2: continue only while the top of the floor is still the max (rising).
     if curve.get(floor_max, -1.0) >= max(curve.values()):
@@ -66,7 +84,7 @@ def select_buffer_count(probe, start=3, floor_max=8, improve_eps=0.01,
         plateau = 0
         c = floor_max + 1
         while c <= max_probe:
-            fps = float(probe(c))
+            fps = _probe(c)
             curve[c] = fps
             if fps <= best * (1 - decline_eps):
                 break                                      # declined past the peak
@@ -87,7 +105,7 @@ def select_buffer_count(probe, start=3, floor_max=8, improve_eps=0.01,
     win = _winner(curve)
     if win == start and start > 1:                          # peak may be below the floor
         below = start - 1
-        curve[below] = float(probe(below))
+        curve[below] = _probe(below)
         win = _winner(curve)
     return win, curve, edge
 
@@ -307,8 +325,21 @@ def run_throughput(
         improve_eps=cfg.buffer_count_improve_eps,
         decline_eps=cfg.buffer_count_decline_eps,
         max_probe=cfg.buffer_count_max_probe,
+        zero_retries=cfg.buffer_count_probe_retries,
     )
     bc_curve_str = " ".join(f"{k}:{v:.1f}" for k, v in sorted(bc_curve.items()))
+    # All probes read 0 fps even after retries → device unresponsive. Don't "pick" a
+    # meaningless winner or waste warmup+measured runs; fail fast so the circuit breaker
+    # (which treats no_fps as fatal) can decide whether the device is truly dead.
+    if buffer_count is None:
+        print(f"    [buffer-count] all probes 0 fps → device unresponsive; skipping throughput "
+              f"(probe {cfg.buffer_count_probe_sec}s: {bc_curve_str})", flush=True)
+        return ModelResult(
+            model=model.name, task=model.task, size=model.size,
+            use_ort=use_ort, family="throughput",
+            status="no_fps", buffer_count=None, buffer_count_curve=bc_curve_str,
+            reason="all buffer-count probes returned 0 fps (device unresponsive)",
+        )
     print(f"    [buffer-count] winner={buffer_count} "
           f"(probe {cfg.buffer_count_probe_sec}s: "
           + ", ".join(f"{k}:{v:.0f}" for k, v in sorted(bc_curve.items())) + ")", flush=True)

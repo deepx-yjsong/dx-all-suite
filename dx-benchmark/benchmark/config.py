@@ -209,6 +209,7 @@ class BenchmarkConfig:
     buffer_count_probe_start: int = 3      # M1/M1M/H1 = 3 cores per chip
     buffer_count_probe_floor_max: int = 8  # always probe start..8 (covers default 6 + margin)
     buffer_count_probe_sec: int = 10       # per-probe duration (-t)
+    buffer_count_probe_retries: int = 1    # retry a probe that returns 0 fps (transient stall)
     buffer_count_improve_eps: float = 0.01
     buffer_count_decline_eps: float = 0.02
     buffer_count_max_probe: int = 16
@@ -281,6 +282,7 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "buffer_count_probe_start": cfg.buffer_count_probe_start,
         "buffer_count_probe_floor_max": cfg.buffer_count_probe_floor_max,
         "buffer_count_probe_sec": cfg.buffer_count_probe_sec,
+        "buffer_count_probe_retries": cfg.buffer_count_probe_retries,
         "buffer_count_max_probe": cfg.buffer_count_max_probe,
         "e2e_runs": cfg.e2e_runs,
         "e2e_stall_timeout": cfg.e2e_stall_timeout,

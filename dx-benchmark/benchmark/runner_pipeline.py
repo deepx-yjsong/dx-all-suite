@@ -604,6 +604,11 @@ def probe_device_alive(timeout_sec: int = 15) -> str:
 # Module-level incident directory — set by callers (e.g. __main__.py)
 _incident_dir: Optional[Path] = None
 _incident_seq: int = 0
+# Total incident bundles captured this run (dxrt-error AND hang). Each bundle shells out
+# for dmesg/journalctl/lspci, so a dead/flapping device must not flood incidents/ with
+# hundreds of expensive captures. The dxrt-error sub-type keeps its own tighter cap below.
+_MAX_INCIDENTS: int = 40
+_incident_captured: int = 0
 
 
 def set_incident_dir(path: Path) -> None:
@@ -651,10 +656,18 @@ def collect_timeout_incident(context: str) -> Optional[Path]:
     Returns:
         Path to the incident directory, or None if incident_dir is not set.
     """
-    global _incident_seq
+    global _incident_seq, _incident_captured
 
     if _incident_dir is None:
         return None
+
+    # Total anti-flood cap (covers hang incidents, which were previously uncapped).
+    if _incident_captured >= _MAX_INCIDENTS:
+        return None
+    _incident_captured += 1
+    if _incident_captured == _MAX_INCIDENTS:
+        print(f"    [incident] total cap ({_MAX_INCIDENTS}) reached — "
+              f"further captures suppressed", flush=True)
 
     _incident_seq += 1
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
