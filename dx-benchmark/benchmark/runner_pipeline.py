@@ -407,6 +407,30 @@ def _terminate_pgid(pgid: Optional[int], proc: subprocess.Popen) -> bool:
         return True
 
 
+def _build_gst_env(env_extra: dict | None = None) -> dict:
+    """Environment for gst-launch subprocesses — headless by default.
+
+    The benchmark sinks to fakesink and never displays, so it must not inherit an
+    X/Wayland display. Inheriting DISPLAY makes ``decodebin``'s VA-API auto-plug
+    create a ``GstGLDisplayX11`` context; at high stream concurrency the shared Xlib
+    connection is used from many threads without ``XInitThreads`` and aborts
+    (``_XReply: xcb_xlib_threads_sequence_lost`` → SIGABRT). Stripping the display
+    steers VA-API/GL to a DRM/GBM display instead — the HW decode path is unchanged
+    (verified: numbers match X11 within ~0.3%).
+
+    Escape hatch: set ``DX_BENCH_KEEP_DISPLAY=1`` to keep the inherited display.
+    """
+    env = os.environ.copy()
+    env["GST_DEBUG_NO_COLOR"] = "1"
+    env["GST_DEBUG"] = "0"  # minimal debug for clean benchmarks
+    if os.environ.get("DX_BENCH_KEEP_DISPLAY") != "1":
+        env.pop("DISPLAY", None)
+        env.pop("WAYLAND_DISPLAY", None)
+    if env_extra:
+        env.update(env_extra)  # explicit caller override wins (incl. re-adding DISPLAY)
+    return env
+
+
 def _run_gst_pipeline(pipeline_parts: list[str], env_extra: dict | None = None, incident_context: str = "",
                       stall_timeout: float = 90.0, hard_cap: float = 1800.0) -> tuple[PipeOutcome, str]:
     """Execute a gst-launch pipeline; return (PipeOutcome, combined_log).
@@ -415,11 +439,7 @@ def _run_gst_pipeline(pipeline_parts: list[str], env_extra: dict | None = None, 
     OK/HANG/RUNAWAY via _watchdog_decision(). Slow-but-progressing runs finish
     naturally; only a stall (HANG) or the anti-runaway hard cap ends a run early
     (with NPU recovery)."""
-    env = os.environ.copy()
-    env["GST_DEBUG_NO_COLOR"] = "1"
-    env["GST_DEBUG"] = "0"  # minimal debug for clean benchmarks
-    if env_extra:
-        env.update(env_extra)
+    env = _build_gst_env(env_extra)
 
     full_cmd = [
         "/usr/bin/time",
