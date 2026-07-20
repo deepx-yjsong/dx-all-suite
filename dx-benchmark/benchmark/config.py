@@ -234,6 +234,14 @@ class BenchmarkConfig:
     thermal_cooldown_max_sec: float = 1000.0   # max cooldown wait seconds
     thermal_idle_temp_c: Optional[float] = None  # measured at start; None = auto-detect
 
+    # ── Device-death circuit breaker (conservative abort) ─────────────
+    # Abort the run ONLY when a dxrt-cli liveness probe confirms the device is
+    # unrecoverable (DEAD). An ALIVE device never aborts — the failed cell is
+    # recorded and the run continues, exactly as before.
+    enable_circuit_breaker: bool = True     # master switch for the abort-on-dead logic
+    device_probe_timeout_sec: int = 15      # dxrt-cli -s liveness probe timeout
+    circuit_breaker_backstop_models: int = 2  # last-resort: N consecutive fully-failed models (device ALIVE) → abort
+
     # ── Output ────────────────────────────────────────────────────────
     output_dir: Optional[str] = None
     # ── Product info (optional, shown in report Environment) ───────
@@ -288,4 +296,8 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "thermal_cooldown_max_sec": cfg.thermal_cooldown_max_sec,
         "npu_warmup_sec": cfg.npu_warmup_sec,
         "npu_drain_sec": cfg.npu_drain_sec,
+
+        "enable_circuit_breaker": cfg.enable_circuit_breaker,
+        "device_probe_timeout_sec": cfg.device_probe_timeout_sec,
+        "circuit_breaker_backstop_models": cfg.circuit_breaker_backstop_models,
     }

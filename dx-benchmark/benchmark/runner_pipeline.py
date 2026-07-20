@@ -561,6 +561,44 @@ def cleanup_after_timeout() -> bool:
     return recovered
 
 
+# ── Device-liveness probe (conservative circuit breaker) ──────────────────
+# A dead device makes run_model complete with bad output (never a clean timeout),
+# so the circuit breaker needs a deterministic, out-of-band way to confirm death.
+_DEVICE_DEAD_SIGNATURES = (
+    "fail to initialize device",
+    "failed to get device count",
+    "failed to identify device",
+)
+
+
+def _parse_device_verdict(raw: str) -> str:
+    """Classify ``dxrt-cli -s`` output as ``'dead'`` | ``'alive'`` | ``'unknown'``.
+
+    - ``dead``   — an explicit unrecoverable signature (device cannot be enumerated).
+    - ``alive``  — at least one device is enumerated (a ``* Device`` line is present).
+    - ``unknown``— probe failed / timed out / empty. NEVER triggers an abort on its own.
+    """
+    if not raw or raw.strip() in ("", "unknown"):
+        return "unknown"
+    low = raw.lower()
+    if any(sig in low for sig in _DEVICE_DEAD_SIGNATURES):
+        return "dead"
+    if "[dxrt-exception]" in low and "identify" in low:
+        return "dead"
+    device_count = sum(1 for line in raw.splitlines() if line.strip().startswith("* Device"))
+    if device_count > 0:
+        return "alive"
+    return "unknown"
+
+
+def probe_device_alive(timeout_sec: int = 15) -> str:
+    """Run ``dxrt-cli -s`` and return a liveness verdict (``dead``|``alive``|``unknown``)."""
+    if not shutil.which("dxrt-cli"):
+        return "unknown"
+    raw = _run_diagnostic_cmd(["dxrt-cli", "-s"], timeout=timeout_sec)
+    return _parse_device_verdict(raw)
+
+
 # ── Timeout incident data collection ─────────────────────────────────────
 
 # Module-level incident directory — set by callers (e.g. __main__.py)

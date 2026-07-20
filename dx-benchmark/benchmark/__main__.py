@@ -34,7 +34,42 @@ from .reporter import (
     save_results_json,
 )
 from .runner_model import run_throughput, run_latency
-from .runner_pipeline import run_single_stream, run_multi_stream_sweep, get_boundary_search_start, wait_until_cool, set_incident_dir
+from .runner_pipeline import run_single_stream, run_multi_stream_sweep, get_boundary_search_start, wait_until_cool, set_incident_dir, _make_sc1_from_single_stream, recover_npu_device, probe_device_alive
+
+
+# ── Device-death circuit breaker (conservative abort) ─────────────────────
+_FATAL_STATUSES = frozenset({"timeout", "error", "no_fps"})
+
+
+def _is_fatal_status(status: str) -> bool:
+    """A cell result meaning the measurement failed (device dead, unparsable, or hung)."""
+    return status in _FATAL_STATUSES
+
+
+def circuit_breaker_decision(
+    model_all_fatal: bool,
+    verdict: str,
+    consecutive_fatal_models: int,
+    backstop_models: int,
+) -> tuple[str, int]:
+    """Decide the run-level action after a model's model-level phase completes.
+
+    Returns ``(action, new_consecutive_fatal_models)`` where action is one of:
+      - ``"continue"``       — keep running (device ALIVE, or the model had a good result)
+      - ``"abort_dead"``     — device probe confirmed unrecoverable → stop the run
+      - ``"abort_backstop"`` — too many consecutive fully-failed models (anti-runaway)
+
+    A ``dead`` verdict is the ONLY deterministic abort; ``alive``/``unknown`` only ever
+    feed the high backstop. Any non-fully-failed model resets the counter to 0.
+    """
+    if not model_all_fatal:
+        return "continue", 0
+    if verdict == "dead":
+        return "abort_dead", consecutive_fatal_models
+    new = consecutive_fatal_models + 1
+    if new >= backstop_models:
+        return "abort_backstop", new
+    return "continue", new
 
 
 def _make_run_id() -> str:
@@ -321,10 +356,14 @@ def cmd_run(args: argparse.Namespace) -> int:
     print("\n=== Benchmarks ===")
     total_models = len(models)
 
+    # Circuit breaker: consecutive models whose model-level phase fully failed.
+    # Reset to 0 by any model that produced a good model-level result.
+    consecutive_fatal_models = 0
+
     for m_idx, m in enumerate(models, 1):
         for use_ort in cfg.ort_modes:
             ort_s = "ON" if use_ort else "OFF"
-            model_timeout_count = 0  # track consecutive timeouts for early skip
+            model_fatal_count = 0  # fatal model-level cells (error/no_fps/timeout) for this model
 
             print(f"\n── [{m_idx}/{total_models}] {m.name}  ORT={ort_s}  ({m.task}) ──", flush=True)
 
@@ -390,8 +429,8 @@ def cmd_run(args: argparse.Namespace) -> int:
                     _save_result_set(model_results, out_dir / "model_results.csv", out_dir / "model_results.json")
                     fps_s = f"{r.fps:.1f}" if r.fps else "N/A"
                     print(f"  ← {fps_s} fps ({elapsed:.1f}s) [{r.status}]")
-                    if r.status == "timeout":
-                        model_timeout_count += 1
+                    if _is_fatal_status(r.status):
+                        model_fatal_count += 1
 
             # ③ Throughput (multi-core, async) — records T_start/T_end
             if run_model_level:
@@ -431,11 +470,54 @@ def cmd_run(args: argparse.Namespace) -> int:
                             json.dump(fp, _f, indent=2)
                     fps_s = f"{r.fps:.1f}" if r.fps else "N/A"
                     print(f"  ← {fps_s} fps ({elapsed:.1f}s) [{r.status}]")
-                    if r.status == "timeout":
-                        model_timeout_count += 1
+                    if _is_fatal_status(r.status):
+                        model_fatal_count += 1
 
-            # Skip E2E + multi if model-level benchmarks both timed out
-            if model_timeout_count >= 2:
+            # ── Circuit breaker: did BOTH model-level benchmarks fail for this model? ──
+            model_all_fatal = run_model_level and model_fatal_count >= 2
+            if model_all_fatal and cfg.enable_circuit_breaker:
+                # Conservative: run the existing recovery once, then a deterministic
+                # liveness probe. Abort ONLY if the device is confirmed unrecoverable.
+                recover_npu_device()
+                verdict = probe_device_alive(cfg.device_probe_timeout_sec)
+                action, consecutive_fatal_models = circuit_breaker_decision(
+                    True, verdict, consecutive_fatal_models, cfg.circuit_breaker_backstop_models,
+                )
+                print(f"  [circuit-breaker] model-level all failed; device probe={verdict} "
+                      f"(consecutive_fatal_models={consecutive_fatal_models})", flush=True)
+                if action == "abort_dead":
+                    failure_context = {
+                        "failure_stage": "device_dead",
+                        "failure_model": m.name,
+                        "failure_ort": ort_s,
+                        "failure_reason": (
+                            "Device unrecoverable (dxrt-cli -s: Fail to initialize). A cold "
+                            "power-cycle is required. Resume with --resume <dir> --retry-failed "
+                            "after recovery."
+                        ),
+                    }
+                    print("  [circuit-breaker] device confirmed DEAD → aborting run "
+                          "(cold boot required)", flush=True)
+                    break
+                if action == "abort_backstop":
+                    failure_context = {
+                        "failure_stage": "repeated_failure",
+                        "failure_model": m.name,
+                        "failure_ort": ort_s,
+                        "failure_reason": (
+                            f"{consecutive_fatal_models} consecutive models fully failed while the "
+                            f"device still probes alive; aborting as a safety backstop."
+                        ),
+                    }
+                    print("  [circuit-breaker] backstop threshold reached → aborting run", flush=True)
+                    break
+            elif model_all_fatal:
+                consecutive_fatal_models += 1   # circuit breaker disabled: preserve skip-only behaviour
+            else:
+                consecutive_fatal_models = 0    # this model produced a good model-level result
+
+            # Skip E2E + multi if the model-level benchmarks both failed
+            if model_all_fatal:
                 remaining = 0
                 if run_e2e and m.task in E2E_SUPPORTED_TASKS:
                     done += 1
@@ -444,7 +526,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                     done += 1
                     remaining += 1
                 if remaining:
-                    print(f"  [SKIP] model-level all timed out → skipping e2e/multi ({remaining} steps)")
+                    print(f"  [SKIP] model-level all failed → skipping e2e/multi ({remaining} steps)")
                 continue
 
             # Cooldown before the E2E phase (protocol v3): shed the throughput phase's
@@ -494,6 +576,22 @@ def cmd_run(args: argparse.Namespace) -> int:
                     pipeline_index[key] = r_dict
                     _save_result_set(pipeline_results, out_dir / "pipeline_results.csv", out_dir / "pipeline_results.json")
                     print(f"  ← {r.avg_e2e_fps:.1f} fps ({elapsed:.1f}s) [{r.status}]")
+                    # Circuit breaker: device may die during e2e even if model-level passed.
+                    if cfg.enable_circuit_breaker and _is_fatal_status(r.status):
+                        if probe_device_alive(cfg.device_probe_timeout_sec) == "dead":
+                            failure_context = {
+                                "failure_stage": "device_dead",
+                                "failure_model": m.name,
+                                "failure_ort": ort_s,
+                                "failure_reason": (
+                                    "Device unrecoverable during e2e (dxrt-cli -s: Fail to "
+                                    "initialize). Cold power-cycle required; resume with "
+                                    "--resume <dir> --retry-failed."
+                                ),
+                            }
+                            print("  [circuit-breaker] device DEAD during e2e → aborting run",
+                                  flush=True)
+                            break
 
             # ⑤ Multi-Stream Sweep — directly follows E2E (already at thermal equilibrium)
             if run_multi and m.task in MULTI_STREAM_SUPPORTED_TASKS:
