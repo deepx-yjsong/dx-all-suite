@@ -342,7 +342,7 @@ def run_throughput(
         )
     print(f"    [buffer-count] winner={buffer_count} "
           f"(probe {cfg.buffer_count_probe_sec}s: "
-          + ", ".join(f"{k}:{v:.0f}" for k, v in sorted(bc_curve.items())) + ")", flush=True)
+          + ", ".join(f"{k}:{v:.1f}" for k, v in sorted(bc_curve.items())) + ")", flush=True)
     if bc_edge:
         print(f"    [WARN] buffer-count still rising at probe cap {cfg.buffer_count_max_probe} "
               f"(winner={buffer_count}); consider raising buffer_count_max_probe", flush=True)
