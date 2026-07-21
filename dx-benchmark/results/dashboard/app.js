@@ -82,8 +82,15 @@ function formatMemMB(mb) { if (mb == null) return '-'; return Number(mb).toFixed
 function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 // Status pill shared by all result tables (E2E overview + Detailed Data) for consistent styling.
 function _statusBadge(s){var st=s||'-';var sc=st==='ok'?'ok':(st==='-'?'':(st==='partial'?'warn':'bad'));return sc?'<span class="status status--'+sc+'">'+escHtml(st)+'</span>':escHtml(st);}
+// Status cell shared by the E2E Overview + Detailed E2E tables: run completeness (n/req)
+// and any status_reason surface in the tooltip ONLY when a run was incomplete; a clean
+// run shows a bare badge. Single source of truth so both E2E tables render status alike.
+function _statusCellRuns(r){var parts=[],rn=r.runs,rq=r.requested_runs;if(rn!=null&&rq!=null&&rn<rq)parts.push(rn+'/'+rq+' runs completed');if(r.status_reason)parts.push(r.status_reason);if(!parts.length)return '<td>'+_statusBadge(r.status)+'</td>';var tip=(r.status||'-')+': '+parts.join(' — ');return '<td title="'+escHtml(tip)+'">'+_statusBadge(r.status)+'</td>';}
 function _fmtTemp(lo,hi){if(lo==null&&hi==null)return'-';var a=lo!=null?Math.round(lo):'?';var b=hi!=null?Math.round(hi):'?';return a===b?String(a):a+'~'+b;}
 function _fmtClock(lo,hi){if(lo==null&&hi==null)return'\u2014';var a=lo!=null?Math.round(lo):'?';var b=hi!=null?Math.round(hi):'?';return a===b?String(a):a+'~'+b;}
+// Single source of truth for the NPU clock cell (value + throttle badge/tooltip), shared
+// by the E2E FPS Overview table and the Detailed Data tables so the tooltip never diverges.
+function _clkCell(lo,hi,nom){var s=_fmtClock(lo,hi);if(lo!=null&&nom!=null&&lo<nom)s='<span class="clk-throttled" title="Clock dropped below nominal ('+Math.round(nom)+' MHz) under sustained load \u2014 throttling">'+s+'</span>';return s;}
 function stripAnsi(s) { return typeof s === 'string' ? s.replace(/\x1b\[[0-9;]*m/g, '') : s; }
 function _history(kind){return ((state.dataset.history||{})[kind])||((state.dataset.summaries||{})[kind])||[];}
 /* ---- Annotation helpers (decoder / bound-type / thermal / SDK stack / protocol) ---- */
@@ -267,14 +274,12 @@ function renderE2eTable(container, envId, task, useOrt, runId) {
   html += '<div class="table-caption">'+_e2eNote()+'</div>';
   html += _decodePathSummary(rows);
 
-  html += '<table class="summary-table"><thead><tr><th>Model</th><th>E2E FPS</th><th>CPU%</th><th>NPU Avg%</th><th>NPU Max%</th><th>NPU Temp \u00b0C</th><th>NPU MHz</th><th>Host RSS (MiB)</th><th>Runs</th><th>Status</th></tr></thead><tbody>';
+  html += '<table class="summary-table"><thead><tr><th>Model</th><th>E2E FPS</th><th>CPU%</th><th>NPU Avg% <span class="ort-info" title="'+UTIL_TIP+'">\u24d8</span></th><th>NPU Max%</th><th>NPU Temp \u00b0C</th><th>NPU MHz</th><th>Host RSS (MiB)</th><th>Status</th></tr></thead><tbody>';
   rows.forEach(function(r) {
     var fpsS=fmt(r.avg_e2e_fps,1);if(r.fps_std!=null)fpsS+=' <span class="detail-std">\u00b1'+fmt(r.fps_std,1)+'</span>';
     var tempS=_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c);
-    var clkS=_fmtClock(r.npu_clock_mhz_min,r.npu_clock_mhz_max);
-    /* throttle badge: min clock below nominal */
-    if(r.npu_clock_mhz_min!=null&&r.npu_clock_mhz_min<_nomClk)clkS='<span class="clk-throttled" title="Thermal throttle">'+clkS+'</span>';
-    html += '<tr><td>'+escHtml(r.model)+'</td><td class="metric-primary">'+fpsS+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+tempS+'</td><td>'+clkS+'</td><td>'+fmt(r.max_rss_mib,0)+'</td><td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td><td>'+_statusBadge(r.status)+'</td></tr>';
+    var clkS=_clkCell(r.npu_clock_mhz_min,r.npu_clock_mhz_max,_nomClk);
+    html += '<tr><td>'+escHtml(r.model)+'</td><td class="metric-primary">'+fpsS+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+tempS+'</td><td>'+clkS+'</td><td>'+fmt(r.max_rss_mib,0)+'</td>'+_statusCellRuns(r)+'</tr>';
   });
   html += '</tbody></table>';
   container.innerHTML = html;
@@ -594,14 +599,10 @@ function renderDetailTables() {
   function taskOrd(a,b){var oa=TASK_ORDER[a],ob=TASK_ORDER[b];return(oa!==undefined?oa:99)-(ob!==undefined?ob:99);}
   function sortRows(rows){return rows.slice().sort(function(a,b){var d=sizeOrd(sizeOf(a))-sizeOrd(sizeOf(b));return d!==0?d:(a.use_ort?1:0)-(b.use_ort?1:0);});}
   function stdSpan(v,s,d){var b=fmt(v,d);if(v!=null&&s!=null)b+=' <span class="detail-std">±'+fmt(s,d)+'</span>';return b;}
-  function mhzTd(r){var lo=r.npu_clock_mhz_min,hi=r.npu_clock_mhz_max,s=_fmtClock(lo,hi);if(lo!=null&&lo<nom)s='<span class="clk-throttled" title="Clock dropped below nominal ('+nom+' MHz) under sustained load — throttling">'+s+'</span>';return '<td>'+s+'</td>';}
+  function mhzTd(r){return '<td>'+_clkCell(r.npu_clock_mhz_min,r.npu_clock_mhz_max,nom)+'</td>';}
   function stTd(s){return '<td>'+_statusBadge(s)+'</td>';}
   // Status cell with a tooltip explaining a non-ok flag (reason + which stream counts failed).
   function stTdReason(r){var reason=r.status_reason,scs=r.failed_stream_counts;if(!reason&&!(scs&&scs.length))return stTd(r.status);var scPart=(scs&&scs.length)?(' @ sc=['+scs.join(',')+']'):'';var tip=(r.status||'-')+scPart+(reason?(': '+reason):'');return '<td title="'+escHtml(tip)+'">'+_statusBadge(r.status)+'</td>';}
-  // E2E status cell: run completeness (n/req) is surfaced in the tooltip ONLY when a run
-  // was incomplete (runs<requested), plus any status_reason. A clean full run gets no
-  // tooltip — so the tooltip never shows misleading info for the common 3/3 case.
-  function stTdRuns(r){var parts=[],rn=r.runs,rq=r.requested_runs;if(rn!=null&&rq!=null&&rn<rq)parts.push(rn+'/'+rq+' runs completed');if(r.status_reason)parts.push(r.status_reason);if(!parts.length)return stTd(r.status);var tip=(r.status||'-')+': '+parts.join(' — ');return '<td title="'+escHtml(tip)+'">'+_statusBadge(r.status)+'</td>';}
   function msOrt(r){return '<td>'+escHtml(r.model)+'</td><td>'+((sizeOf(r)||'-')+'').toUpperCase()+'</td><td>'+(r.use_ort?'ON':'OFF')+'</td>';}
   function section(title,sub,by,head,rowFn,preHtml,key){var tasks=Object.keys(by).sort(taskOrd);if(!tasks.length)return '';var inner=tasks.map(function(t){var body=sortRows(by[t]).map(rowFn).join('');return '<h4 class="detail-task">'+(TASK_MAP[t]?TASK_MAP[t].label:t)+'</h4><div class="table-scroll"><table class="summary-table detail-table"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div>';}).join('');return '<section class="detail-metric" id="dm-'+key+'"><h2 class="detail-metric-title">'+title+(sub?' <span class="detail-metric-sub">'+sub+'</span>':'')+'</h2>'+(preHtml||'')+inner+'</section>';}
 
@@ -617,8 +618,8 @@ function renderDetailTables() {
     '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>Latency (ms)</th><th>NPU % <span class="ort-info" title="'+OCC_TIP+'">ⓘ</span></th><th>Temp °C</th><th>Status</th>',
     function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.latency_ms,r.latency_ms_std,2)+'</td><td>'+fmt(r.npu_occupancy_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+stTd(r.status)+'</tr>';},'','latency');
   var secE2e=section('E2E FPS (Single-Channel)','single-channel',e2e,
-    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>E2E FPS</th><th>Total ms</th><th>CPU%</th><th>NPU Avg% <span class="ort-info" title="'+UTIL_TIP+'">ⓘ</span></th><th>Temp °C</th><th>MHz</th><th>Status</th>',
-    function(r){var tot=r.avg_e2e_fps?1000/r.avg_e2e_fps:null;return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.avg_e2e_fps,r.fps_std,1)+'</td><td>'+fmt(tot,2)+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+stTdRuns(r)+'</tr>';},
+    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>E2E FPS</th><th>CPU%</th><th>NPU Avg% <span class="ort-info" title="'+UTIL_TIP+'">ⓘ</span></th><th>NPU Max%</th><th>Temp °C</th><th>MHz</th><th>Host RSS (MiB)</th><th>Status</th>',
+    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.avg_e2e_fps,r.fps_std,1)+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+'<td>'+fmt(r.max_rss_mib,0)+'</td>'+_statusCellRuns(r)+'</tr>';},
     _decodePathSummary(e2eRows),'e2e');
   var secMul=section('Max Channel Capacity','max channels ≥ threshold',cap,
     '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>Max Channels</th><th>Per-Ch FPS</th><th>FPS Threshold</th><th>Status</th>',
@@ -664,8 +665,8 @@ function renderDetailTables() {
     +'<li><b>Throughput</b> — multi-core async, sustained 30&nbsp;s ×3.</li>'
     +'<li><b>E2E</b> — full GStreamer pipeline (decode → pre → infer → post) ×3.</li>'
     +'<li><b>Max Channels</b> — most streams still meeting the FPS threshold.</li>'
-    +'<li><b>NPU %</b> — Throughput/E2E show <i>core utilization</i> sampled by dxtop over the run. Latency shows <i>occupancy</i> (NPU time ÷ total frame time, from the profiler): a sub-second single-core run is too short for dxtop to sample.</li>'
-    +'<li><b>MHz / throttle</b> — shown for sustained metrics only. A red clock means it fell below the nominal rated clock under load (throttling). Idle DVFS downclock is not throttling, so Latency omits the clock column.</li>'
+    +'<li><b>NPU %</b> — Throughput/E2E show <i>core utilization</i> sampled by dxtop over the run. Latency shows <i>occupancy</i> (NPU time ÷ total frame time, from the profiler).</li>'
+    +'<li><b>MHz / throttle</b> — A red clock means it fell below the nominal rated clock under load (throttling).</li>'
     +'</ul></div></details>';
   target.innerHTML=jump+methodNote+groupsHtml+detailsHtml;
   if(env){
