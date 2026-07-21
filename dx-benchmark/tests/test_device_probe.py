@@ -11,7 +11,7 @@ DEAD_OUTPUT = (
     "DXRT v3.3.2\n"
     '[dxrt-exception] Device input & output exception '
     '{"Fail to initialize device 0":'
-    "/home/deepx/work/.../dx_rt/lib/device_pool/device_core.cpp:194:Identify}\n"
+    "/path/to/dx_rt/lib/device_pool/device_core.cpp:194:Identify}\n"
 )
 
 # Shape of a healthy `dxrt-cli -s` (device enumerated via "* Device" lines)

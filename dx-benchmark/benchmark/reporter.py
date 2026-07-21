@@ -598,6 +598,7 @@ def _add_environment_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| CPU Cores | {host.get('cpu_count', 'N/A')} |")
     lines.append(f"| RAM | {host.get('ram_gb', 'N/A')} GB |")
     lines.append(f"| NPU SKU | {npu.get('sku', 'N/A')} |")
+    lines.append(f"| DX-AllSuite | {fingerprint.get('dx_all_suite_version') or 'N/A'} |")
     lines.append(f"| NPU RT | {npu.get('rt_version', 'N/A')} |")
     if npu.get("rt_version_raw") and npu.get("rt_version_raw") != npu.get("rt_version"):
         lines.append(f"| NPU RT (commit) | {npu.get('rt_version_raw')} |")
@@ -608,20 +609,6 @@ def _add_environment_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| NPU Board | {npu.get('board', 'N/A')} |")
     lines.append(f"| NPU PCIe | {npu.get('pcie', 'N/A')} |")
     lines.append("")
-
-    prov = fingerprint.get("source_provenance") or {}
-    if prov:
-        lines.append("### Source Provenance (git)")
-        lines.append("")
-        lines.append("> Source checkout that produced this run (complements the installed-binary")
-        lines.append("> versions above; matches them if the binaries were built from this source).")
-        lines.append("")
-        lines.append("| Repo | Branch | Commit | Describe |")
-        lines.append("|------|--------|--------|----------|")
-        for name, p in prov.items():
-            commit = (p.get("commit") or "?")[:12]
-            lines.append(f"| {name} | {p.get('branch', '?')} | {commit} | {p.get('describe', '?')} |")
-        lines.append("")
 
     tools = fingerprint.get("tools", {})
     lines.append("### Tools")
@@ -733,13 +720,6 @@ def _add_bc_sweep_subtable(lines: list[str], results: list[dict]) -> None:
         lines.append(f"| {r.get('model', '?')} | {bc if bc is not None else '—'} | "
                      f"{_bc_sweep_cell(r.get('buffer_count_curve', ''), bc)} |")
     lines.append("")
-    lines.append(
-        "> ★ = winner: the buffer-count with the highest measured throughput "
-        "(chosen at full probe precision; fps shown rounded to 1 decimal). "
-        "A smaller buffer-count wins only on an exact tie. The goal of the sweep "
-        "is to find the throughput ceiling — the winning buffer-count value itself "
-        "is secondary, since tied buffer-counts deliver effectively equal throughput."
-    )
 
 
 def _add_model_throughput_section(lines: list[str], throughput: list[dict]) -> None:
@@ -751,6 +731,18 @@ def _add_model_throughput_section(lines: list[str], throughput: list[dict]) -> N
     # Check if clock data is available in any result
     has_npu_clock = any(r.get("npu_clock_mhz_min") is not None or r.get("npu_clock_mhz_max") is not None for r in throughput)
     has_bc = any(r.get("buffer_count") is not None for r in throughput)
+
+    if has_bc:
+        # Legend once per report; the per-table sweep captions below just mark ★.
+        lines.append(
+            "> **Buffer-count sweep (★)** — the _Buffer-count sweep_ tables below list "
+            "throughput fps per `--buffer-count`; ★ marks the winner (highest measured "
+            "throughput, at full probe precision; fps rounded to 1 decimal). A smaller "
+            "buffer-count wins only on an exact tie. The sweep's goal is the throughput "
+            "ceiling — the winning buffer-count value itself is secondary, since tied "
+            "buffer-counts deliver effectively equal throughput."
+        )
+        lines.append("")
 
     for task, task_results in task_groups.items():
         task_name = _TASK_DISPLAY_NAMES.get(task, task)

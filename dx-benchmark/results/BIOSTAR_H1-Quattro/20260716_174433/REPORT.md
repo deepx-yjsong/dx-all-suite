@@ -1,6 +1,6 @@
 # YOLO26 Benchmark Report
 
-**Generated:** 2026-07-21 14:46:35 (Local)
+**Generated:** 2026-07-21 17:07:31 (Local)
 
 ## Test Timing
 
@@ -97,6 +97,7 @@
 | CPU Cores | 12 |
 | RAM | 30.5 GB |
 | NPU SKU | H1-Quattro |
+| DX-AllSuite | v2.3.3 |
 | NPU RT | v3.3.2 |
 | NPU Driver (RT) | v2.4.1 |
 | NPU Driver (PCIe) | v2.2.0 |
@@ -104,17 +105,6 @@
 | NPU Memory | LPDDR5x 6000 Mbps, 3.92GiB |
 | NPU Board | H1, Rev 0.0 |
 | NPU PCIe | Gen3 X4 [04:00:00] |
-
-### Source Provenance (git)
-
-> Source checkout that produced this run (complements the installed-binary
-> versions above; matches them if the binaries were built from this source).
-
-| Repo | Branch | Commit | Describe |
-|------|--------|--------|----------|
-| suite | feat/dx-benchmark-suite-relocation | bb77ed3d6701 | bb77ed3d-dirty |
-| dx_runtime | feat/dx-benchmark-suite-relocation | bb77ed3d6701 | bb77ed3d-dirty |
-| dx_compiler | feat/dx-benchmark-suite-relocation | bb77ed3d6701 | bb77ed3d-dirty |
 
 ### Tools
 
@@ -240,6 +230,8 @@
 
 ### Throughput (Multi-Core, Async)
 
+> **Buffer-count sweep (★)** — the _Buffer-count sweep_ tables below list throughput fps per `--buffer-count`; ★ marks the winner (highest measured throughput, at full probe precision; fps rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The sweep's goal is the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
+
 #### Object Detection
 
 **ORT = ON**
@@ -262,7 +254,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l.dxnn | 4 | [3]:259.1 · **[4]:276.3 ★** · [5]:274.8 · [6]:271.9 · [7]:273.1 · [8]:272.0 |
 | yolo26x.dxnn | 4 | [3]:151.2 · **[4]:158.1 ★** · [5]:155.5 · [6]:154.3 · [7]:154.2 · [8]:155.4 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 **ORT = OFF**
 
@@ -284,7 +275,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l.dxnn | 4 | [3]:260.6 · **[4]:276.4 ★** · [5]:274.4 · [6]:271.8 · [7]:271.7 · [8]:272.0 |
 | yolo26x.dxnn | 4 | [3]:149.7 · **[4]:158.2 ★** · [5]:155.8 · [6]:154.8 · [7]:155.5 · [8]:154.2 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 #### Pose Estimation
 
@@ -308,7 +298,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l-pose.dxnn | 4 | [3]:254.4 · **[4]:271.4 ★** · [5]:266.8 · [6]:264.4 · [7]:264.2 · [8]:264.7 |
 | yolo26x-pose.dxnn | 4 | [3]:146.9 · **[4]:155.1 ★** · [5]:152.3 · [6]:151.6 · [7]:151.1 · [8]:151.8 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 **ORT = OFF**
 
@@ -330,7 +319,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l-pose.dxnn | 4 | [3]:254.3 · **[4]:271.3 ★** · [5]:266.8 · [6]:264.5 · [7]:264.4 · [8]:264.8 |
 | yolo26x-pose.dxnn | 4 | [3]:146.7 · **[4]:155.3 ★** · [5]:152.4 · [6]:152.3 · [7]:151.5 · [8]:152.5 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 #### Segmentation
 
@@ -354,7 +342,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l-seg.dxnn | 4 | [3]:190.9 · **[4]:212.7 ★** · [5]:208.0 · [6]:209.4 · [7]:208.6 · [8]:209.4 |
 | yolo26x-seg.dxnn | 5 | [3]:109.7 · [4]:119.3 · **[5]:120.9 ★** · [6]:115.9 · [7]:116.3 · [8]:116.5 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 **ORT = OFF**
 
@@ -376,7 +363,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l-seg.dxnn | 4 | [3]:194.3 · **[4]:212.3 ★** · [5]:207.3 · [6]:208.8 · [7]:209.0 · [8]:210.1 |
 | yolo26x-seg.dxnn | 4 | [3]:110.0 · **[4]:120.3 ★** · [5]:119.0 · [6]:116.9 · [7]:116.5 · [8]:117.6 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 #### Oriented BBox (OBB)
 
@@ -400,7 +386,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l-obb.dxnn | 4 | [3]:92.5 · **[4]:95.6 ★** · [5]:95.2 · [6]:94.9 · [7]:94.6 · [8]:94.9 |
 | yolo26x-obb.dxnn | 7 | [3]:52.5 · [4]:54.6 · [5]:54.8 · [6]:54.6 · **[7]:54.9 ★** · [8]:54.6 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 **ORT = OFF**
 
@@ -422,7 +407,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l-obb.dxnn | 4 | [3]:93.1 · **[4]:95.6 ★** · [5]:95.2 · [6]:95.0 · [7]:95.0 · [8]:95.1 |
 | yolo26x-obb.dxnn | 10 | [3]:53.1 · [4]:54.6 · [5]:54.5 · [6]:54.6 · [7]:54.3 · [8]:54.8 · [9]:54.8 · **[10]:54.9 ★** |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 #### Classification
 
@@ -446,7 +430,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l-cls.dxnn | 4 | [3]:3102.0 · **[4]:3417.9 ★** · [5]:3402.1 · [6]:3403.1 · [7]:3397.9 · [8]:3400.4 |
 | yolo26x-cls.dxnn | 5 | [3]:1694.8 · [4]:1825.5 · **[5]:1827.0 ★** · [6]:1824.3 · [7]:1825.6 · [8]:1825.2 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 **ORT = OFF**
 
@@ -468,7 +451,6 @@ _Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):
 | yolo26l-cls.dxnn | 4 | [3]:3094.6 · **[4]:3416.6 ★** · [5]:3400.6 · [6]:3404.7 · [7]:3398.9 · [8]:3400.2 |
 | yolo26x-cls.dxnn | 8 | [3]:1695.9 · [4]:1825.5 · [5]:1825.1 · [6]:1825.7 · [7]:1825.8 · **[8]:1826.8 ★** · [9]:1825.8 · [10]:1825.9 |
 
-> ★ = winner: the buffer-count with the highest measured throughput (chosen at full probe precision; fps shown rounded to 1 decimal). A smaller buffer-count wins only on an exact tie. The goal of the sweep is to find the throughput ceiling — the winning buffer-count value itself is secondary, since tied buffer-counts deliver effectively equal throughput.
 
 ### Latency (Single-Core, Sync)
 
