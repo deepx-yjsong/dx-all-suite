@@ -13,6 +13,9 @@ var SIZE_KEYS   = ['n', 's', 'm', 'l', 'x'];
 var SIZE_LABELS = { n: 'Nano', s: 'Small', m: 'Medium', l: 'Large', x: 'X-Large' };
 // Shared ORT explanation (ONNX Runtime CPU-offload) — used by filter labels + table headers.
 var ORT_TIP = "ORT (ONNX Runtime)\n- ON: model's CPU part offloaded to host CPU via ONNX Runtime → output matches the source ONNX (standard post-processing).\n- OFF: NPU-only output → needs a model-specific post-processor.";
+// NPU % means two different things by metric family (see methodology note).
+var UTIL_TIP = "NPU core utilization sampled by dxtop during the run, averaged over the measurement window (sustained load).";
+var OCC_TIP = "NPU occupancy = NPU compute time / total frame time (from the profiler). Latency is a sub-second single-core run that dxtop's ~1 Hz sampler cannot measure, so occupancy is derived from profiler timing instead.";
 var SIZE_COLORS = {
   n: { fill: 'rgba(59,130,246,0.70)',  hi: 'rgba(59,130,246,0.95)',  line: 'rgb(59,130,246)',  dim: 'rgba(59,130,246,0.25)' },
   s: { fill: 'rgba(16,185,129,0.70)',  hi: 'rgba(16,185,129,0.95)',  line: 'rgb(16,185,129)',  dim: 'rgba(16,185,129,0.25)' },
@@ -591,8 +594,14 @@ function renderDetailTables() {
   function taskOrd(a,b){var oa=TASK_ORDER[a],ob=TASK_ORDER[b];return(oa!==undefined?oa:99)-(ob!==undefined?ob:99);}
   function sortRows(rows){return rows.slice().sort(function(a,b){var d=sizeOrd(sizeOf(a))-sizeOrd(sizeOf(b));return d!==0?d:(a.use_ort?1:0)-(b.use_ort?1:0);});}
   function stdSpan(v,s,d){var b=fmt(v,d);if(v!=null&&s!=null)b+=' <span class="detail-std">±'+fmt(s,d)+'</span>';return b;}
-  function mhzTd(r){var lo=r.npu_clock_mhz_min,hi=r.npu_clock_mhz_max,s=_fmtClock(lo,hi);if(lo!=null&&lo<nom)s='<span class="clk-throttled" title="Thermal throttle">'+s+'</span>';return '<td>'+s+'</td>';}
+  function mhzTd(r){var lo=r.npu_clock_mhz_min,hi=r.npu_clock_mhz_max,s=_fmtClock(lo,hi);if(lo!=null&&lo<nom)s='<span class="clk-throttled" title="Clock dropped below nominal ('+nom+' MHz) under sustained load — throttling">'+s+'</span>';return '<td>'+s+'</td>';}
   function stTd(s){return '<td>'+_statusBadge(s)+'</td>';}
+  // Status cell with a tooltip explaining a non-ok flag (reason + which stream counts failed).
+  function stTdReason(r){var reason=r.status_reason,scs=r.failed_stream_counts;if(!reason&&!(scs&&scs.length))return stTd(r.status);var scPart=(scs&&scs.length)?(' @ sc=['+scs.join(',')+']'):'';var tip=(r.status||'-')+scPart+(reason?(': '+reason):'');return '<td title="'+escHtml(tip)+'">'+_statusBadge(r.status)+'</td>';}
+  // E2E status cell: run completeness (n/req) is surfaced in the tooltip ONLY when a run
+  // was incomplete (runs<requested), plus any status_reason. A clean full run gets no
+  // tooltip — so the tooltip never shows misleading info for the common 3/3 case.
+  function stTdRuns(r){var parts=[],rn=r.runs,rq=r.requested_runs;if(rn!=null&&rq!=null&&rn<rq)parts.push(rn+'/'+rq+' runs completed');if(r.status_reason)parts.push(r.status_reason);if(!parts.length)return stTd(r.status);var tip=(r.status||'-')+': '+parts.join(' — ');return '<td title="'+escHtml(tip)+'">'+_statusBadge(r.status)+'</td>';}
   function msOrt(r){return '<td>'+escHtml(r.model)+'</td><td>'+((sizeOf(r)||'-')+'').toUpperCase()+'</td><td>'+(r.use_ort?'ON':'OFF')+'</td>';}
   function section(title,sub,by,head,rowFn,preHtml,key){var tasks=Object.keys(by).sort(taskOrd);if(!tasks.length)return '';var inner=tasks.map(function(t){var body=sortRows(by[t]).map(rowFn).join('');return '<h4 class="detail-task">'+(TASK_MAP[t]?TASK_MAP[t].label:t)+'</h4><div class="table-scroll"><table class="summary-table detail-table"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div>';}).join('');return '<section class="detail-metric" id="dm-'+key+'"><h2 class="detail-metric-title">'+title+(sub?' <span class="detail-metric-sub">'+sub+'</span>':'')+'</h2>'+(preHtml||'')+inner+'</section>';}
 
@@ -602,23 +611,24 @@ function renderDetailTables() {
   var e2eRows=_history('e2e_single').filter(function(r){return r.env_id===envId&&r.run_id===runId;});
 
   var secThr=section('Model Throughput','multi-core, async',thr,
-    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>FPS</th><th>CPU%</th><th>NPU Avg%</th><th>NPU Max%</th><th>Temp °C</th><th>MHz</th><th>Status</th>',
+    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>FPS</th><th>CPU%</th><th>NPU Avg% <span class="ort-info" title="'+UTIL_TIP+'">ⓘ</span></th><th>NPU Max%</th><th>Temp °C</th><th>MHz</th><th>Status</th>',
     function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.fps,r.fps_std,1)+'</td><td>'+fmt(r.cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+fmt(r.npu_total_max_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+stTd(r.status)+'</tr>';},'','throughput');
   var secLat=section('Model Latency','single-core, sync',lat,
-    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>Latency (ms)</th><th>NPU Avg%</th><th>Temp °C</th><th>MHz</th><th>Status</th>',
-    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+fmt(r.latency_ms,2)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+stTd(r.status)+'</tr>';},'','latency');
+    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>Latency (ms)</th><th>NPU % <span class="ort-info" title="'+OCC_TIP+'">ⓘ</span></th><th>Temp °C</th><th>Status</th>',
+    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.latency_ms,r.latency_ms_std,2)+'</td><td>'+fmt(r.npu_occupancy_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+stTd(r.status)+'</tr>';},'','latency');
   var secE2e=section('E2E FPS (Single-Channel)','single-channel',e2e,
-    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>E2E FPS</th><th>Total ms</th><th>CPU%</th><th>NPU Avg%</th><th>Temp °C</th><th>MHz</th><th>Runs</th><th>Status</th>',
-    function(r){var tot=r.avg_e2e_fps?1000/r.avg_e2e_fps:null;return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.avg_e2e_fps,r.fps_std,1)+'</td><td>'+fmt(tot,2)+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+'<td>'+(r.runs||'-')+'/'+(r.requested_runs||'-')+'</td>'+stTd(r.status)+'</tr>';},
+    '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>E2E FPS</th><th>Total ms</th><th>CPU%</th><th>NPU Avg% <span class="ort-info" title="'+UTIL_TIP+'">ⓘ</span></th><th>Temp °C</th><th>MHz</th><th>Status</th>',
+    function(r){var tot=r.avg_e2e_fps?1000/r.avg_e2e_fps:null;return '<tr>'+msOrt(r)+'<td class="metric-primary">'+stdSpan(r.avg_e2e_fps,r.fps_std,1)+'</td><td>'+fmt(tot,2)+'</td><td>'+fmt(r.avg_cpu_pct,0)+'</td><td>'+fmt(r.npu_total_avg_pct,1)+'</td><td>'+_fmtTemp(r.npu_temp_min_c,r.npu_temp_max_c)+'</td>'+mhzTd(r)+stTdRuns(r)+'</tr>';},
     _decodePathSummary(e2eRows),'e2e');
   var secMul=section('Max Channel Capacity','max channels ≥ threshold',cap,
     '<th>Model</th><th>Size</th><th>ORT <span class="ort-info" title="'+ORT_TIP+'">ⓘ</span></th><th>Max Channels</th><th>Per-Ch FPS</th><th>FPS Threshold</th><th>Status</th>',
-    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+(r.capacity_streams!=null?r.capacity_streams:'-')+'</td><td>'+fmt(r.capacity_per_channel_fps,1)+'</td><td>'+fmt(r.fps_threshold,0)+'</td>'+stTd(r.status)+'</tr>';},'','multi');
+    function(r){return '<tr>'+msOrt(r)+'<td class="metric-primary">'+(r.capacity_streams!=null?r.capacity_streams:'-')+'</td><td>'+fmt(r.capacity_per_channel_fps,1)+'</td><td>'+fmt(r.fps_threshold,0)+'</td>'+stTdReason(r)+'</tr>';},'','multi');
 
   // Two metric families surfaced as color-coded groups so users grasp each metric's character:
   //  · NPU Performance    — model inference (Throughput + Latency)          → green
   //  · End-to-End Pipeline — host + NPU (decode → pre → infer → post) (E2E + Max Channel) → blue
-  var npu=[{h:secThr,id:'dm-throughput',lb:'Throughput'},{h:secLat,id:'dm-latency',lb:'Latency'}].filter(function(c){return c.h;});
+  // Ordered to match the per-model measurement sequence: latency → throughput → e2e → multi.
+  var npu=[{h:secLat,id:'dm-latency',lb:'Latency'},{h:secThr,id:'dm-throughput',lb:'Throughput'}].filter(function(c){return c.h;});
   var pipe=[{h:secE2e,id:'dm-e2e',lb:'E2E'},{h:secMul,id:'dm-multi',lb:'Max Channel'}].filter(function(c){return c.h;});
   // Reuse the Version Trend tab's group chrome (.trend-group) so both tabs look identical:
   // colour-coded left border + tinted header band + subtle tint; cards stacked in a padded body.
@@ -648,7 +658,16 @@ function renderDetailTables() {
     jump='<nav class="detail-jump" aria-label="Jump to metric section"><span class="detail-jump-label">↓ Jump to</span>'+jl(npu,'jl--npu')+jl(pipe,'jl--pipe')+(env?'<a class="jl--muted" href="#dm-details">Details</a>':'')+'</nav>';
   }
 
-  target.innerHTML=jump+groupsHtml+detailsHtml;
+  // Concise methodology note so the numbers are read correctly (collapsed by default).
+  var methodNote='<details class="panel detail-group detail-method" id="dm-method"><summary><span class="dg-caret" aria-hidden="true">▸</span><span class="dg-titlewrap"><span class="dg-title">How to read these metrics</span></span><span class="dg-hint"></span></summary><div class="detail-sub"><ul class="method-note">'
+    +'<li><b>Latency</b> — single-core sync, 300 loops ×1, measured from cold.</li>'
+    +'<li><b>Throughput</b> — multi-core async, sustained 30&nbsp;s ×3.</li>'
+    +'<li><b>E2E</b> — full GStreamer pipeline (decode → pre → infer → post) ×3.</li>'
+    +'<li><b>Max Channels</b> — most streams still meeting the FPS threshold.</li>'
+    +'<li><b>NPU %</b> — Throughput/E2E show <i>core utilization</i> sampled by dxtop over the run. Latency shows <i>occupancy</i> (NPU time ÷ total frame time, from the profiler): a sub-second single-core run is too short for dxtop to sample.</li>'
+    +'<li><b>MHz / throttle</b> — shown for sustained metrics only. A red clock means it fell below the nominal rated clock under load (throttling). Idle DVFS downclock is not throttling, so Latency omits the clock column.</li>'
+    +'</ul></div></details>';
+  target.innerHTML=jump+methodNote+groupsHtml+detailsHtml;
   if(env){
     renderHostInfo(document.getElementById('detailEnvHostInfo'),env);
     renderNpuInfo(document.getElementById('detailEnvNpuInfo'),env);

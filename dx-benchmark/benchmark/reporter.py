@@ -840,6 +840,8 @@ def _add_model_latency_section(lines: list[str], latency: list[dict]) -> None:
             lines.append("|-------|-----|----------|--------|--------|-------------|--------|")
             for r in ort_results:
                 fps = f'{r["fps"]:.1f}' if r.get("fps") is not None else "N/A"
+                if r.get("fps") is not None and r.get("fps_std") is not None:
+                    fps += f' ±{r["fps_std"]:.1f}'
                 total = f'{r["total_ms"]:.2f}' if r.get("total_ms") is not None else "N/A"
                 npu_ms = f'{r["npu_task_ms"]:.2f}' if r.get("npu_task_ms") is not None else "N/A"
                 cpu_0 = r.get("cpu_0_ms")

@@ -129,6 +129,25 @@ def _normalize_run(run_id: str, env_id: str, result_dir: Path, fingerprint: dict
 def _flatten_model_results(run_id: str, env_id: str, rows: list[dict]) -> list[dict]:
     flattened = []
     for row in rows:
+        # Latency is a single-core sync burst measured via the profiler. dxtop's
+        # ~1 Hz sampler undersamples such sub-second runs (util reads ~0%, and the
+        # clock catches the idle DVFS downclock, e.g. 700 MHz, which then trips a
+        # false throttle flag). So for latency we derive NPU occupancy from the
+        # profiler timing (npu_task_ms / total_ms) and drop the sampled clock/throttle;
+        # the sustained families (throughput/e2e/multi) keep the dxtop-sampled values.
+        is_latency = row.get("family") == "latency"
+        total_ms = row.get("total_ms")
+        npu_task_ms = row.get("npu_task_ms")
+        occupancy = None
+        latency_ms_std = None
+        if is_latency and total_ms:
+            if npu_task_ms is not None:
+                occupancy = round(min(100.0, npu_task_ms / total_ms * 100.0), 1)
+            fps = row.get("fps")
+            fps_std = row.get("fps_std")
+            if fps and fps_std is not None:
+                # delta method: latency = 1000/fps  ->  σ_ms = latency_ms * σ_fps / fps
+                latency_ms_std = round(total_ms * fps_std / fps, 3)
         flattened.append({
             "run_id": run_id,
             "env_id": env_id,
@@ -141,14 +160,16 @@ def _flatten_model_results(run_id: str, env_id: str, rows: list[dict]) -> list[d
             "fps_std": row.get("fps_std"),
             "buffer_count": row.get("buffer_count"),
             "latency_ms": row.get("total_ms"),
+            "latency_ms_std": latency_ms_std,
+            "npu_occupancy_pct": occupancy,
             "cpu_pct": row.get("cpu_pct"),
             "npu_total_avg_pct": row.get("npu_total_avg_pct"),
             "npu_total_max_pct": row.get("npu_total_max_pct"),
             "npu_temp_min_c": row.get("npu_temp_min_c"),
             "npu_temp_max_c": row.get("npu_temp_max_c"),
-            "npu_clock_mhz_min": row.get("npu_clock_mhz_min"),
-            "npu_clock_mhz_max": row.get("npu_clock_mhz_max"),
-            "npu_throttled": row.get("npu_throttled"),
+            "npu_clock_mhz_min": None if is_latency else row.get("npu_clock_mhz_min"),
+            "npu_clock_mhz_max": None if is_latency else row.get("npu_clock_mhz_max"),
+            "npu_throttled": None if is_latency else row.get("npu_throttled"),
             "status": row.get("status"),
         })
     return flattened

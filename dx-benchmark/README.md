@@ -311,6 +311,13 @@ never required to view results or rebuild the dashboard from a fresh clone.
 | Pipeline retry | 1 automatic retry each for warmup + measured run |
 | NPU recovery | Automatic dxrt.service restart after SIGKILL |
 
+> **Reading NPU %** — Throughput/E2E/Multi report NPU **core utilization** sampled by
+> dxtop over the run (sustained load). Latency reports NPU **occupancy**
+> (`npu_task_ms / total_ms`, from the profiler): a sub-second single-core run is too
+> short for dxtop's ~1 Hz sampler, so its clock/throttle are omitted and shown only for
+> the sustained metrics. A red clock elsewhere means it dropped below the nominal rated
+> clock under load (throttling) — idle DVFS downclock is not throttling.
+
 ## Per-Model Execution Order (Thermal Normalization)
 
 Each model × ORT combination follows these steps sequentially.

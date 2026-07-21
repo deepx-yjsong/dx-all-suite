@@ -335,6 +335,12 @@ def cmd_run(args: argparse.Namespace) -> int:
         benchmarked_models.append(entry)
     fp["benchmarked_models"] = benchmarked_models
 
+    # On resume, union the cumulative scope fields with the prior fingerprint so a
+    # partial/family-scoped re-run never shrinks benchmarked_models / families /
+    # video_infos below what has actually been benchmarked into this directory.
+    if resume_dir:
+        _merge_fingerprint_scope(fp, existing_fp)
+
     env_path = out_dir / "environment.json"
     with open(env_path, "w") as _f:
         json.dump(fp, _f, indent=2)
@@ -1372,6 +1378,47 @@ def _upsert_result(results: list[dict], new_result: dict, key_func) -> None:
             results[idx] = new_result
             return
     results.append(new_result)
+
+
+# Families in canonical measurement/display order, used to normalise a merged set.
+_FAMILY_ORDER = ["model", "e2e", "multi", "all"]
+
+
+def _merge_fingerprint_scope(fp: dict, prior: dict) -> None:
+    """Resume-aware merge of the fingerprint's *cumulative scope* fields with a prior
+    environment.json.
+
+    environment.json is rewritten from only the CURRENT invocation's scope, but result
+    data accumulates across resumes (``_upsert_result``). So a partial/family-scoped
+    resume (e.g. ``--family multi``, or a size-limited retry) must not shrink the
+    recorded scope below what has actually been benchmarked into this directory.
+    ``timing``/``timing_history`` are already merged separately; this covers the
+    remaining scope fields. Merge policy = union, current invocation wins on conflict.
+    """
+    if not prior:
+        return
+    # benchmarked_models: keyed by model name; current entry wins, prior-only preserved.
+    cur_models = fp.get("benchmarked_models") or []
+    have = {m.get("name") for m in cur_models}
+    for pm in (prior.get("benchmarked_models") or []):
+        if pm.get("name") not in have:
+            cur_models.append(pm)
+    fp["benchmarked_models"] = cur_models
+    # families: set-union, normalised to canonical order (unknown families appended).
+    if isinstance(fp.get("benchmark_params"), dict):
+        cur_fams = fp["benchmark_params"].get("families") or []
+        prior_fams = (prior.get("benchmark_params") or {}).get("families") or []
+        union = set(cur_fams) | set(prior_fams)
+        merged = [f for f in _FAMILY_ORDER if f in union]
+        for f in list(cur_fams) + list(prior_fams):
+            if f not in merged:
+                merged.append(f)
+        fp["benchmark_params"]["families"] = merged
+    # video_infos: dict-merge by task group; current group wins, prior groups preserved.
+    merged_vi = dict(prior.get("video_infos") or {})
+    merged_vi.update(fp.get("video_infos") or {})
+    if merged_vi:
+        fp["video_infos"] = merged_vi
 
 
 def _get_resume_stream_start(

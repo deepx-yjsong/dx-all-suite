@@ -267,3 +267,7 @@ tbody tr:nth-child(even) { background: var(--table-stripe); }
 .measure-note b { color: var(--ink, #1a1a1a); font-weight: 600; }
 .table-caption { margin: 0 0 10px; }
 .ort-info { cursor: help; color: var(--muted); font-weight: 400; font-size: 0.85em; margin-left: 2px; }
+.method-note { margin: 0; padding-left: 18px; }
+.method-note li { font-size: 13px; line-height: 1.5; color: var(--muted, #556); margin-bottom: 6px; }
+.method-note li:last-child { margin-bottom: 0; }
+.method-note b { color: var(--ink, #1a1a1a); font-weight: 600; }
