@@ -8,6 +8,8 @@ Uses gst-launch-1.0 to run full inference pipelines with:
   - NPU stats from dxtop
 """
 
+from __future__ import annotations
+
 import enum
 import json
 import logging
@@ -508,7 +510,15 @@ def _run_gst_pipeline(pipeline_parts: list[str], env_extra: dict | None = None, 
     killed_hard = _terminate_pgid(pgid, proc)
     reader.join(timeout=5)
     suffix = ".hang" if outcome is PipeOutcome.HANG else ".runaway"
-    collect_timeout_incident(f"{incident_context or 'gst_pipeline'}{suffix}")
+    stall_dur = (time.monotonic() - state["last_progress_ts"]
+                 if outcome is PipeOutcome.HANG
+                 else time.monotonic() - start_ts)
+    collect_timeout_incident(
+        f"{incident_context or 'gst_pipeline'}{suffix}",
+        pipeline_output="".join(lines),
+        stall_duration_sec=round(stall_dur, 1),
+        killed_hard=killed_hard,
+    )
     if killed_hard:
         cleanup_after_timeout()
     if pgid is not None:
@@ -663,7 +673,14 @@ def _run_diagnostic_cmd_elevated(cmd: list[str], timeout: int = 10) -> str:
     return result
 
 
-def collect_timeout_incident(context: str) -> Optional[Path]:
+def collect_timeout_incident(
+    context: str,
+    *,
+    pipeline_output: Optional[str] = None,
+    stall_duration_sec: Optional[float] = None,
+    killed_hard: Optional[bool] = None,
+    nominal_clock_mhz: float = 1000.0,
+) -> Optional[Path]:
     """Capture a diagnostic snapshot when a timeout occurs.
 
     Collects dxrt-cli status, systemctl status, journalctl logs, dmesg tail,
@@ -671,7 +688,19 @@ def collect_timeout_incident(context: str) -> Optional[Path]:
 
     Args:
         context: A short label describing when the timeout happened
-                 (e.g. "throughput.run3", "e2e.warmup").
+                 (e.g. "throughput.run3", "e2e.warmup"). Its final ``.``-token
+                 (``hang``/``runaway``/``dxrt_error``/``oserror``) is recorded as
+                 the incident ``outcome``.
+        pipeline_output: Combined stdout/stderr of the gst pipeline whose stall
+                 triggered this incident. When given, the last 200 lines are
+                 written to ``pipeline_output.log`` — the ONLY record of WHERE the
+                 pipeline stalled (device-side files just show the NPU was idle).
+        stall_duration_sec: Seconds since the last progress before the watchdog
+                 fired (recorded in ``summary.txt`` when provided).
+        killed_hard: Whether SIGKILL was needed to stop the process group
+                 (recorded in ``summary.txt`` when provided).
+        nominal_clock_mhz: NPU clock at/above which the device is considered not
+                 throttled, for the ``npu_throttled`` classifier.
 
     Returns:
         Path to the incident directory, or None if incident_dir is not set.
@@ -731,16 +760,34 @@ def collect_timeout_incident(context: str) -> Optional[Path]:
     except Exception as e:  # diagnostics must never break incident capture
         (inc_dir / "host_health.txt").write_text(f"<host health capture failed: {e}>\n")
 
-    # 7. NPU temperature + clock at the moment of timeout
+    # 6b. gst pipeline stdout tail — the output of the operation whose stall/exit
+    #     triggered this incident. Without it a hang bundle only proves the device
+    #     was healthy, never WHERE the pipeline stalled (and raw/ is overwritten by
+    #     the successful retry, so this is the only durable record).
+    if pipeline_output is not None:
+        tail = "\n".join(pipeline_output.splitlines()[-200:])
+        (inc_dir / "pipeline_output.log").write_text(tail + "\n")
+
+    # 7. NPU temperature + clock at the moment of timeout + at-a-glance triage
     npu_temp = read_npu_temp_c()
     npu_clock = read_npu_clock_mhz()
+    outcome = context.rsplit(".", 1)[-1]
+    npu_throttled = npu_clock is not None and npu_clock < nominal_clock_mhz
+    device_responsive = "* Device" in dxrt_status
     summary_lines = [
         f"incident: {incident_name}",
         f"context: {context}",
         f"timestamp: {ts}",
+        f"outcome: {outcome}",
         f"npu_temp_c: {npu_temp}",
         f"npu_clock_mhz: {npu_clock}",
+        f"npu_throttled: {npu_throttled}",
+        f"device_responsive: {device_responsive}",
     ]
+    if stall_duration_sec is not None:
+        summary_lines.append(f"stall_duration_sec: {stall_duration_sec}")
+    if killed_hard is not None:
+        summary_lines.append(f"killed_hard: {killed_hard}")
     (inc_dir / "summary.txt").write_text("\n".join(summary_lines) + "\n")
 
     print(f"    [incident] saved: {incident_name}", flush=True)
