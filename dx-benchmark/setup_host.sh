@@ -40,21 +40,58 @@ fi
 
 echo "[setup] Target user: ${TARGET_USER}"
 
-# ── Install benchmark system dependencies ─────────────────────────────────
-# CLIs the benchmark and setup_data.sh rely on: GNU time (CPU%/RSS in every
-# run_model & gst run), jq (model download), ffmpeg/ffprobe (E2E frame counting),
-# curl + tar (data download). Installed here so they never surface as a
-# mid-run failure or a missing-tool surprise in preflight.
-BENCH_APT_PKGS=(time jq ffmpeg curl tar)
-if command -v apt-get >/dev/null 2>&1; then
-    echo "[setup] Installing system dependencies: ${BENCH_APT_PKGS[*]}"
-    apt-get update -qq && apt-get install -y "${BENCH_APT_PKGS[@]}"
-    echo "[setup] System dependencies ready."
+# ── Ensure benchmark system dependencies ──────────────────────────────────
+# CLIs the benchmark & setup_data.sh rely on: GNU time (CPU%/RSS in every
+# run_model & gst run), jq (model download), ffmpeg/ffprobe (E2E frame
+# counting), curl + tar (data download).
+#
+# What matters is that the TOOLS are present — NOT that apt succeeds. So we:
+#   1. detect which are missing (by the binary the benchmark actually invokes),
+#   2. apt-install ONLY the missing ones (skip apt entirely when none missing),
+#   3. never abort on an apt error unrelated to our tools — a pre-existing
+#      broken dpkg state (e.g. a failing DKMS build) or a deliberately held
+#      package (e.g. a vendor MPP ffmpeg) must NOT block the sudoers/group
+#      provisioning below.
+# A hard failure is raised only if a required binary is still absent afterward.
+# >>> bench-deps (self-test extracts this block by these markers) >>>
+TIME_BIN="${TIME_BIN:-/usr/bin/time}"   # GNU time path (override if non-standard)
+BENCH_TOOL_BINS=("${TIME_BIN}" jq ffprobe curl tar)
+declare -A BENCH_BIN_PKG=(
+    ["${TIME_BIN}"]=time [jq]=jq [ffprobe]=ffmpeg [curl]=curl [tar]=tar
+)
+_have() { command -v "$1" >/dev/null 2>&1; }
+
+_missing_pkgs=()
+for _bin in "${BENCH_TOOL_BINS[@]}"; do
+    _have "${_bin}" || _missing_pkgs+=("${BENCH_BIN_PKG[${_bin}]}")
+done
+
+if ((${#_missing_pkgs[@]} == 0)); then
+    echo "[setup] All system dependencies already present — skipping apt."
+elif command -v apt-get >/dev/null 2>&1; then
+    echo "[setup] Installing missing dependencies: ${_missing_pkgs[*]}"
+    # '|| true' / '|| echo': an unrelated broken or held dpkg state must not
+    # abort this script (set -e). Tools are re-verified by binary just below.
+    apt-get update -qq || true
+    apt-get install -y "${_missing_pkgs[@]}" || \
+        echo "[setup] WARNING: apt reported an error — verifying tools directly (an unrelated broken/held package state does not affect these tools)."
 else
     echo "[setup] Non-apt system detected — install these manually (package names may vary):"
     echo "        GNU time, jq, ffmpeg (provides ffprobe), curl, tar"
     echo "        e.g.  dnf install time jq ffmpeg curl tar   |   pacman -S time jq ffmpeg curl tar"
 fi
+
+_still_missing=()
+for _bin in "${BENCH_TOOL_BINS[@]}"; do
+    _have "${_bin}" || _still_missing+=("${_bin}")
+done
+if ((${#_still_missing[@]})); then
+    echo "ERROR: required benchmark tools still missing after setup: ${_still_missing[*]}"
+    echo "       Install them manually, then re-run this script."
+    exit 1
+fi
+echo "[setup] System dependencies ready."
+# <<< bench-deps <<<
 
 # ── Resolve command paths ─────────────────────────────────────────────────
 SYSTEMCTL_BIN="$(command -v systemctl 2>/dev/null || echo /usr/bin/systemctl)"
