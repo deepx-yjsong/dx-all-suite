@@ -16,12 +16,13 @@ from benchmark.config import APP_DIR
 # ── B2: no absolute-path / username / internal-repo leak ────────────────────
 
 def test_normalize_run_path_is_relative_no_leak():
+    # Deliberately leaky-looking input (username + org path) to prove it is stripped.
     result_dir = Path(
-        "/home/someuser/work/deepx-yjsong/dx-all-suite/dx-benchmark/results/EnvX_M1/20260101_000000"
+        "/home/someuser/work/example-org/some-suite/some-tool/results/EnvX_M1/20260101_000000"
     )
     run = aggregator._normalize_run("20260101_000000", "EnvX_M1", result_dir, {"npu": {}, "software": {}})
     assert "/home/" not in run["path"]
-    assert "deepx-yjsong" not in run["path"]
+    assert "example-org" not in run["path"]
     assert run["path"] == "EnvX_M1/20260101_000000"
 
 
