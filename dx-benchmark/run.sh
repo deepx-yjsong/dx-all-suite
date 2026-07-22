@@ -5,7 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 
-# Activate the benchmark venv if setup.sh created one.
+# Activate a local venv if one exists (optional — the benchmark needs no pip deps).
 if [ -f "$SCRIPT_DIR/venv/bin/activate" ]; then
     # shellcheck disable=SC1091
     source "$SCRIPT_DIR/venv/bin/activate"

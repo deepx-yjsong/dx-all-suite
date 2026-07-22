@@ -112,7 +112,9 @@ def _normalize_run(run_id: str, env_id: str, result_dir: Path, fingerprint: dict
         "run_id": run_id,
         "env_id": env_id,
         "dx_all_suite_version": fingerprint.get("dx_all_suite_version"),
-        "path": str(result_dir),
+        # Relative "<env_id>/<run_id>" — never an absolute path (no username /
+        # internal-repo leak in the published dataset.json; unused by the dashboard).
+        "path": f"{env_id}/{run_id}",
         "timestamp": fingerprint.get("timestamp"),
         # Per-run SDK stack (this run's environment.json) — powers the Version Trend
         # tooltip so each point shows what actually changed at that suite version.

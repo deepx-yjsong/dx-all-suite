@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # dx-benchmark host provisioning — one-time, requires sudo/root.
-# Usage: sudo ./setup_env.sh [username]
+# Usage: sudo ./setup_host.sh [username]
 #
 # Configures:
+#   0. System dependencies (time, jq, ffmpeg, curl, tar) via apt
 #   1. Passwordless sudo for dxrt.service restart (crash recovery)
 #   2. Passwordless sudo for dmesg (kernel log collection on incidents)
 #   3. Passwordless sudo for journalctl (dxrt service log collection on incidents)
@@ -10,7 +11,7 @@
 #   5. systemd-journal group membership (journal access without sudo)
 #   6. video group membership (vcgencmd power/throttle capture — Raspberry Pi only)
 #
-# Data (models/videos) needs no sudo — use ./setup.sh for that.
+# Data (models/videos) needs no sudo — use ./setup_data.sh for that.
 set -euo pipefail
 
 SUDOERS_FILE="/etc/sudoers.d/benchmark-dxrt"
@@ -38,6 +39,22 @@ if [[ "$(id -u)" -ne 0 ]]; then
 fi
 
 echo "[setup] Target user: ${TARGET_USER}"
+
+# ── Install benchmark system dependencies ─────────────────────────────────
+# CLIs the benchmark and setup_data.sh rely on: GNU time (CPU%/RSS in every
+# run_model & gst run), jq (model download), ffmpeg/ffprobe (E2E frame counting),
+# curl + tar (data download). Installed here so they never surface as a
+# mid-run failure or a missing-tool surprise in preflight.
+BENCH_APT_PKGS=(time jq ffmpeg curl tar)
+if command -v apt-get >/dev/null 2>&1; then
+    echo "[setup] Installing system dependencies: ${BENCH_APT_PKGS[*]}"
+    apt-get update -qq && apt-get install -y "${BENCH_APT_PKGS[@]}"
+    echo "[setup] System dependencies ready."
+else
+    echo "[setup] Non-apt system detected — install these manually (package names may vary):"
+    echo "        GNU time, jq, ffmpeg (provides ffprobe), curl, tar"
+    echo "        e.g.  dnf install time jq ffmpeg curl tar   |   pacman -S time jq ffmpeg curl tar"
+fi
 
 # ── Resolve command paths ─────────────────────────────────────────────────
 SYSTEMCTL_BIN="$(command -v systemctl 2>/dev/null || echo /usr/bin/systemctl)"

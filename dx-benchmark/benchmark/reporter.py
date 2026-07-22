@@ -10,6 +10,8 @@ Report table structure (per section):
   3. ORT ON vs OFF comparison table
 """
 
+from __future__ import annotations
+
 import csv
 import json
 import re
@@ -17,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .config import TASK_MAP, TASK_GROUP_MAP, TASK_MODEL_META, MULTI_STREAM_SUPPORTED_TASKS
+from .config import TASK_MODEL_META, MULTI_STREAM_SUPPORTED_TASKS
 from .runner_pipeline import is_capacity_pass
 
 

@@ -36,8 +36,8 @@ Produces reproducible performance measurements across any Host PC + NPU combinat
 ```
 dx-benchmark/
 ├── run.sh          # launcher
-├── setup.sh        # data setup: download models + videos (no sudo)
-├── setup_env.sh    # one-time host provisioning (sudo): dxrt sudoers + journal
+├── setup_data.sh   # data setup: download models + videos (no sudo)
+├── setup_host.sh   # one-time host provisioning (sudo): system deps + dxrt sudoers + journal
 ├── README.md
 ├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md (performance analysis)
 ├── benchmark/      # python package (python3 -m benchmark)
@@ -58,18 +58,28 @@ dx-benchmark/
 ## Prerequisites
 
 - **OS**: Linux (x86_64 or arm64) with a DEEPX NPU (DX-M1 / DX-H1).
+- **Python 3.9+** — standard library only, no third-party pip packages required.
 - **DEEPX runtime installed** — the benchmark drives already-installed artifacts, not source:
   - `run_model`, `gst-launch-1.0`, `gst-inspect-1.0`, `dxrt-cli` on `PATH`
   - dx_stream GStreamer plugin (`libgstdxstream.so`) and postprocess libraries under
     `/usr/local/share/gstdxstream/lib/`
   - Install via the suite: `dx-runtime/install.sh --all` (see the dx-all-suite README).
-- **`jq`** — required by `setup.sh` for model downloads (`sudo apt-get install -y jq`).
-- **`ffprobe`** (ffmpeg) — used for E2E frame counting.
+- **System tools**: `time` (GNU), `jq`, `ffmpeg` (provides `ffprobe`), `curl`, `tar`.
+  Install them all in one shot with `sudo ./setup_host.sh` (apt), or manually on non-apt
+  distros (e.g. `dnf install time jq ffmpeg curl tar`).
 - **Network access** to `https://sdk.deepx.ai` to download benchmark models/videos.
-- Run `./run.sh preflight` first — it verifies the tools above and prints an environment fingerprint.
+- Run `./run.sh preflight` first — it verifies the tools above (always-required plus the
+  E2E prerequisites) and prints an environment fingerprint.
 
-Then download data once: `./setup.sh` (models + videos; no sudo). For crash-recovery
-provisioning (passwordless dxrt restart + journal access), run `sudo ./setup_env.sh`.
+Then download data once: `./setup_data.sh` (models + videos; no sudo). For host
+provisioning (system deps + passwordless dxrt restart + journal access), run
+`sudo ./setup_host.sh`.
+
+> **For comparable numbers**: the fingerprint records your CPU governor, NPU/CPU clocks,
+> and thermal state so every run is traceable. You do **not** need a specific CPU governor
+> — the benchmark reports whatever your host actually uses (the as-deployed number). Just
+> keep conditions (cooling, power, background load, governor) consistent across the runs
+> you compare.
 
 ## Usage
 
@@ -306,9 +316,9 @@ never required to view results or rebuild the dashboard from a fresh clone.
 | CPU clock monitoring | sysfs scaling_cur_freq pre/post snapshots |
 | Multi-stream 1ch | Reuses single-stream result |
 | Multi-stream max streams | 128 (safety cap) |
-| Process timeout | 600s/run |
+| Process timeout | `run_model`: 600s/run; E2E/multi: 90s no-progress stall + 1800s hard cap |
 | Graceful shutdown | SIGTERM → 10s wait → SIGKILL (2-phase) |
-| Pipeline retry | 1 automatic retry each for warmup + measured run |
+| Retry (model / E2E / multi) | warmup: 1 retry on timeout; measured runs: up to 2 backfill attempts |
 | NPU recovery | Automatic dxrt.service restart after SIGKILL |
 
 > **Reading NPU %** — Throughput/E2E/Multi report NPU **core utilization** sampled by
@@ -354,7 +364,8 @@ unresponsive (deadlock, NPU hang). A 3-layer recovery structure handles these ca
 
 ### Layer 1: Graceful Shutdown (SIGTERM → SIGKILL)
 
-When a process exceeds the 600s timeout:
+When a `run_model` process exceeds its 600s timeout — or an E2E/multi-stream pipeline
+stalls (no progress for 90s) or exceeds the 1800s hard cap:
 
 1. **SIGTERM** sent to the entire process group → up to 10s wait for graceful exit
 2. If not terminated by SIGTERM → **SIGKILL** forced termination
@@ -368,15 +379,14 @@ When a process exceeds the 600s timeout:
 
 Handles transient deadlocks in individual pipelines/models:
 
+Retry behavior is unified across families via two knobs — `model_warmup_retries`
+(default 1) and `model_run_retries` (default 2):
+
 | Phase | Retries | Notes |
 |-------|:-------:|-------|
-| Model warmup (latency/throughput) | 0 | Immediate failure return on timeout |
-| Model measured run | 0 | Skips timed-out run, averages remaining runs |
-| E2E warmup | 1 | 1 retry on TIMEOUT |
-| E2E measured run | 1/run | Max 1 retry per run index |
-| Multi-stream warmup | 1 | GStreamer dxinputselector init deadlock mitigation |
-| Multi-stream measured run | 1/run | Max 1 retry per run index |
-| Multi-stream sweep | 1/channel | Max 1 retry per stream count |
+| Warmup (model / E2E / multi) | 1 | 1 retry on timeout (`model_warmup_retries`) before giving up the cell |
+| Measured run (model / E2E / multi) | up to 2 | Backfill failed/timed-out runs toward the target count (`model_run_retries`); remaining successful runs are averaged |
+| Multi-stream sweep | up to 2 / channel | Same backfill budget per stream count |
 
 When both model-level (latency + throughput) time out consecutively,
 E2E and multi-stream phases are automatically skipped for that model × ORT combination.
@@ -399,10 +409,25 @@ Automatically triggered when SIGKILL was required:
 2. `sudo -n systemctl restart dxrt.service` — restart NPU runtime daemon (3s settle)
 3. Same procedure for run_model timeout (`pkill -9 run_model` + service restart)
 
-> Passwordless sudo required: run `sudo ./setup_env.sh` or manually add the
+> Passwordless sudo required: run `sudo ./setup_host.sh` or manually add the
 > following rules to `/etc/sudoers.d/benchmark-dxrt`:
 > ```
 > user ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart dxrt.service
 > user ALL=(ALL) NOPASSWD: /usr/bin/dmesg *
 > user ALL=(ALL) NOPASSWD: /usr/bin/journalctl *
 > ```
+
+## Development / Testing
+
+The tool has no third-party runtime dependencies (standard library only). The test
+suite uses `pytest` (a dev-only dependency):
+
+```bash
+cd /path/to/dx-benchmark
+pip install pytest          # dev-only; not needed to run benchmarks
+python3 -m pytest tests/
+```
+
+The repo-root `conftest.py` is intentionally empty — its mere presence sets the pytest
+`rootdir` and puts the package root on `sys.path`, so `import benchmark` resolves without
+any install or `PYTHONPATH` tweaks.

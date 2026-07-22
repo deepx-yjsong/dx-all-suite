@@ -103,7 +103,7 @@
   "dx_all_suite_version": "v2.3.3",
   "video_infos": {
     "od_pose_seg": {
-      "path": "/home/rock/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
+      "path": "benchmark/assets/videos/od_benchmark_video.mp4",
       "filename": "od_benchmark_video.mp4",
       "codec": "h264",
       "width": 1920,
@@ -116,7 +116,7 @@
       "bitrate_mbps": 4.47
     },
     "obb": {
-      "path": "/home/rock/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/obb_benchmark_video.mp4",
+      "path": "benchmark/assets/videos/obb_benchmark_video.mp4",
       "filename": "obb_benchmark_video.mp4",
       "codec": "h264",
       "width": 1920,
@@ -129,7 +129,7 @@
       "bitrate_mbps": 4.87
     },
     "cls": {
-      "path": "/home/rock/work/github/deepx-yjsong/dx-all-suite/dx-benchmark/benchmark/assets/videos/od_benchmark_video.mp4",
+      "path": "benchmark/assets/videos/od_benchmark_video.mp4",
       "filename": "od_benchmark_video.mp4",
       "codec": "h264",
       "width": 1920,

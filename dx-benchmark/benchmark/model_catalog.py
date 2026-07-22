@@ -1,9 +1,11 @@
 """Model catalog – load .dxnn models from the manifest and classify by task/size.
 
 The manifest (model_list.json) is the single source of truth for both download
-(setup.sh) and classification. Filenames are opaque here — task/size come from
+(setup_data.sh) and classification. Filenames are opaque here — task/size come from
 the manifest, so a future naming-rule change only touches the JSON, not this code.
 """
+
+from __future__ import annotations
 
 import json
 from dataclasses import dataclass

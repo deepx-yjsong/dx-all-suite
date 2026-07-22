@@ -5,6 +5,8 @@ Two benchmark families:
   - latency:   sync  (single-core) with profiler → measures ms per frame
 """
 
+from __future__ import annotations
+
 import json
 import re
 import shutil
@@ -509,7 +511,6 @@ def run_latency(
     cpu_pcts = []
     npu_stats_accum: list[NpuStats] = []
     last_npu_mem = None
-    last_profiler_path = None
 
     # Backfill: keep attempting until *num_runs* successful runs or the attempt
     # budget (num_runs + model_run_retries) is exhausted. A run counts as successful
@@ -590,7 +591,6 @@ def run_latency(
                 if profiler_path.exists() and save_dir:
                     dest = save_dir / f"{model.name}.ort_{'on' if use_ort else 'off'}.profiler.json"
                     shutil.copy2(profiler_path, dest)
-                    last_profiler_path = dest
 
                 if save_dir:
                     _save_raw(save_dir, model.name, f"latency.{label}", use_ort, combined, npu_stats.raw_log)

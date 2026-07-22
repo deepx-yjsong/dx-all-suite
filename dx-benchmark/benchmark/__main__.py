@@ -11,6 +11,8 @@ Usage:
     python -m benchmark report             # regenerate report from results
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import re
@@ -23,9 +25,9 @@ from pathlib import Path
 
 from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
-from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, TASK_GROUP_VIDEOS, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
+from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
 from .dashboard_builder import build_static_dashboard
-from .env_fingerprint import collect_fingerprint, check_preflight, check_cpu_governor, collect_host_health, save_fingerprint, get_video_info, resolve_dx_all_suite_version
+from .env_fingerprint import collect_fingerprint, check_preflight, check_e2e_readiness, check_cpu_governor, collect_host_health, save_fingerprint, get_video_info, resolve_dx_all_suite_version
 from .model_catalog import discover_models, filter_models
 from .npu_monitor import parse_npu_log_temp_clock
 from .reporter import (
@@ -140,6 +142,14 @@ def cmd_preflight(args: argparse.Namespace) -> int:
         print("[FAIL] Missing required tools:")
         for e in errors:
             print(f"  - {e}")
+
+    e2e_ok, e2e_warn = check_e2e_readiness(fp)
+    if e2e_ok:
+        print("[OK] E2E/multi-stream prerequisites are available.")
+    else:
+        print("[WARN] E2E/multi-stream prerequisites missing (model-level runs still work):")
+        for w in e2e_warn:
+            print(f"  - {w}")
     return 0 if ok else 1
 
 
@@ -182,13 +192,15 @@ def cmd_dry_run(args: argparse.Namespace) -> int:
 
     if "multi" in families or "all" in families:
         print("--- E2E Pipeline (Multi-Stream Sweep) ---")
-        print(f"  Runs: {cfg.e2e_runs}, FPS threshold: {cfg.fps_threshold} (no upper stream limit)")
+        from .runner_pipeline import _MAX_SWEEP_STREAMS
+        print(f"  Runs: {cfg.e2e_runs}, FPS threshold: {cfg.fps_threshold} "
+              f"(boundary search, safety cap {_MAX_SWEEP_STREAMS} streams)")
         for m in models:
             if m.task not in MULTI_STREAM_SUPPORTED_TASKS:
                 continue
             for ort in cfg.ort_modes:
                 ort_s = "ON" if ort else "OFF"
-                print(f"  [multi] {m.name}  ORT={ort_s}  streams=1..∞")
+                print(f"  [multi] {m.name}  ORT={ort_s}  streams=1..{_MAX_SWEEP_STREAMS}")
         print()
 
     total = _count_runs(cfg, models, families)
@@ -222,9 +234,18 @@ def cmd_run(args: argparse.Namespace) -> int:
             print(f"  - {e}")
         return 1
 
-    _gov_warn = check_cpu_governor(fp)
-    if _gov_warn:
-        print(f"[WARN] {_gov_warn}", flush=True)
+    _gov_note = check_cpu_governor(fp)
+    if _gov_note:
+        print(f"[INFO] {_gov_note}", flush=True)
+
+    if "e2e" in families or "multi" in families or "all" in families:
+        e2e_ok, e2e_warn = check_e2e_readiness(fp)
+        if not e2e_ok:
+            print("[FAIL] E2E/multi-stream prerequisites missing:")
+            for w in e2e_warn:
+                print(f"  - {w}")
+            print("  (use --family model to run model-level benchmarks only)")
+            return 1
 
     if cfg.product_name:
         fp["product_name"] = cfg.product_name
@@ -243,17 +264,12 @@ def cmd_run(args: argparse.Namespace) -> int:
         suite_ver = existing_fp.get("dx_all_suite_version")
     suite_ver = resolve_dx_all_suite_version(suite_ver)
     if suite_ver is None:
-        if sys.stdin.isatty():
-            try:
-                entered = input(
-                    "dx-all-suite version not found (no --dx-all-suite-version, no release.ver). "
-                    "Enter version (e.g. v2.4.0), or leave blank to skip: ").strip()
-            except (EOFError, KeyboardInterrupt):
-                entered = ""
-            suite_ver = entered or None
-        if suite_ver is None:
-            print("[WARN] dx-all-suite version unknown; this run will bucket as "
-                  "'unknown' in the Version Trend tab.")
+        # No interactive prompt — never block an unattended run. Pass
+        # --dx-all-suite-version for an accurate Version Trend; otherwise this
+        # run is recorded (and buckets) as 'unknown'.
+        print("[WARN] dx-all-suite version unknown — pass --dx-all-suite-version "
+              "(e.g. v2.4.0) for an accurate Version Trend. This run buckets as "
+              "'unknown'.", flush=True)
     fp["dx_all_suite_version"] = suite_ver
 
     overall_start_iso = _resolve_overall_start_iso(existing_fp, out_dir, session_start_iso)
@@ -290,7 +306,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     models = _get_models(cfg)
     if not models:
-        print("[WARN] No models found. Run './setup.sh' (or './setup.sh models') "
+        print("[WARN] No models found. Run './setup_data.sh' (or './setup_data.sh models') "
               "to download benchmark models first.")
         return 1
 
@@ -1157,22 +1173,14 @@ def _build_config(args: argparse.Namespace) -> BenchmarkConfig:
     runs_override = getattr(args, "runs", None)
     _model_time = getattr(args, "model_time", None)
     _warmup = getattr(args, "warmup", None)
-    _warmup_retries = getattr(args, "warmup_retries", None)
-    _run_retries = getattr(args, "run_retries", None)
     _fps_thr = getattr(args, "fps_threshold", None)
-    _e2e_stall_timeout = getattr(args, "e2e_stall_timeout", None)
-    _e2e_hard_cap = getattr(args, "e2e_hard_cap", None)
     return BenchmarkConfig(
         task=getattr(args, "task", base_cfg.task),
         sizes=sizes,
         ort_modes=ort_modes,
         model_time_sec=_model_time if _model_time is not None else base_cfg.model_time_sec,
         model_warmup=_warmup if _warmup is not None else base_cfg.model_warmup,
-        model_warmup_retries=_warmup_retries if _warmup_retries is not None else base_cfg.model_warmup_retries,
-        model_run_retries=_run_retries if _run_retries is not None else base_cfg.model_run_retries,
         e2e_runs=runs_override if runs_override is not None else base_cfg.e2e_runs,
-        e2e_stall_timeout=_e2e_stall_timeout if _e2e_stall_timeout is not None else base_cfg.e2e_stall_timeout,
-        e2e_hard_cap=_e2e_hard_cap if _e2e_hard_cap is not None else base_cfg.e2e_hard_cap,
         model_latency_runs=runs_override if runs_override is not None else base_cfg.model_latency_runs,
         model_throughput_runs=runs_override if runs_override is not None else base_cfg.model_throughput_runs,
         video=getattr(args, "video", base_cfg.video),
@@ -1524,14 +1532,6 @@ def _add_benchmark_args(parser: argparse.ArgumentParser, defaults: BenchmarkConf
                         help=f"Duration of model benchmark in seconds (default: {defaults.model_time_sec})")
     parser.add_argument("--warmup", type=int, default=None,
                         help=f"Warmup runs (default: {defaults.model_warmup})")
-    parser.add_argument("--warmup-retries", type=int, default=None,
-                        help=f"Extra warmup attempts on timeout before giving up the cell (default: {defaults.model_warmup_retries})")
-    parser.add_argument("--run-retries", type=int, default=None,
-                        help=f"Extra measured-run attempts to backfill failed runs up to the target count (default: {defaults.model_run_retries})")
-    parser.add_argument("--e2e-stall-timeout", type=float, default=None,
-                        help=f"E2E no-progress window in seconds before a run is treated as a hang (default: {defaults.e2e_stall_timeout})")
-    parser.add_argument("--e2e-hard-cap", type=float, default=None,
-                        help=f"E2E absolute anti-runaway ceiling in seconds (default: {defaults.e2e_hard_cap})")
     parser.add_argument("--runs", type=int, default=None,
                         help=f"Measured repetitions for model and E2E benchmarks (default: {defaults.e2e_runs})")
     parser.add_argument("--fps-threshold", type=float, default=None,

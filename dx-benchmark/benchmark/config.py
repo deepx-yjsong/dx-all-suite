@@ -3,6 +3,8 @@
 Central place for all tunable parameters, paths, and task definitions.
 """
 
+from __future__ import annotations
+
 import json
 import tempfile
 from dataclasses import dataclass, field

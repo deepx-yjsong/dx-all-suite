@@ -4,6 +4,8 @@ Spawns dxtop in a PTY via `script`, collects samples during a
 benchmark run, and parses per-core utilization and memory stats.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import shutil

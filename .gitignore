@@ -11,6 +11,11 @@ dx-benchmark/results/**/*.csv
 dx-benchmark/results/dashboard/dashboard_standalone.html
 # internal-only quality review (배포 금지)
 dx-benchmark/docs/QUALITY_REVIEW_2026-07-14_KOR.md
+# local http.server access log (leftover from `python3 -m http.server` dashboard preview)
+dx-benchmark/results/*.log
+dx-benchmark/results/**/*.log
+# out-of-tree measurement backups — never commit (kept outside the repo)
+dx-benchmark/results_backup/
 # NOTE: results/dashboard/ build artifacts ARE tracked (consumed by suite features)
 
 # Python bytecode

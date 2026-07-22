@@ -4,6 +4,8 @@ Produces a dict that uniquely identifies the measurement environment
 so results from different machines are traceable and comparable.
 """
 
+from __future__ import annotations
+
 import glob
 import json
 import os
@@ -95,8 +97,46 @@ def _tool_version(name: str) -> dict[str, Any]:
     return {"path": path, "version": ver, "available": True}
 
 
-REQUIRED_TOOLS = ["run_model", "gst-launch-1.0", "gst-inspect-1.0"]
-OPTIONAL_TOOLS = ["dxtop", "ffprobe"]
+# Always required — every benchmark family (model / E2E / multi) needs these.
+# `time` is GNU /usr/bin/time, used for CPU%/RSS in every run_model & gst run.
+REQUIRED_TOOLS = ["run_model", "dxrt-cli", "gst-launch-1.0", "gst-inspect-1.0", "time"]
+# Required only for the E2E / multi-stream (GStreamer pipeline) families.
+E2E_REQUIRED_TOOLS = ["ffprobe"]
+OPTIONAL_TOOLS = ["dxtop"]
+
+# Actionable install hints surfaced next to a missing tool in preflight output.
+_REMEDIATION = {
+    "run_model": "DEEPX runtime — run: dx-runtime/install.sh --all",
+    "dxrt-cli": "DEEPX runtime — run: dx-runtime/install.sh --all",
+    "gst-launch-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
+    "gst-inspect-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
+    "time": "GNU time — sudo apt-get install -y time",
+    "ffprobe": "ffmpeg — sudo apt-get install -y ffmpeg",
+}
+
+
+def _remediation(tool: str) -> str:
+    """Return an install hint for a tool name, or '' when none is known."""
+    for key, hint in _REMEDIATION.items():
+        if key in tool:
+            return hint
+    return ""
+
+
+def _repo_relative_path(p: str | Path) -> str:
+    """Return a repo-relative path string (no username/absolute-path leak).
+
+    Falls back to the bare filename when the target is outside the repo, so a
+    user-supplied ``--video`` path never leaks a home directory into results.
+    """
+    from .config import APP_DIR
+
+    path = Path(p)
+    repo_root = APP_DIR.parent  # dx-benchmark/
+    try:
+        return str(path.resolve().relative_to(repo_root))
+    except (ValueError, OSError):
+        return path.name
 
 
 def _get_dx_stream_version() -> str:
@@ -139,7 +179,7 @@ def collect_fingerprint() -> dict[str, Any]:
         "tools": {},
     }
 
-    # Required tools
+    # Always-required tools
     missing = []
     for tool in REQUIRED_TOOLS:
         info = _tool_version(tool)
@@ -147,12 +187,37 @@ def collect_fingerprint() -> dict[str, Any]:
         if not info["available"]:
             missing.append(tool)
 
+    # E2E-tier tools (record availability; gate only the E2E/multi families)
+    for tool in E2E_REQUIRED_TOOLS:
+        fp["tools"][tool] = _tool_version(tool)
+
     # Optional tools
     for tool in OPTIONAL_TOOLS:
         fp["tools"][tool] = _tool_version(tool)
 
     fp["missing_required"] = missing
+    fp["missing_e2e"] = collect_e2e_missing()
     return fp
+
+
+def collect_e2e_missing() -> list[str]:
+    """Return E2E/multi-stream prerequisites that are absent.
+
+    Beyond ``E2E_REQUIRED_TOOLS`` (CLIs on PATH) this also checks the GStreamer
+    ``dxstream`` plugin and the task postprocess libraries — presence of
+    ``gst-inspect-1.0`` alone does NOT imply the DEEPX plugin is installed.
+    """
+    from .config import POSTPROCESS_LIB_DIR
+
+    missing: list[str] = []
+    if _get_dx_stream_version() == "unknown":
+        missing.append("dxstream (GStreamer plugin — gst-inspect-1.0 dxstream)")
+    if not POSTPROCESS_LIB_DIR.exists() or not list(POSTPROCESS_LIB_DIR.glob("libpostprocess_yolo26*.so")):
+        missing.append(f"postprocess libs ({POSTPROCESS_LIB_DIR}/libpostprocess_yolo26*.so)")
+    for tool in E2E_REQUIRED_TOOLS:
+        if not shutil.which(tool):
+            missing.append(tool)
+    return missing
 
 
 def _get_os_pretty_name() -> str:
@@ -232,17 +297,21 @@ def _get_cpu_governors(cpu_base: str = CPU_SYSFS_BASE) -> dict[str, int]:
 
 
 def check_cpu_governor(fingerprint: dict) -> Optional[str]:
-    """Return a warning string if CPU governors aren't all 'performance', else None.
+    """Return a neutral informational note about the CPU governor, else None.
 
-    Empty/unknown governors return None — we don't warn when we cannot tell.
+    The governor is recorded in the fingerprint for reproducibility. We do NOT
+    prescribe a specific governor — the benchmark measures whatever governor the
+    host actually uses (that is the representative, as-deployed number). Empty/
+    unknown governors return None (nothing to say); a uniform governor also
+    returns None (no cross-core inconsistency worth flagging).
     """
     govs = (fingerprint.get("host") or {}).get("cpu_governors") or {}
-    if not govs or set(govs) == {"performance"}:
+    if not govs:
         return None
     summary = ", ".join(f"{g}×{n}" for g, n in sorted(govs.items()))
-    return (f"CPU governor not all 'performance' ({summary}). Host-bound metrics "
-            f"(latency, small-model throughput, E2E) may be depressed and noisy. "
-            f"Set: sudo cpupower frequency-set -g performance")
+    return (f"CPU governor: {summary}. Recorded in the fingerprint for "
+            f"reproducibility. No action needed — just keep the governor "
+            f"consistent across runs you compare.")
 
 
 # ── Host power / PCIe link health (G5) ─────────────────────────────────────
@@ -422,20 +491,34 @@ def _get_npu_info() -> dict[str, Any]:
 
 
 def check_preflight(fingerprint: dict) -> tuple[bool, list[str]]:
-    """Validate that all required tools are present.
+    """Validate that all always-required tools are present.
 
-    Returns (ok, list_of_error_messages).
+    Returns (ok, list_of_error_messages). Each message carries an install hint.
     """
     errors = []
     for tool in fingerprint.get("missing_required", []):
-        errors.append(f"Required tool not found: {tool}")
+        hint = _remediation(tool)
+        errors.append(f"Required tool not found: {tool}" + (f"  → {hint}" if hint else ""))
     return len(errors) == 0, errors
+
+
+def check_e2e_readiness(fingerprint: dict) -> tuple[bool, list[str]]:
+    """Validate E2E/multi-stream prerequisites (dxstream plugin, postprocess libs, ffprobe).
+
+    Returns (ok, list_of_warning_messages). Model-only runs do not need these,
+    so this is separate from ``check_preflight`` and only gates E2E/multi families.
+    """
+    warnings = []
+    for item in fingerprint.get("missing_e2e", []):
+        hint = _remediation(item)
+        warnings.append(f"E2E prerequisite missing: {item}" + (f"  → {hint}" if hint else ""))
+    return len(warnings) == 0, warnings
 
 
 def get_video_info(video_path: str | Path) -> dict[str, Any]:
     """Get video metadata using ffprobe."""
     info: dict[str, Any] = {
-        "path": str(video_path),
+        "path": _repo_relative_path(video_path),
         "filename": Path(video_path).name,
     }
     if not shutil.which("ffprobe") or not Path(video_path).exists():

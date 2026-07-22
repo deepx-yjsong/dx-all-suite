@@ -970,7 +970,7 @@ def run_single_stream(
             break
         print(f"    [e2e warmup] {warmup_outcome.value.upper()}", flush=True)
         if warmup_attempt + 1 < warmup_attempts:
-            print(f"    [e2e warmup] retrying ...", flush=True)
+            print("    [e2e warmup] retrying ...", flush=True)
         else:
             warmup_timed_out = True
     if save_dir:

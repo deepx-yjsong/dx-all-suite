@@ -4,6 +4,8 @@ Extracted from runner_pipeline.py so both runner_model.py and
 runner_pipeline.py can share the same merge logic.
 """
 
+from __future__ import annotations
+
 from .npu_monitor import NpuStats
 
 

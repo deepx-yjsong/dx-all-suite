@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # dx-benchmark data setup — download benchmark models and videos (no sudo needed).
-# Usage: ./setup.sh [all|models|videos]   (default: all)
+# Usage: ./setup_data.sh [all|models|videos]   (default: all)
 #
-# For one-time privileged host provisioning (passwordless sudo for dxrt crash
-# recovery / incident log collection, systemd-journal membership), run the
-# separate script: sudo ./setup_env.sh
+# For one-time privileged host provisioning (system dependency install +
+# passwordless sudo for dxrt crash recovery / incident log collection /
+# systemd-journal membership), run the separate script: sudo ./setup_host.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
@@ -143,4 +143,4 @@ case "${1:-all}" in
     videos) phase_videos ;;
     *) echo "Usage: $0 [all|models|videos]" >&2; exit 1 ;;
 esac
-echo "[setup.sh] done: ${1:-all}"
+echo "[setup_data.sh] done: ${1:-all}"
