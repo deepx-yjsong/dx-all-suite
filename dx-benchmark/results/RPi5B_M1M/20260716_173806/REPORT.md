@@ -1,6 +1,6 @@
 # YOLO26 Benchmark Report
 
-**Generated:** 2026-07-21 17:07:31 (Local)
+**Generated:** 2026-07-21 20:13:36 (Local)
 
 ## Test Timing
 
