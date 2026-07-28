@@ -74,7 +74,13 @@ def resolve_dx_all_suite_version(explicit: str | None, start: Path | None = None
         return _normalize_version(explicit)
     if start is None:
         from .config import APP_DIR
-        start = APP_DIR
+        # Search for the SUITE-root release.ver ABOVE the dx-benchmark component, so
+        # dx-benchmark's OWN release.ver (its tool version, e.g. v0.1.0) is never
+        # mistaken for the measured dx-all-suite version. Layout:
+        #   <suite-root>/dx-benchmark/benchmark  == APP_DIR
+        #   APP_DIR.parent        == dx-benchmark  (has its own release.ver → skip)
+        #   APP_DIR.parent.parent == suite root    (the release.ver we want)
+        start = APP_DIR.parent.parent
     resolved = _read_release_ver(start)
     return _normalize_version(resolved) if resolved else resolved
 

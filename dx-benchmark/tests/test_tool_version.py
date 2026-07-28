@@ -44,6 +44,23 @@ def test_tool_version_distinct_from_protocol_version():
     assert benchmark.__version__ != PROTOCOL_VERSION
 
 
+def test_release_ver_file_is_source_of_truth():
+    # Suite convention: every component ships a `release.ver` (v-prefixed) — the single
+    # source of truth for its version. __version__ derives from it (v stripped).
+    root = Path(benchmark.__file__).resolve().parent.parent  # dx-benchmark/
+    rv = (root / "release.ver").read_text().strip()
+    assert rv == "v0.1.0", rv
+    assert rv.lstrip("v") == benchmark.__version__
+
+
+def test_suite_version_not_shadowed_by_own_release_ver():
+    # dx-benchmark's OWN release.ver (its tool version) must NOT be mistaken for the
+    # measured dx-all-suite version when resolving with the default (in-package) start.
+    from benchmark.env_fingerprint import resolve_dx_all_suite_version
+    v = resolve_dx_all_suite_version(None)
+    assert v not in ("0.1.0", "v0.1.0"), f"suite version shadowed by tool release.ver: {v!r}"
+
+
 def test_report_environment_section_shows_tool_version():
     from benchmark.reporter import _add_environment_section
     fp = {
