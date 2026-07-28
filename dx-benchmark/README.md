@@ -1,22 +1,145 @@
-# YOLO26 Benchmark Tool
+# DX-Benchmark — YOLO26 on DEEPX NPU
 
-Unified benchmarking tool for YOLO26 models on DEEPX NPU.
-Produces reproducible performance measurements across any Host PC + NPU combination using a standardized procedure.
+Reproducible YOLO26 performance benchmarking on the DEEPX NPU — one standardized
+procedure across any Host PC + NPU combination. It measures two tiers:
+
+- **Model-Level** (direct `run_model`) — **Latency** (single-core, sync) and **Throughput** (multi-core, async)
+- **E2E Pipeline** (full GStreamer / DX-Stream) — **Single-Stream** FPS and **Multi-Stream** channel capacity
+
+Both tiers run automatic ONNX-Runtime ON/OFF comparison with thermal-throttle detection,
+then render an interactive dashboard for cross-environment and cross-version comparison.
+
+> **Status:** Beta (tool `v0.1.0`). Data is final; the CLI and output schema may still evolve.
+
+---
+
+## At a Glance
+
+Practical performance of the lightest **nano** model on the current release
+(**dx-all-suite v2.4.0**), Full HD (1920×1080) 30 fps input, **`end-to-end FPS / max
+concurrent channels`** (better of ORT ON/OFF):
+
+| Environment | NPU | Object Detection (nano) | Note |
+|-------------|-----|------------------------:|------|
+| **BIOSTAR_H1-Quattro** | H1 (4-chip) | **496.8 fps / 17 ch** | highest channel density |
+| **DX-AIPlayer-N97_M1** | M1 | 184.9 fps / 6 ch | x86, balanced edge box |
+| **OrangePi5+_M1** | M1 | 148.1 fps / 4 ch | RK3588, PCIe ×4 |
+| **ROCK5B+_M1** | M1 | 141.5 fps / 4 ch | RK3588, PCIe ×2 |
+| **RPi5B_M1** | M1 | 80.1 fps / 2 ch | PCIe ×1, SW decode |
+| **RPi5B_M1M** | M1M | 79.8 fps / 2 ch | M1M SKU (slower tier) |
+
+**Three headline findings** (full data + method in [`docs/ANALYSIS_EN.md`](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md)):
+
+1. **The DEEPX M1 NPU is the performance anchor.** On medium/large/x-large models the four
+   very different single-M1 hosts agree to within a few percent — the host mostly affects
+   only the lightest models and the video pipeline.
+2. **v2.3.3 → v2.4.0 gained ~25–35%** on NPU-bound detection models, consistently across
+   every environment.
+3. **H1-Quattro scales ~4.2–4.3×** a single M1 with its four NPU chips.
+
+---
+
+## Interactive Dashboard
+
+Every result set renders to a self-contained HTML dashboard (no CDN, works offline).
+Four tabs cover the full picture — from a one-glance comparison to raw per-model tables
+and release-over-release trends:
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/images/dashboard-01-fps-overview.png"><img src="docs/images/dashboard-01-fps-overview.png" width="100%"></a>
+      <br><b>E2E FPS Overview</b> — grouped E2E FPS by model size × environment, with max-channel badges.
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/images/dashboard-02-full-metrics.png"><img src="docs/images/dashboard-02-full-metrics.png" width="100%"></a>
+      <br><b>Full Metrics</b> — latency (line) + throughput + E2E FPS + max channels in one combo chart.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/images/dashboard-03-detailed-data.png"><img src="docs/images/dashboard-03-detailed-data.png" width="100%"></a>
+      <br><b>Detailed Data</b> — full numeric tables (latency/throughput/E2E/capacity) with filters.
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/images/dashboard-04-version-trend.png"><img src="docs/images/dashboard-04-version-trend.png" width="100%"></a>
+      <br><b>Version Trend</b> — per-metric trend across dx-all-suite releases for the same hardware.
+    </td>
+  </tr>
+</table>
+
+> Click any thumbnail for the full-resolution view.
+
+Launch it locally:
+
+```bash
+./run.sh dashboard results          # build results/dashboard/ from all runs
+cd results/dashboard && python3 -m http.server 8899
+# open http://localhost:8899/
+```
+
+| Tab | What it shows |
+|-----|---------------|
+| **E2E FPS Overview** | E2E FPS comparison by Task/ORT (grouped bars by model size); max-channel badge above each bar. |
+| **Full Metrics** | Cross-environment NPU latency, throughput, and E2E FPS per Task/Size/ORT (latency as a dashed line on the secondary axis). |
+| **Detailed Data** | Full numeric tables with Environment/Task/ORT filters and a Run-ID selector. |
+| **Version Trend** | Per-metric line charts across dx-all-suite releases for the same HW_ID (Latency / Throughput / E2E FPS / Max Channel). |
+
+---
+
+## Quick Start
+
+```bash
+cd /path/to/dx-benchmark
+
+# 1) Verify tools + print an environment fingerprint
+./run.sh preflight
+
+# 2) One-time: download models + videos (no sudo) and provision host deps (sudo)
+./setup_data.sh
+sudo ./setup_host.sh
+
+# 3) Run the full suite (model-level + end-to-end + multi-stream)
+./run.sh run
+
+# 4) Build + view the dashboard
+./run.sh dashboard results
+cd results/dashboard && python3 -m http.server 8899
+```
+
+---
+
+## How It Works
+
+Top-level pipeline — `run` measures every **model × ORT mode**, then the results feed the
+report and dashboard:
+
+```mermaid
+flowchart LR
+  P[preflight] --> S[setup_data] --> R["run<br/>per model × ORT"] --> RP[report] --> AG[aggregate] --> DB[dashboard]
+```
+
+Inside `run`, each model × ORT mode goes through a thermal-normalized sequence —
+**cooldown → latency (cold) → throughput → cooldown → E2E → multi-stream** — so latency is
+measured cold, throughput heats the NPU, and a second cooldown lets E2E/multi measure their
+own steady state. Throttling is detected and flagged, never hidden. Full detail in
+[Per-Model Execution Order](#per-model-execution-order-thermal-normalization).
+
+---
 
 ## Key Features
 
-- **Model-Level Benchmarks**: NPU inference engine throughput/latency measurement (direct `run_model` execution)
-- **E2E Pipeline Benchmarks**: Full GStreamer pipeline FPS measurement via DX-STREAM (Single-Stream)
-- **Multi-Stream Benchmarks**: Boundary channel count search based on single-stream FPS (1ch reuses single-stream results)
-- **NPU Temperature/Clock Monitoring**: Automatic logging of NPU temperature, utilization, and clock (MHz) via dxtop + dxrt-cli pre/post snapshots for throttle detection
-- **CPU/NPU Clock Tracking**: Records NPU MHz and CPU MHz to track changes (min/max)
-- **Thermal Steady-State Normalization**: Rejects start above 60°C, per-model cooldown targeting `min(idle + Δ10°C, 55°C)`, benchmark failure on cooldown timeout
-- **Automatic ORT ON/OFF Comparison**: Both modes measured automatically in every benchmark
-- **Environment Fingerprinting**: Automatic capture of measurement context for reproducibility
-- **Markdown Report Generation**: Result tables + ORT comparison + channel capacity summary
-- **Static Dashboard**: HTML dashboard for comparing results across multiple environments
-- **Version Trend Tracking**: Line charts comparing performance changes across dx-all-suite releases for the same HW_ID
-- **Resume / Retry-Failed**: Continue from interrupted runs or rerun only failed conditions
+- **Model-Level Benchmarks** — NPU throughput/latency via direct `run_model` execution.
+- **E2E Pipeline Benchmarks** — full GStreamer pipeline FPS through DX-Stream (single-stream).
+- **Multi-Stream Benchmarks** — boundary channel-count search from single-stream FPS.
+- **Thermal monitoring & steady-state normalization** — NPU temp/clock (MHz) tracking,
+  hot-start rejection, per-model cooldown, and automatic throttle detection.
+- **Automatic ORT ON/OFF comparison** — both modes measured in every run.
+- **Environment fingerprinting** — full measurement context captured for reproducibility
+  (host, NPU stack, tool version, protocol).
+- **Reports & dashboard** — Markdown `REPORT.md` per run + a static interactive HTML dashboard.
+- **Version trend tracking** — performance across dx-all-suite releases for the same HW_ID.
+- **Resume / retry-failed** — continue interrupted runs or rerun only failed conditions.
 
 ## Supported Tasks
 
@@ -28,32 +151,9 @@ Produces reproducible performance measurements across any Host PC + NPU combinat
 | Oriented BBox (OBB) | O | O | O |
 | Classification | O | O | — |
 
-> OBB models use 1024x1024 input, Classification uses 224x224 (keep-ratio=false), all others use 640x640.
-> Classification Multi-Stream is excluded: Classification is less representative of common E2E multi-stream usage scenarios.
-
-## Directory Structure
-
-```
-dx-benchmark/
-├── run.sh          # launcher
-├── setup_data.sh   # data setup: download models + videos (no sudo)
-├── setup_host.sh   # one-time host provisioning (sudo): system deps + dxrt sudoers + journal
-├── README.md
-├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md (performance analysis)
-├── benchmark/      # python package (python3 -m benchmark)
-│   ├── __main__.py, config.py, model_list.json, ...
-│   └── assets/{models,videos}/   # downloaded (gitignored)
-└── results/        # per-run results
-    ├── <hw_id>/<run_id>/   # tracked: *_results.json + environment.json + REPORT.md
-    │                       # gitignored (local-only): raw/, incidents/, *.csv
-    └── dashboard/          # tracked build artifacts (index.html/app.js/styles.css/dataset.json)
-```
-
-> **What ships in git:** the compact per-run JSON summaries + `REPORT.md`, plus the
-> built dashboard. The large `raw/` logs, `incidents/` diagnostics, and the `*.csv`
-> mirrors of the JSON are regenerated locally by `run`/`report` and are **git-ignored**
-> — they are not needed to read results or rebuild the dashboard. The `*_results.json`
-> files are the lossless source of truth (the CSVs carry identical columns).
+> OBB uses 1024×1024 input, Classification uses 224×224 (keep-ratio=false), all others 640×640.
+> Classification Multi-Stream is excluded — a 224×224 classifier is not representative of
+> real multi-stream video-analytics workloads.
 
 ## Prerequisites
 
@@ -89,6 +189,7 @@ provisioning (system deps + passwordless dxrt restart + journal access), run
 cd /path/to/dx-benchmark
 ./run.sh preflight
 # raw equivalent (from dx-benchmark/): python3 -m benchmark preflight
+# tool version: python3 -m benchmark --version
 ```
 
 ### 2. Dry-Run (Preview Matrix)
@@ -113,17 +214,17 @@ cd /path/to/dx-benchmark
 ./run.sh run --sizes n,s --family model --model-time 30
 
 # Resume interrupted run
-./run.sh run --resume results/BIOSTAR_H1-Quattro/20260710_180653
+./run.sh run --resume results/BIOSTAR_H1-Quattro/20260722_151413
 
 # Retry failed conditions only
-./run.sh run --resume results/BIOSTAR_H1-Quattro/20260710_180653 --retry-failed
+./run.sh run --resume results/BIOSTAR_H1-Quattro/20260722_151413 --retry-failed
 ```
 
 ### 4. Regenerate Report
 
 ```bash
 # Specify a {hw_id}/{run_id} result directory path
-./run.sh report results/BIOSTAR_H1-Quattro/20260710_180653
+./run.sh report results/BIOSTAR_H1-Quattro/20260722_151413
 ```
 
 ### 5. Aggregate Results
@@ -150,20 +251,9 @@ cd results/dashboard && python3 -m http.server 8899
 
 Pure HTML/CSS/JS with no external CDN — works fully offline.
 
-**Dashboard Tabs:**
-
-| Tab | Description |
-|-----|-------------|
-| E2E FPS Overview | E2E FPS comparison chart by Task/ORT (grouped bars by model size). Max Ch badge displayed above E2E FPS. |
-| Full Metrics | Cross-environment comparison of NPU Latency, Throughput, E2E FPS per Task/Size/ORT. Latency shown as dashed line on secondary Y-axis. |
-| Detailed Data | Full numeric table with Environment/Task/ORT filters. Run ID dropdown for specific run selection. |
-| Version Trend | dx-all-suite version performance trend line charts from nested result history. Metrics dropdown: Latency/Throughput/E2E FPS/Max Channel. |
-
 ### 7. Version Trend Tracking
 
 Compare benchmark results before and after dx-all-suite releases using the same HW_ID.
-
-**Workflow:**
 
 ```bash
 # (1) Run benchmark on each environment
@@ -176,67 +266,22 @@ Compare benchmark results before and after dx-all-suite releases using the same 
 ./run.sh dashboard results
 ```
 
-Results always follow the `results/{hw_id}/{run_id}/` structure. HW_ID is automatically computed from the `environment.json` fingerprint during `run`.
+Results always follow the `results/{hw_id}/{run_id}/` structure. HW_ID is automatically
+computed from the `environment.json` fingerprint during `run`.
 
 - With `--product-name`: `{product_name}_{hw_config}` (e.g., `DX-AIPlayer-N97_M1`)
 - Without: `{hostname}_{hw_config}` (e.g., `RPi5B_M1`)
 
-**Result Directory Structure:**
-
-```
-results/
-├── DX-AIPlayer-N97_M1/          # When --product-name is used
-│   ├── 20260629_172308/         # one run per (env, dx-all-suite version)
-│   │   ├── environment.json           # tracked
-│   │   ├── {model,pipeline,multi_stream}_results.json   # tracked (source of truth)
-│   │   ├── REPORT.md                   # tracked
-│   │   ├── {model,pipeline,multi_stream}_results.csv    # git-ignored (CSV mirror)
-│   │   ├── raw/                        # git-ignored (raw logs)
-│   │   └── incidents/                  # git-ignored (timeout diagnostics)
-│   └── 20260710_180416/
-│       └── (same layout)
-├── RPi5B_M1/                     # Hostname-based (default)
-│   └── 20260713_115536/
-│       └── (same layout)
-└── dashboard/                    # tracked build artifacts (consumed by suite tooling)
-    ├── index.html
-    ├── app.js
-    ├── styles.css
-    └── dataset.json
-```
-
-**Version Trend Tab:**
-
-- Environment / Task / ORT / Metrics filters for condition selection
-- Metrics dropdown: Latency, Throughput, E2E FPS, Max Channel
-- X-axis: dx-all-suite version (latest run per version; run date shown as secondary label), Y-axis: selected metric
-- Per-size (N/S/M/L/X) line charts
-- Automatic label de-overlap, selected column highlight (white halo + black text)
-- Click a point to view the snapshot's environment details (Host PC / NPU / Tools)
-
-### dx-all-suite version tracking
-
-The dashboard's **Version Trend** tab compares results across dx-all-suite
-releases. The version is captured per run, resolved in this order:
+The version is captured per run, resolved in this order:
 
 - `--dx-all-suite-version v2.4.0` passed to `run` (explicit — always wins), **or**
-- run in-suite: auto-read from the suite-root `release.ver` (walked up from the
-  package dir), **or**
+- run in-suite: auto-read from the suite-root `release.ver` (walked up from the package dir), **or**
 - on an interactive terminal with neither available: you are prompted for it, **or**
-- otherwise (headless / unattended): a `[WARN]` is printed and the run is recorded
-  with version `unknown` (it groups under an `unknown` bucket in the trend).
+- otherwise (headless / unattended): a `[WARN]` is printed and the run is recorded with
+  version `unknown`.
 
-**Unattended runs:** always pass `--dx-all-suite-version` explicitly for headless
-or long-running unattended jobs — otherwise, on a TTY with no `release.ver`, the
-run pauses at the interactive prompt.
-
-**Back-data (runs measured before this feature):** gather the run directories under
-`results/<hw_id>/<run_id>/` and add a single top-level string key to each
-`environment.json` — note this is the snake_case JSON key, not the CLI flag:
-
-    "dx_all_suite_version": "v2.3.0"
-
-Runs left unstamped group under `unknown`.
+> **Unattended runs:** always pass `--dx-all-suite-version` explicitly for headless jobs —
+> otherwise, on a TTY with no `release.ver`, the run pauses at the interactive prompt.
 
 ## CLI Options
 
@@ -256,12 +301,13 @@ Runs left unstamped group under `unknown`.
 | `--resume` | — | Resume from an existing result directory |
 | `--retry-failed` | — | With `--resume`, rerun only entries not in `ok`/`partial` status |
 | `--product-name` | — | Product name. Used in HW_ID instead of hostname (e.g., `DX-AIPlayer-N97`) |
-| `--dx-all-suite-version VER` | Auto (`release.ver`) | dx-all-suite release version for the Version Trend axis (e.g. `v2.4.0`). Default: auto-read from suite-root `release.ver` |
+| `--dx-all-suite-version VER` | Auto (`release.ver`) | dx-all-suite release version for the Version Trend axis (e.g. `v2.4.0`) |
 
 ### Subcommands
 
 | Command | Description |
 |---------|-------------|
+| `--version` | Print the dx-benchmark tool version and exit |
 | `preflight` | Check tool availability + print environment fingerprint |
 | `dry-run` | Preview benchmark matrix (no execution) |
 | `run` | Execute benchmarks |
@@ -269,31 +315,40 @@ Runs left unstamped group under `unknown`.
 | `aggregate <results_root> [--output PATH]` | Aggregate results into dataset.json |
 | `dashboard <results_root> [--output DIR]` | Generate static HTML dashboard |
 
-## Output Structure
+## Directory & Output Structure
+
+```
+dx-benchmark/
+├── run.sh          # launcher
+├── setup_data.sh   # data setup: download models + videos (no sudo)
+├── setup_host.sh   # one-time host provisioning (sudo): system deps + dxrt sudoers + journal
+├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md, images/ (dashboard screenshots)
+├── benchmark/      # python package (python3 -m benchmark)
+└── results/
+    ├── <hw_id>/<run_id>/   # tracked: *_results.json + environment.json + REPORT.md
+    │                       # git-ignored (local-only): raw/, incidents/, *.csv
+    └── dashboard/          # tracked build artifacts (index.html/app.js/styles.css/dataset.json)
+```
+
+Per-run output:
 
 ```
 results/{hw_id}/{run_id}/
-├── environment.json              # tracked — environment fingerprint + timing + timing_history
+├── environment.json              # tracked — fingerprint + timing + timing_history
 ├── model_results.json            # tracked — model-level results (throughput + latency)
 ├── pipeline_results.json         # tracked — E2E single-stream results
 ├── multi_stream_results.json     # tracked — multi-stream boundary search results
 ├── REPORT.md                     # tracked — comprehensive Markdown report
-├── *_results.csv                 # git-ignored — CSV mirror of the JSON above (identical columns)
+├── *_results.csv                 # git-ignored — CSV mirror of the JSON (identical columns)
 ├── raw/                          # git-ignored — raw logs (.log + .npu.log + profiler.json)
 └── incidents/                    # git-ignored — timeout diagnostic snapshots (when applicable)
 ```
 
-Every command reads the **JSON** files (`aggregate`, `dashboard`, `report`, and
-`--resume` all consume `*_results.json`), so the git-ignored CSVs and raw logs are
-never required to view results or rebuild the dashboard from a fresh clone.
-
-## Resume vs Retry-Failed
-
-| Scenario | Command |
-|----------|---------|
-| Interrupted → continue unfinished combinations | `--resume <dir>` |
-| Rerun only failed conditions | `--resume <dir> --retry-failed` |
-| Fresh measurement | New result directory via `run` |
+> **What ships in git:** the compact per-run JSON summaries + `REPORT.md`, plus the built
+> dashboard. The large `raw/` logs, `incidents/` diagnostics, and the `*.csv` mirrors are
+> regenerated locally by `run`/`report` and are **git-ignored**. The `*_results.json` files
+> are the lossless source of truth (the CSVs carry identical columns), so `aggregate`,
+> `dashboard`, `report`, and `--resume` all read JSON — a fresh clone can rebuild everything.
 
 ## Measurement Protocol
 
@@ -308,10 +363,10 @@ never required to view results or rebuild the dashboard from a fresh clone.
 | ORT modes | ON + OFF |
 | Thermal mode | steady |
 | Hot-start block | 60°C (benchmark start rejected if exceeded) |
+| Cooldown points | ① before model-level (fatal) · ④ before E2E/multi — protocol v3 (non-fatal) |
 | Cooldown target | `min(idle + Δ10°C, 55°C)` |
-| Cooldown timeout | 1000s (RuntimeError on exceed) |
-| NPU warmup | 1.0s |
-| NPU drain | 0.5s |
+| Cooldown timeout | 1000s — model-level: RuntimeError; pre-E2E: warn + proceed |
+| NPU warmup / drain | 1.0s / 0.5s |
 | NPU clock monitoring | dxtop Core Clock MHz (during measurement) + dxrt-cli pre/post snapshots |
 | CPU clock monitoring | sysfs scaling_cur_freq pre/post snapshots |
 | Multi-stream 1ch | Reuses single-stream result |
@@ -330,97 +385,75 @@ never required to view results or rebuild the dashboard from a fresh clone.
 
 ## Per-Model Execution Order (Thermal Normalization)
 
-Each model × ORT combination follows these steps sequentially.
-This ordering ensures the NPU warms up naturally from cold state.
+Each model × ORT combination follows these steps sequentially. The protocol uses **two
+cooldown points** — one before the model-level phase, one before the E2E phase — so each
+measurement runs at a controlled thermal state:
 
 ```
 ── [1/N] yolo26-n_640x640.dxnn  ORT=ON  (object_detection) ──
 
-  ① Cooldown → Rejects start above 60°C. Wait until ≤ min(idle + Δ10°C, 55°C) (when family=model is included)
-  ② Latency  → Single-core sync mode (-l 300 loops), profiler-based NPU/CPU ms
-                (cold state → NPU DVFS stabilization begins)
-  ③ Throughput → Multi-core async mode, FPS measurement (3 runs)
-                 (sustained NPU load → natural temperature convergence)
-  ④ E2E Single-Stream → Full GStreamer pipeline FPS measurement (3 runs)
-  ⑤ Multi-Stream Sweep → Start point estimation from single-stream FPS, then boundary search
+  ① Cooldown → reject start above 60°C; wait until ≤ min(idle + Δ10°C, 55°C)   (when the model family is included)
+  ② Latency    → single-core sync mode (-l 300 loops), profiler-based NPU/CPU ms   (cold state)
+  ③ Throughput → multi-core async mode, FPS (3 runs)                              (sustained load heats the NPU)
+  ④ Cooldown (protocol v3) → shed the throughput burst's residual heat            (when the e2e/multi family is included)
+  ⑤ E2E Single-Stream → full GStreamer pipeline FPS (3 runs)
+  ⑥ Multi-Stream Sweep → estimate start from single-stream FPS, then boundary search
 
-→ Proceed to next model × ORT combination (repeat from ①)
+→ next model × ORT combination (repeat from ①)
 ```
 
-**Design Rationale:**
-
-- ② Latency runs from cold state. The profiler accurately measures NPU/CPU time separation with minimal temperature impact.
-- ③ Throughput runs 30s × 3 consecutive runs to sufficiently heat the NPU.
-- ④ By E2E measurement time, NPU temperature has nearly converged (steady state) after ②+③.
-- ⑤ Multi-stream runs immediately after E2E, maintaining thermal equilibrium without additional cooldown.
-- ① Cooldown is only performed when the model family is included.
-- If cooldown times out (1000s), the run fails with RuntimeError.
-- If both latency and throughput time out, E2E/Multi-Stream phases are automatically skipped for that model.
+- ② Latency runs from cold — the profiler cleanly separates NPU/CPU time with minimal heating.
+- ③ Throughput (30s × 3) heats the NPU to a sustained load.
+- ④ The **pre-E2E cooldown (protocol v3)** sheds the throughput burst's residual heat so
+  E2E and multi-stream measure their *own* sustained steady state, rather than a state
+  inflated by the preceding throughput burst.
+- ⑤/⑥ E2E then multi-stream run back-to-back at that steady state (no cooldown between them).
+- **Cooldown failure differs by point:** the model-level cooldown ① is fatal (RuntimeError
+  on the 1000s timeout); the pre-E2E cooldown ④ is non-fatal — it warns and proceeds
+  (E2E measured hot). If both latency and throughput time out, E2E/Multi-Stream are skipped
+  for that model.
 
 ## Timeout Recovery and Retry Strategy
 
-During benchmark execution, GStreamer pipelines or run_model processes may become
-unresponsive (deadlock, NPU hang). A 3-layer recovery structure handles these cases.
+GStreamer pipelines or `run_model` processes can occasionally hang (deadlock, NPU hang).
+A 3-layer recovery structure handles these cases.
 
-### Layer 1: Graceful Shutdown (SIGTERM → SIGKILL)
+**Layer 1 — Graceful shutdown (SIGTERM → SIGKILL).** On a `run_model` 600s timeout, an
+E2E/multi 90s no-progress stall, or the 1800s hard cap: SIGTERM to the process group →
+10s wait → SIGKILL if needed → NPU device recovery.
 
-When a `run_model` process exceeds its 600s timeout — or an E2E/multi-stream pipeline
-stalls (no progress for 90s) or exceeds the 1800s hard cap:
+> Force-killing `gst-launch-1.0` destroys dxrtd's IPC message queue (Error 43: Identifier
+> removed), so all subsequent NPU inference fails — device recovery is mandatory.
 
-1. **SIGTERM** sent to the entire process group → up to 10s wait for graceful exit
-2. If not terminated by SIGTERM → **SIGKILL** forced termination
-3. If SIGKILL was needed → NPU device recovery (see below)
-
-> Force-killing gst-launch-1.0 via SIGKILL destroys dxrtd's IPC message queue
-> (Error 43: Identifier removed). All subsequent NPU inference fails in this state,
-> making device recovery mandatory.
-
-### Layer 2: Python-Level Retry (Per Pipeline)
-
-Handles transient deadlocks in individual pipelines/models:
-
-Retry behavior is unified across families via two knobs — `model_warmup_retries`
-(default 1) and `model_run_retries` (default 2):
+**Layer 2 — Python-level retry.** Unified across families via two knobs —
+`model_warmup_retries` (default 1) and `model_run_retries` (default 2):
 
 | Phase | Retries | Notes |
 |-------|:-------:|-------|
-| Warmup (model / E2E / multi) | 1 | 1 retry on timeout (`model_warmup_retries`) before giving up the cell |
-| Measured run (model / E2E / multi) | up to 2 | Backfill failed/timed-out runs toward the target count (`model_run_retries`); remaining successful runs are averaged |
+| Warmup (model / E2E / multi) | 1 | 1 retry on timeout before giving up the cell |
+| Measured run (model / E2E / multi) | up to 2 | Backfill failed/timed-out runs toward the target; remaining successes are averaged |
 | Multi-stream sweep | up to 2 / channel | Same backfill budget per stream count |
 
-When both model-level (latency + throughput) time out consecutively,
-E2E and multi-stream phases are automatically skipped for that model × ORT combination.
+When both model-level phases (latency + throughput) time out, E2E and multi-stream are
+skipped for that model × ORT combination.
 
-### Incident Diagnostic Collection
+**Incident diagnostics.** On timeout, snapshots are saved to `incidents/`: `dxrt-cli -s`
+status, `systemctl status dxrt.service`, recent `journalctl`/`dmesg`, a process-tree dump,
+and an NPU temperature/clock snapshot.
 
-On timeout, diagnostic snapshots are saved to the `incidents/` directory:
+**NPU device recovery** (when SIGKILL was required): `pkill -9 gst-launch-1.0` /
+`run_model` → `sudo -n systemctl restart dxrt.service` (3s settle).
 
-- `dxrt-cli -s` NPU status
-- `systemctl status dxrt.service` service status
-- `journalctl` recent 100 lines / `dmesg` recent 200 lines
-- Process tree dump (`ps`)
-- NPU temperature/clock snapshot
-
-### NPU Device Recovery
-
-Automatically triggered when SIGKILL was required:
-
-1. `pkill -9 gst-launch-1.0` — clean up orphaned pipeline processes
-2. `sudo -n systemctl restart dxrt.service` — restart NPU runtime daemon (3s settle)
-3. Same procedure for run_model timeout (`pkill -9 run_model` + service restart)
-
-> Passwordless sudo required: run `sudo ./setup_host.sh` or manually add the
-> following rules to `/etc/sudoers.d/benchmark-dxrt`:
-> ```
-> user ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart dxrt.service
-> user ALL=(ALL) NOPASSWD: /usr/bin/dmesg *
-> user ALL=(ALL) NOPASSWD: /usr/bin/journalctl *
-> ```
+> Passwordless sudo is required for NPU recovery and incident diagnostics. Run
+> `sudo ./setup_host.sh` — it writes `/etc/sudoers.d/benchmark-dxrt` granting the current
+> user NOPASSWD for exactly these commands (and nothing else):
+> `systemctl restart dxrt.service`, `dmesg`, `journalctl -u dxrt.service`, and `lspci`
+> (the last three are for incident-diagnostic collection on timeouts).
 
 ## Development / Testing
 
-The tool has no third-party runtime dependencies (standard library only). The test
-suite uses `pytest` (a dev-only dependency):
+No third-party runtime dependencies (standard library only). The test suite uses `pytest`
+(a dev-only dependency):
 
 ```bash
 cd /path/to/dx-benchmark
@@ -428,6 +461,24 @@ pip install pytest          # dev-only; not needed to run benchmarks
 python3 -m pytest tests/
 ```
 
-The repo-root `conftest.py` is intentionally empty — its mere presence sets the pytest
+The repo-root `conftest.py` is intentionally empty — its presence sets the pytest
 `rootdir` and puts the package root on `sys.path`, so `import benchmark` resolves without
 any install or `PYTHONPATH` tweaks.
+
+**Analysis-document gate.** `tests/test_analysis_doc_values.py` recomputes every number
+printed in `docs/ANALYSIS_EN.md` / `docs/ANALYSIS_KOR.md` from the committed
+`results/<env>/<run>/*_results.json` and fails if the document disagrees — tables, derived
+statistics (coefficient of variation, ORT gain ranges, throttle spreads) and the prose
+figures alike. Run it after adding measurement data or editing the analysis documents:
+
+```bash
+python3 -m pytest tests/test_analysis_doc_values.py -v
+```
+
+It resolves runs the same way the dashboard does (highest `dx_all_suite_version` present =
+current release, next-highest = trend baseline), and skips itself when fewer than two
+versions are committed.
+
+## License
+
+See [`LICENSE`](LICENSE). Provided for use with DEEPX NPU products.

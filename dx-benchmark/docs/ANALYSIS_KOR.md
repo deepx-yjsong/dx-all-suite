@@ -1,32 +1,34 @@
-# YOLO26 × DEEPX NPU — 벤치마크 분석 (Beta)
+# YOLO26 × DEEPX NPU — 벤치마크 분석
 
-> **Beta 안내.** 이 보고서는 현재 `dx-benchmark/results/`에 커밋된 측정 데이터
-> —**6개 hardware 환경 × 3개 dx-all-suite 릴리스(v2.2.2, v2.3.3, v2.4.0) = 18개
-> 벤치마크 run**—로부터 생성되었습니다. 모든 측정은 **동일한 tool과 동일한
-> protocol**로 수행되었으므로, 환경 간 비교와 버전 간 비교 모두 동일 조건 비교입니다.
-> 일부 cell에는 알려진 측정 caveat(passive cooling board의 thermal throttling,
-> 몇몇 host 측 이상치)이 있으며, 이는 숨기지 않고 [§2 알려진 한계](#2-알려진-한계-beta)에
-> 명시했습니다. flag가 붙은 환경의 수치는 **잠정치(provisional)**이며 통제된 조건에서
-> 재측정 예정입니다.
+> **범위.** 본 보고서는 [`dx-benchmark/results/`](../results/) 에 commit된 측정
+> 데이터를 근거로 작성되었다 — **6개 hardware 환경 × 2개 dx-all-suite release
+> (v2.3.3, v2.4.0) = 12개 benchmark run**. 모든 run은 동일한 tool과 동일한 protocol로
+> 측정되었으므로 환경 간·버전 간 비교가 동일 조건에서 성립한다. v2.4.0 run이 현재
+> release이며 본 보고서의 분석 대상이고, v2.3.3 run은
+> [§9](#9-dx-all-suite-release별-성능-추이)의 release 간 추이를 제공한다.
 >
-> **이 보고서의 모든 수치는 추적 가능합니다.** 각 표는 정확한 출처 좌표—환경,
-> dx-all-suite 버전, task, model size, ONNX-Runtime mode—를 명시하므로, 어떤 값이든
-> raw `results/<env>/<run_id>/*_results.json` 파일이나 interactive dashboard로 직접
-> fact-check 할 수 있습니다.
+> **추적성.** 각 표는 출처 좌표(환경, dx-all-suite 버전, task, model size,
+> ONNX-Runtime mode)를 명시한다. 따라서 모든 값은 run별 `*_results.json` 파일 또는
+> interactive dashboard([`results/dashboard/index.html`](../results/dashboard/index.html))
+> 로 재확인할 수 있다.
+>
+> **유의사항.** 일부 cell은 정확한 해석이 필요한 실제 platform 동작을 반영한다 —
+> thermal limit에 도달한 board의 throttling, 그리고 NPU-bound가 아니라 host-bound인
+> 지표다. 이러한 사항은 생략하지 않고 [§2](#2-수치를-읽는-법)에서 명시적으로 다룬다.
 
 ---
 
 ## 목차
 
 1. [요약](#1-요약)
-2. [알려진 한계 (Beta)](#2-알려진-한계-beta)
+2. [수치를 읽는 법](#2-수치를-읽는-법)
 3. [무엇을 측정했는가 — 용어와 방법](#3-무엇을-측정했는가--용어와-방법)
 4. [실험 환경](#4-실험-환경)
 5. [NPU 연산 성능 (Model-Level Throughput)](#5-npu-연산-성능-model-level-throughput)
 6. [Inference Latency](#6-inference-latency)
 7. [End-to-End 영상 파이프라인 (Single Stream)](#7-end-to-end-영상-파이프라인-single-stream)
 8. [Multi-Stream 채널 수용량](#8-multi-stream-채널-수용량)
-9. [dx-all-suite 릴리스별 성능 추이](#9-dx-all-suite-릴리스별-성능-추이)
+9. [dx-all-suite release별 성능 추이](#9-dx-all-suite-release별-성능-추이)
 10. [환경별 배포 가이드](#10-환경별-배포-가이드)
 11. [부록](#11-부록)
 
@@ -34,438 +36,725 @@
 
 ## 1. 요약
 
-아래 표는 각 환경에서 **가장 가벼운(nano) model**을 **최신 릴리스(dx-all-suite
-v2.4.0)**로 실행했을 때의 **실사용 성능**을, **Full HD(1920×1080) 30 fps** 영상을
-입력으로 하여 보여줍니다. 각 cell은 두 ONNX-Runtime mode(ON / OFF —
-[§3](#3-무엇을-측정했는가--용어와-방법)에서 설명) 중 **더 좋은 쪽**을 표시합니다. 형식은
-**`end-to-end FPS / 최대 동시 채널 수`**이며, 채널은 30 fps 이상을 유지하는 하나의
-영상 stream입니다. Classification은 FPS만 표시합니다(multi-stream 미측정 —
-[§8](#8-multi-stream-채널-수용량) 참조).
+아래 표는 **현재 release(dx-all-suite v2.4.0)** 에서 각 환경의 **가장 가벼운 nano
+model**이 보이는 실용 성능이다. 입력은 **Full HD(1920×1080) 30 fps** 영상이다.
+
+표를 읽는 방법:
+
+- 형식은 **`single-stream end-to-end FPS / 최대 동시 채널 수`**다. 앞의 값은 Full HD 영상
+  **1개 stream**을 pipeline 전체(decode → preprocess → NPU → post-process)로 처리했을 때의
+  FPS이고, 뒤의 값은 각 stream이 30 fps 이상을 유지하는 조건에서 동시에 처리할 수 있는 최대
+  stream 수다.
+- 각 cell은 두 ONNX-Runtime mode(ORT ON / OFF —
+  [§3](#3-무엇을-측정했는가--용어와-방법)에서 정의) 중 single-stream end-to-end FPS가 더 높은
+  쪽의 값이다.
+- Classification은 single-stream end-to-end FPS만 표시한다. multi-stream 측정 대상이 아니기
+  때문이다([§8](#8-multi-stream-채널-수용량) 참조).
 
 | 환경 | Object Detection | Pose Estimation | Segmentation | Oriented Bounding Box | Classification |
 |------|------------------|-----------------|--------------|-----------------------|----------------|
-| **BIOSTAR_H1-Quattro** | 478.1 fps / 17 ch | 534.8 fps / 19 ch | 344.7 fps / 11 ch | 367.1 fps / 13 ch | 747.7 fps |
-| **DX-AIPlayer-N97_M1** | 181.4 fps / 6 ch | 195.1 fps / 7 ch | 106.7 fps / 3 ch | 98.3 fps / 3 ch | 278.3 fps |
-| **OrangePi5+_M1** | 112.3 fps / 3 ch | 170.9 fps / 5 ch | 83.8 fps / 2 ch | 86.6 fps / 2 ch | 944.1 fps |
-| **ROCK5B+_M1** | 140.6 fps / 4 ch | 234.0 fps / 7 ch | 85.9 fps / 2 ch | 101.9 fps / 3 ch | 975.3 fps |
-| **RPi5B_M1** | 77.2 fps / 2 ch | 108.0 fps / 3 ch | 52.8 fps / 1 ch | 78.3 fps / 2 ch | 182.2 fps |
-| **RPi5B_M1M** | 67.0 fps / 2 ch | 99.8 fps / 3 ch | 46.6 fps / 1 ch | 60.5 fps / 1 ch | 175.3 fps |
+| **BIOSTAR_H1-Quattro** | 496.8 fps / 17 ch | 553.9 fps / 20 ch | 360.8 fps / 12 ch | 392.9 fps / 14 ch | 772.4 fps |
+| **DX-AIPlayer-N97_M1** | 184.9 fps / 6 ch | 197.3 fps / 7 ch | 108.3 fps / 3 ch | 98.9 fps / 3 ch | 278.6 fps |
+| **OrangePi5+_M1** | 148.1 fps / 4 ch | 243.4 fps / 8 ch | 101.5 fps / 3 ch | 100.0 fps / 3 ch | 1072.7 fps |
+| **ROCK5B+_M1** | 141.5 fps / 4 ch | 237.9 fps / 8 ch | 86.8 fps / 2 ch | 101.8 fps / 3 ch | 957.9 fps |
+| **RPi5B_M1** | 80.1 fps / 2 ch | 112.2 fps / 3 ch | 55.1 fps / 1 ch | 81.8 fps / 2 ch | 189.1 fps |
+| **RPi5B_M1M** | 79.8 fps / 2 ch | 112.4 fps / 3 ch | 54.9 fps / 1 ch | 72.3 fps / 2 ch | 189.3 fps |
 
-> 출처: `results/<env>/<v2.4.0 run>/`, task = 각 열, size = `n`(nano),
-> ONNX-Runtime = ON/OFF 중 우수값. End-to-end FPS는 `pipeline_results.json`,
-> 채널 수는 `multi_stream_results.json`.
+> **출처:** `results/<env>/<v2.4.0 run>/`, task = 각 열, size = `n`(nano), ORT = ON/OFF
+> 중 더 나은 쪽. End-to-end FPS는 `pipeline_results.json`, 채널 수는
+> 30-fps-per-channel threshold 기준 `multi_stream_results.json`.
 
-**세 가지 핵심 결과** (각각 뒤에서 출처 데이터와 함께 상세히 설명):
+### 핵심 발견
 
-1. **DEEPX M1 NPU는 매우 다른 host CPU에서도 거의 동일한 연산 성능을 낸다.**
-   NPU가 병목인 medium/large/x-large model에서는, 네 대의 single-M1 머신(Intel N97,
-   Rockchip OrangePi, Rockchip ROCK5B, Raspberry Pi 5)이 약 1% 이내로 일치합니다
-   ([§5](#5-npu-연산-성능-model-level-throughput)). DEEPX NPU가 성능의 기준점이며,
-   host는 주로 가장 가벼운 model과 그 주변 영상 pipeline에만 영향을 줍니다.
-2. **v2.2.2 → v2.4.0에서 성능이 약 45–56% 향상**되었으며, NPU-bound model에서
-   모든 환경에 걸쳐 일관되게 나타납니다
-   ([§9](#9-dx-all-suite-릴리스별-성능-추이)).
-3. **H1-Quattro card는 4개의 NPU chip 수에 거의 선형적으로 확장**됩니다 — NPU-bound
-   작업에서 single M1의 약 4.0배 ([§5](#5-npu-연산-성능-model-level-throughput)).
+각 항목은 본문 해당 절에서 출처 데이터와 함께 상술한다.
+
+1. **DEEPX M1 NPU는 사양이 크게 다른 host CPU에서도 거의 동일한 연산 성능을 제공한다.**
+   medium·large·x-large model, 즉 host가 아니라 NPU가 bottleneck인 구간에서는 4개의
+   single-M1 machine(Intel N97, Rockchip OrangePi, Rockchip ROCK5B, Raspberry Pi 5)이
+   수 % 이내로 일치한다([§5](#5-npu-연산-성능-model-level-throughput)). NPU가 성능의
+   기준점이며, host와 그 interconnect는 주로 가장 가벼운 model과 NPU 주변의 영상
+   pipeline에 영향을 준다.
+
+2. **NPU-bound 구간(medium·large·x-large)의 model-level throughput이 v2.3.3 stack 대비
+   v2.4.0 stack에서 중앙값 +28.4% 향상되었다.** 6개 환경 × 3개 size = 18개 cell 중 14개가
+   +25–35% 구간에 들며, 모든 cell에서 향상 방향이 일관된다. DX-COM·DX-RT·driver·firmware가
+   함께 바뀐 결과다([§9](#9-dx-all-suite-release별-성능-추이),
+   [§2.1](#21-버전-추이는-release-stack-전체가-함께-바뀐-결과다)).
+
+3. **H1-Quattro card는 M1 chip 4개로 model-level throughput을 약 4× 확장한다** — object
+   detection medium·large·x-large의 `run_model` throughput이 single-M1 4대 평균의
+   4.24–4.32×다([§5.2](#52-h1-quattro는-chip-4개로-model-level-throughput을-약-4-확장한다)).
+   단일 stream end-to-end FPS는 host 공급 한계 때문에 같은 비율로 확장되지 않는다
+   ([§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다)).
+
+4. **경량 model의 end-to-end 상한은 NPU가 아니라 host다.** nano·small 구간의 single-stream
+   end-to-end FPS는 동일 조건 model throughput의 45–82%에 머물며, NPU 평균 활용률은
+   18–41%다([§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다)). 남는 NPU 여력은
+   multi-stream으로 회수된다.
+
+5. **ORT mode의 최적값은 환경 × task 조합에 따라 달라지며, 경량 model에서 그 차이는 최대
+   +48.8%에 이른다.** 단일 기본값이 존재하지 않으므로 배포 전 확인이 필요하다
+   ([§7.2](#72-ort-mode-선택은-환경--task-조합으로-결정된다)).
 
 ---
 
-## 2. 알려진 한계 (Beta)
+## 2. 수치를 읽는 법
 
-특정 수치 하나로 결론을 내리기 전에 반드시 읽어 주세요. 아래 내용은 이 데이터셋
-뒤에 있는 raw log와 profiler trace를 전수 분석한 결과입니다.
+아래 네 항목은 개별 수치로 결론을 내리기 전에 반드시 확인해야 할 사항이다. 본 데이터셋의
+raw log와 profiler trace를 전수 검토한 결과를 정리한 것이다.
 
-### 2.1 버전 추이는 runtime만이 아니라 세 가지가 합쳐진 결과다
+### 2.1 버전 추이는 release stack 전체가 함께 바뀐 결과다
 
-각 dx-all-suite 릴리스는 **그 릴리스의 compiler로 재컴파일한 model binary**로
-측정되었습니다. 따라서 릴리스 간 변화는 **runtime + firmware + 재컴파일된 model**이
-함께 반영된 결과이며, 순수 runtime만의 변화가 아닙니다. 이것이
-[§9](#9-dx-all-suite-릴리스별-성능-추이)의 정직한 해석입니다: "이 model에 대해
-v2.4.0이 end-to-end로 v2.2.2보다 ~50% 빠르다"이지 "runtime만 50% 빨라졌다"가
-아닙니다.
+두 release 사이에는 특정 구성요소 하나가 아니라 **dx-all-suite가 배포하는 stack 전체**가
+바뀌었다. 각 run의 metadata에 기록된 차이는 다음과 같다.
 
-### 2.2 M1과 M1M은 서로 다른 제품 — 절대 수치를 섞지 말 것
+| 구성요소 | v2.3.3 측정 | v2.4.0 측정 | model-level 경로 | E2E·multi-stream 경로 |
+|----------|:-------------:|:-------------:|:----------------:|:---------------------:|
+| DX-COM (model 재컴파일) | v2.3.0-rc.5 | v2.4.0-rc.4 | 포함 | 포함 |
+| DX-RT runtime | v3.3.2 | v3.4.0 | 포함 | 포함 |
+| RT driver | v2.4.1 | v2.5.1 | 포함 | 포함 |
+| PCIe driver | v2.2.0 | v2.4.1 | 포함 | 포함 |
+| NPU firmware | v2.5.6 | v2.7.3 | 포함 | 포함 |
+| DX-Stream | 3.0.1 | 3.1.0 | 미포함 | 포함 |
+
+> **출처:** 각 run `environment.json`의 `benchmarked_models[].dxcom_version`, `npu`
+> (`rt_version` / `driver` / `pcie_driver` / `firmware`), `software.dx_stream`. 6개 환경
+> 모두 release별로 동일한 버전 조합을 사용했다.
+
+동일하게 유지된 조건은 다음과 같다. DXNN binary format은 두 측정 모두 `v8`이며, 각 환경의
+host OS·kernel은 변경되지 않았고, 측정 protocol 값(30초 throughput, 300-loop latency, 반복
+횟수, 30 fps threshold, cooldown 목표) 역시 동일하다. v2.4.0 측정에 사용된 tool에 추가된 항목은
+실패 처리용 안정화 knob(circuit breaker, buffer-count zero-fps 재시도, device probe timeout)
+뿐이며, 정상 측정 절차 자체는 바뀌지 않았다.
+
+따라서 [§9](#9-dx-all-suite-release별-성능-추이)의 정확한 해석은 "medium·large·x-large 구간의
+**model-level throughput**이 v2.3.3 stack 대비 v2.4.0 stack에서 중앙값 +28.4% 향상되었다"이며,
+**개별 구성요소의 기여도는 본 데이터로 분리할 수 없다.** 특정 구성요소 하나의 개선 효과로
+서술하는 것은 근거가 없다.
+
+두 경로의 구성이 다르다는 점도 함께 고려해야 한다. §9의 수치는 `run_model` 기반 model-level
+throughput이므로 DX-Stream은 그 경로에 포함되지 않는다. 반면
+[§7](#7-end-to-end-영상-파이프라인-single-stream)·[§8](#8-multi-stream-채널-수용량)의
+end-to-end·multi-stream 수치는 DX-Stream까지 포함한 결과다.
+
+### 2.2 M1과 M1M은 서로 다른 제품이며 수치를 섞어서는 안 된다
 
 `RPi5B_M1`과 `RPi5B_M1M`은 **동일한 Raspberry Pi 5 host**에 **서로 다른 두 DEEPX
-module**을 장착한 것입니다. NPU-bound model에서 M1M은 확연히 느립니다. 동일 host,
-동일 릴리스(v2.4.0), object detection, ONNX-Runtime OFF 기준 —
+module**을 장착한 구성이다. NPU-bound model에서 M1M은 확연히 느리다 — 동일 host, 동일
+release(v2.4.0), object detection, ORT OFF 기준:
 
 | Size | RPi5B_M1 throughput | RPi5B_M1M throughput | M1M ÷ M1 |
 |------|--------------------:|---------------------:|:--------:|
-| m | 119.1 fps | 72.4 fps | 0.61 |
-| l | 86.5 fps | 57.7 fps | 0.67 |
-| x | 48.6 fps | 28.4 fps | 0.59 |
+| m | 118.7 fps | 73.5 fps | 0.62 |
+| l | 86.8 fps | 60.0 fps | 0.69 |
+| x | 49.2 fps | 26.3 fps | 0.53 |
 
-> 출처: `results/RPi5B_M1/20260713_115536/`, `results/RPi5B_M1M/20260710_180022/`,
+> **출처:** [`results/RPi5B_M1/20260722_150437/`](../results/RPi5B_M1/20260722_150437/)
+> 및 [`results/RPi5B_M1M/20260723_142408/`](../results/RPi5B_M1M/20260723_142408/),
 > `model_results.json`, family = `throughput`, ORT OFF.
 
-M1M은 실제로 구별되는, ~30–40% 더 느린 SKU입니다(둘 다 1000 MHz에 도달하므로 clock
-차이가 아니라 architecture 차이). Dashboard와 이 보고서는 둘을 별개 환경으로
-유지합니다. **M1과 M1M을 평균 내지 마세요.**
+M1M은 이 model들에서 31–47% 더 느린 별개의 SKU다(m −38%, l −31%, x −47%). 두 module 모두
+nominal 1000 MHz core clock으로 동작하므로 이 차이는 clock 차이가 아닌 architectural
+차이다. 또한 M1M은 LPDDR4(4200 Mbps, 1.92 GiB)를, M1은 LPDDR5(5600 Mbps, 3.92 GiB)를
+사용한다. 가장 큰
+model에서는 해당 M1M unit이 추가로 throttling하기 때문에 격차가 더 벌어진다
+([§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다) 참조).
 
-### 2.3 Passive cooling board는 후반 test 단계에서 thermal throttling이 발생한다
+dashboard와 본 보고서는 두 구성을 별개 환경으로 유지한다. **M1과 M1M의 수치를 평균해서는
+안 된다.**
 
-Protocol은 각 model을 latency → throughput → end-to-end → multi-stream 순서로
-실행하며, 이 과정에서 NPU가 점진적으로 가열됩니다. active cooling이 없는 board에서는
-*후반*(end-to-end / multi-stream) 단계에서 NPU가 thermal 한계에 도달해 clock을
-낮출 수 있습니다. 이는 *같은* cell의 앞선 throughput 수치보다 end-to-end 수치가 더
-나빠 보이는 형태로 나타나며, software regression이 아니라 실제 thermal 동작입니다.
-Throttling된 cell은 dashboard에서 clock badge로 표시됩니다.
+### 2.3 Thermal limit에 도달하는 board는 지속 부하 구간에서 throttling한다
 
-| 환경 (v2.4.0) | Model-level throttled cell | End-to-end ≥80 °C cell | 최고 NPU 온도 |
-|---------------|:--------------------------:|:----------------------:|:-------------:|
-| BIOSTAR_H1-Quattro (active cooling) | 0 | 0 | 73 °C |
-| DX-AIPlayer-N97_M1 | 0 | 16 | 84 °C |
-| ROCK5B+_M1 | 13 | 24 | 84 °C |
-| RPi5B_M1M | 27 | 33 | 88 °C |
+protocol(v3)은 각 model × ORT cell을 다음 순서로 실행하며, **cooldown을 두 지점에 배치**한다.
 
-> 출처: 각 v2.4.0 run의 `model_results.json`, `pipeline_results.json` 내 cell별
-> `npu_throttled` / `npu_temp_max_c`. N97은 높은 온도에 도달하지만 active cooling이
-> clock을 유지하므로 *model-level* cell은 거의 throttling되지 않습니다.
+```
+① cooldown → ② latency → ③ throughput → ④ cooldown(E2E 직전) → ⑤ E2E → ⑥ multi-stream
+```
 
-### 2.4 일부 지표는 NPU-bound가 아니라 host-bound다 — 그에 맞게 해석할 것
+즉 E2E는 앞 단계의 잔열을 그대로 물려받지 않는다. ④의 cooldown 목표는
+min(idle + 10 °C, 55 °C)이며, v2.4.0 측정의 E2E 진입 온도는 환경별 중앙값 44–55 °C(개별
+cell 39–55 °C), 대기 시간은 환경별 중앙값 250–522초(최대 773초)로 기록되었다. 따라서 E2E
+단계의 throttling은 이전 단계에서 누적된 열이 아니라 **E2E 자체의 지속 부하** 때문에
+발생한다.
 
-- **Latency**(단일 frame 시간)는 부분적으로 host CPU와 PCIe/USB interconnect에 의해
-  좌우됩니다. 동일 M1, 동일 v2.4.0, object detection nano에서 `OrangePi5+_M1`은
-  42.9 ms, `RPi5B_M1`은 21.2 ms로 2배 차이가 나는데, 이는 NPU 특성이 아니라 host
-  특성입니다 ([§6](#6-inference-latency)).
-- **nano/small throughput**도 부분적으로 host-CPU-bound입니다(v2.4.0 기준 환경 간
-  편차 ~10–19%, 반면 큰 model은 ~1% — [§5](#5-npu-연산-성능-model-level-throughput)).
-- **Classification end-to-end FPS**는 NPU가 아니라 host 영상 decoder가 지배합니다.
-  classification model은 매우 작아서(224×224 입력) NPU 부하가 거의 없고, 이 가벼운
-  부하 상황에서는 ARM board의 hardware decoder가 x86 board의 decoder 경로보다 더 많은
-  decode frame을 밀어낼 수 있습니다. Classification end-to-end FPS는 NPU 성능 지표가
-  아니라 *pipeline/decoder* 지표로 해석하세요.
+반면 **⑤ E2E와 ⑥ multi-stream 사이에는 cooldown이 없다.** multi-stream은 E2E의 열 상태를
+이어받은 상태에서 N개 stream을 동시에 처리하므로, 본 측정에서 부하가 가장 큰 구간이다. 모든
+환경에서 throttling된 cell 비율이 multi-stream에서 가장 높은 것이 이 구조를 반영한다.
 
-### 2.5 재측정 backlog가 있는 환경 (잠정 데이터)
+지속 부하를 방열하지 못하는 board는 NPU가 thermal limit에 도달해 clock을 1000 MHz에서
+200–800 MHz 구간으로 낮춘다. 이는 software regression이 아니라 실제 thermal 동작이다.
+Throttling된 cell은 raw 데이터에 `npu_throttled = true`로 기록되며, dashboard에는 clock
+badge로 표시된다.
 
-- **OrangePi5+_M1, v2.4.0 — small-model host regression.** nano throughput이
-  226.0 fps(v2.3.3)에서 164.6 fps(v2.4.0)로 *하락*했는데, 다른 모든 M1 host는
-  향상되었습니다. nano latency도 35.5 ms → 42.9 ms로 상승했습니다. 해당 run의
-  profiler에서 host CPU와 NPU가 모두 미포화 상태(host-side stall 서명)로 나타나므로,
-  이는 v2.4.0 stack의 regression이 아니라 환경/host artifact입니다. CPU governor를
-  `performance`로 고정하고 background load 없이 재측정 예정.
-- **RPi5B_M1M, v2.4.0 — 심각한 thermal throttling** (§2.3 참조): model-level 27개
-  + end-to-end 33개 cell이 최대 88 °C에서 throttling. medium/large/x-large
-  throughput, end-to-end FPS, 채널 수용량이 억제되어 있으므로 module의 상한이 아니라
-  *thermal 제한 하한*으로 간주해야 합니다. cooling/power 개선 후 재측정 예정.
-- **Firmware 참고:** `BIOSTAR_H1-Quattro` v2.2.2 run은 firmware v2.5.6을 사용했고,
-  다른 모든 v2.2.2 run은 v2.5.0을 사용했습니다. 이는 주로 해당 환경 버전 추이의
-  v2.2.2 시작점에 영향을 줄 뿐 v2.4.0 headline 수치에는 영향이 없습니다.
+> **출처:** cooldown 배치는 protocol v3(`benchmark/__main__.py`의 model-level cooldown +
+> pre-E2E cooldown), 진입 온도·대기 시간은 각 v2.4.0 run `pipeline_results.json`의
+> `cooldown_temp_c` / `cooldown_wait_sec`(환경당 50 cell), clock 하한은 3개 결과 파일의
+> throttled cell 291개 `npu_clock_mhz_min`.
+
+| 환경 (v2.4.0) | Model-level throttled | End-to-end throttled | Multi-stream throttled | Max NPU temp |
+|----------------|:---------------------:|:--------------------:|:----------------------:|:------------:|
+| BIOSTAR_H1-Quattro (active cooling) | 0 / 100 | 0 / 50 | 16 / 90 | 83 °C |
+| DX-AIPlayer-N97_M1 (active cooling) | 0 / 100 | 5 / 50 | 33 / 78 | 84 °C |
+| OrangePi5+_M1 | 0 / 100 | 4 / 50 | 29 / 78 | 82 °C |
+| ROCK5B+_M1 | 24 / 100 | 22 / 50 | 51 / 76 | 86 °C |
+| RPi5B_M1 | 0 / 100 | 2 / 50 | 8 / 78 | 80 °C |
+| RPi5B_M1M | 28 / 100 | 26 / 50 | 43 / 66 | 87 °C |
+
+> **출처:** 각 v2.4.0 run의 `model_results.json`, `pipeline_results.json`,
+> `multi_stream_results.json`에 기록된 cell별 `npu_throttled` / `npu_temp_max_c`.
+
+*model-level* 단계, 즉 단일 cooldown 직후의 latency·throughput 구간에서 이미 thermal limit에
+도달한 board는 **ROCK5B+_M1**(24개 cell)과 **RPi5B_M1M**(28개 cell) 두 대다. 모든 board는
+multi-stream 구간에서 어느 정도 throttling하며, active cooling이 적용된 x86 board와
+`RPi5B_M1`은 model 단계 전 구간에서 clock을 유지한다.
+
+`ROCK5B+_M1`은 측정 시작 시점부터 여유가 없었다. v2.4.0 run의 fingerprint는 측정 전 상태를
+**600 MHz / 55–56 °C** 로 기록했는데, 다른 환경과 같은 board의 v2.3.3 run은 모두 idle에서
+1000 MHz(34–50 °C)를 기록했다. 이 board의 medium 이상 수치를 해석할 때 함께 고려해야 한다.
+
+> **출처:** 각 run `environment.json`의 `npu.clock_mhz` / `npu.cores`.
+
+Thermal limit에 도달한 두 board의 medium·large·x-large 수치는 module의 상한이 아니라
+**지속 부하 하한**으로 해석해야 한다. cooling을 개선하면 상승한다.
+
+Throttling은 평균 성능만 낮추는 것이 아니라 **측정 편차도 함께 키운다.** v2.4.0의 model
+throughput cell 300개를 대상으로 run 간 편차(fps 표준편차 ÷ 평균)를 계산하면, throttling되지
+않은 cell(249개)은 중앙값 0.31%(상위 10% 경계 1.15%)인 반면 throttling된 cell(51개)은 중앙값
+5.46%, 최대 17.0%다. Clock이 300–800 MHz 구간에서 run마다 다른 지점으로 하향되기 때문이다.
+따라서 **편차가 큰 cell은 그 자체로 thermal 문제의 신호**로 활용할 수 있다.
+
+> **출처:** 각 v2.4.0 run `model_results.json`의 `fps_std` / `fps` / `npu_throttled` /
+> `npu_clock_mhz_min`, family = throughput 전체 cell.
+
+### 2.4 일부 지표는 NPU-bound가 아니라 host-bound다
+
+- **PCIe lane 폭이 가장 가벼운 model을 제한한다.** ORT OFF의 nano/small throughput은 NPU
+  연산이 아니라 frame이 PCIe link를 통과하는 속도에 의해 제한된다. single-lane
+  (**Gen3 ×1**) board 두 대(`RPi5B_M1`, `RPi5B_M1M`)는 nano object detection에서
+  **약 179 fps**가 상한이지만, ×2/×4 board는 *동일한* NPU·release에서 **약 315–320 fps**에
+  도달한다. 이것이 nano의 환경 간 편차는 크고 medium·large·x-large 편차는 작은 주된
+  이유다([§5.1](#51-npu가-성능의-기준점이다)).
+
+  NPU 활용률이 이를 직접 뒷받침한다. nano throughput 측정 구간의 NPU core 평균 활용률은
+  Gen3 ×1 board에서 44%(`RPi5B_M1`)·56%(`RPi5B_M1M`)에 머무르는 반면, ×2/×4 board는
+  **89–91%** 다. 즉 ×1 board의 NPU는 절반 이상 입력을 기다리는 상태다. 같은 board의
+  medium 이상에서는 활용률이 89–92%로 회복되며, 이는 연산 시간이 길어져 전송 시간의 비중이
+  줄어들기 때문이다. 참고로 PCIe 이론 단방향 대역폭은 Gen3 ×1 ≈ 1.0 GB/s, ×2 ≈ 2.0 GB/s,
+  ×4 ≈ 3.9 GB/s다.
+
+- **Latency는 host CPU와 interconnect에 의해 제한된다.** 동일 M1 module, 동일 v2.4.0
+  release, object detection nano 기준으로 `RPi5B_M1`은 21.1 ms, `OrangePi5+_M1`은
+  37.1 ms다. 이 편차는 NPU 특성이 아니라 host 특성이다([§6](#6-inference-latency)).
+
+- **Classification end-to-end FPS는 NPU-bound가 아니라 decoder-bound다.** Classification
+  model은 입력이 224×224로 작아 NPU 부하가 낮으며, 이 경량 부하 조건에서는 ARM board의
+  hardware decoder가 x86 decode 경로보다 더 높은 decoded frame rate를 유지했다
+  (end-to-end 기준 OrangePi 1072.7 fps, H1-Quattro 772.4 fps). 따라서 classification
+  end-to-end FPS는 NPU 능력치가 아니라 *pipeline·decoder* 수치로 해석해야 한다.
 
 ---
 
 ## 3. 무엇을 측정했는가 — 용어와 방법
 
-이 절은 이후에 쓰이는 모든 용어를 풀어서 정의합니다.
+이 절은 이후 사용되는 모든 용어를 정의한다.
 
-**NPU (Neural Processing Unit).** 신경망을 실행하는 DEEPX accelerator(module `M1`
-또는 `M1M`, 혹은 4-chip `H1-Quattro` card). nominal core clock은 1000 MHz입니다.
+### 3.1 하드웨어
 
-**ONNX-Runtime mode (ORT ON / OFF).** DEEPX가 컴파일한 model은 신경망의 일부(주로
-마지막 post-processing layer)를 NPU 밖에 남길 수 있습니다.
-- **ONNX-Runtime ON**은 그 남은 부분을 ONNX Runtime library로 **host CPU**에서
-  실행하여, 출력이 원본 ONNX model과 정확히 일치합니다(표준, 바로 사용 가능한 출력).
-- **ONNX-Runtime OFF**는 **raw NPU 출력만** 반환합니다(host post-processing 없음).
-  더 빠르지만 application에 model별 post-processor가 필요합니다.
+**NPU (Neural Processing Unit).** neural network를 실행하는 DEEPX accelerator로, module
+`M1` 또는 `M1M`, 또는 4-chip `H1-Quattro` card를 의미한다. 모든 module은 nominal
+1000 MHz core clock으로 동작한다.
 
-  ONNX-Runtime ON은 host CPU 작업을 추가하므로, 매우 빠른 NPU에서 작은 model을 돌릴
-  때는 CPU 단계가 병목이 되어 ON이 OFF보다 *느려질* 수 있습니다. 예: object detection
-  nano, `BIOSTAR_H1-Quattro` v2.4.0에서 ONNX-Runtime OFF는 1285.0 fps, ON은
-  972.1 fps(−24%). 두 mode를 항상 함께 보고하므로, application이 표준 post-processing
-  출력을 필요로 하는지에 따라 선택할 수 있습니다.
+### 3.2 ONNX-Runtime mode (ORT ON / OFF) — model의 CPU 구간을 어디서 실행할지
 
-**Throughput (model-level, FPS).** DEEPX `run_model` tool이 NPU를 **모든 core에서
-비동기(asynchronous)**로 30초간 실행해 얻는 지속 frame rate. 영상 decode나 그리기가
-전혀 없는, **NPU 연산 능력**의 가장 순수한 척도입니다.
+DEEPX compiler는 필요에 따라 model graph를 **NPU 구간**과 **CPU 구간**으로 분할한다. ORT
+mode는 ONNX Runtime으로 이 CPU 구간을 실행할지 여부를 결정한다.
 
-**Latency (ms).** **단일 frame** 시간으로, **single-core / synchronous**
-(`run_model` 300-loop mode)로 측정합니다. host↔NPU 왕복을 포함한 한 번의 inference
-호출 반응성을 반영합니다.
+| Mode | runtime이 실행하는 범위 | 반환되는 출력 | 비용 |
+|------|------------------------|--------------|------|
+| **ORT ON** | NPU 구간 **+** CPU 구간(후자는 ONNX Runtime library를 통해 **host CPU**로 offload) | 원본 ONNX model과 동일 — 그대로 사용 가능 | frame마다 host CPU 작업이 추가됨 |
+| **ORT OFF** | NPU 구간만 | raw NPU 출력 tensor | host CPU offload 없음. 동등한 연산을 application이 직접 구현해야 함 |
 
-**End-to-end FPS.** decode → preprocess → NPU inference → post-process로 이어지는
-**전체 GStreamer 영상 pipeline**의 frame rate로, DEEPX dx_stream element를 통해
-측정합니다. 실제 영상 분석 application이 체감하는 값입니다.
 
-**최대 채널 수 (Maximum channels).** **모든** stream이 여전히 최소 30 fps를 유지하는
-가장 큰 동시 영상 stream 수(채널당 threshold). stream 수를 늘려 가며 한 stream이 30
-fps 아래로 떨어지는 지점을 찾는 boundary search로 구합니다.
+두 mode는 모든 cell에서 함께 측정·공개되므로, application이 원본 ONNX model과 동일한
+출력을 요구하는지 또는 최적 성능에 따라 선택할 수 있다.
 
-**Model size.** YOLO26는 다섯 가지 size로 제공됩니다 — `n`(nano) < `s`(small) <
-`m`(medium) < `l`(large) < `x`(extra-large). 큰 model일수록 정확하지만 느립니다.
+### 3.3 측정 지표
 
-**입력 해상도.** object detection·pose·segmentation은 640×640, oriented bounding
-box는 1024×1024, classification은 224×224를 사용합니다. 모든 영상 입력은 Full
-HD(1920×1080) 30 fps입니다.
+**Throughput (model-level, FPS).** DEEPX `run_model` tool이 NPU를 **모든 core에 걸쳐
+asynchronous하게** 30초간 구동해 얻는 지속 frame rate. 영상 decoding과 rendering이 포함되지
+않으므로 **NPU 연산 능력**의 가장 순수한 측정치다.
 
-**반복 횟수.** latency = 300-loop 1회, throughput = 30초 × 3회 평균, end-to-end =
-3회 평균. 각각에 앞서 warm-up 1회를 실행하고 버립니다. 전체 protocol parameter는
-[부록](#11-부록) 참조.
+**Latency (ms).** **single frame** 처리 시간으로, **single-core·synchronous** 조건에서
+측정한다(`run_model` 300-loop mode). host↔NPU 왕복을 포함한 단일 inference 호출의 응답성을
+반영한다.
+
+**End-to-end FPS.** **전체 GStreamer 영상 pipeline**(decode → preprocess → NPU inference →
+post-process)의 frame rate로, DEEPX dx_stream element를 통해 측정한다. 실제 영상 분석
+application이 체감하는 수치다.
+
+**최대 채널 수 (Maximum channels).** **모든** stream이 30 fps 이상(per-channel threshold)을
+유지하는 최대 동시 영상 stream 수. stream 수를 증가시키며 어느 stream이 30 fps 아래로
+떨어지는 지점까지 경계 탐색으로 결정한다. status가 ok이고 모든 반복이 완료되었으며
+per-channel FPS가 threshold를 만족하는 결과만 유효한 것으로 인정한다.
+
+### 3.4 Workload 정의
+
+**Model size.** YOLO26은 5개 size로 제공된다 — `n`(nano) < `s`(small) < `m`(medium) <
+`l`(large) < `x`(extra-large). model이 클수록 정확도가 높고 속도는 느리다.
+
+**입력 해상도.** object detection·pose estimation·segmentation은 640×640, oriented
+bounding box는 1024×1024, classification은 224×224이다. 모든 영상 입력은
+Full HD(1920×1080) 30 fps다.
+
+**반복 횟수.** latency는 300-loop 1회, throughput은 30초 측정 3회 평균, end-to-end는 3회
+평균이다. 각 측정 앞에 warm-up 1회를 실행하고 그 결과는 버린다. 전체 protocol parameter는
+[부록](#112-측정-protocol--주요-parameter)에 있다.
 
 ---
 
 ## 4. 실험 환경
 
-4-chip x86 server부터 Raspberry Pi 5까지, 각각 DEEPX NPU를 장착한 6개 환경입니다.
-환경 이름(이 보고서와 dashboard 전반에서 식별 key로 사용)은 host와 NPU module을
-인코딩합니다.
+4-chip x86 server부터 Raspberry Pi 5까지 6개 환경을 측정했으며, 각 환경은 DEEPX NPU를
+장착한다. 환경 이름은 본 보고서와 dashboard 전반의 식별 key로 사용되며, host와 NPU module을
+함께 나타낸다.
 
-| 환경 | Host CPU | Arch | RAM | DEEPX NPU | Chip | 비고 |
-|------|----------|:----:|----:|-----------|:----:|------|
-| **BIOSTAR_H1-Quattro** | AMD Ryzen 5 9600X (6-core) | x86_64 | 30.5 GB | H1-Quattro card | 4 | Active cooling; 여기서 성능 상한 |
-| **DX-AIPlayer-N97_M1** | Intel N97 | x86_64 | 7.5 GB | M1 module | 1 | 소형 x86 AI box, active cooling |
-| **OrangePi5+_M1** | Rockchip (Cortex-A55) | aarch64 | 15.6 GB | M1 module | 1 | ARM SBC; §2.5 v2.4.0 caveat 참조 |
-| **ROCK5B+_M1** | Rockchip (Cortex-A76/A55) | aarch64 | 7.8 GB | M1 module | 1 | ARM SBC; passive cooling → 후반 throttle |
-| **RPi5B_M1** | Broadcom (Cortex-A76) | aarch64 | 7.9 GB | M1 module | 1 | Raspberry Pi 5; software 영상 decode |
-| **RPi5B_M1M** | Broadcom (Cortex-A76) | aarch64 | 7.9 GB | **M1M** module | 1 | 위와 동일 Pi host, 더 느린 M1M SKU (§2.2) |
+| 환경 | Host CPU | Arch | RAM | DEEPX NPU | Chips | PCIe link | CPU governor | Video decoder |
+|------|----------|:----:|----:|-----------|:-----:|:---------:|:------------:|---------------|
+| **BIOSTAR_H1-Quattro** | AMD Ryzen 5 9600X (6-core) | x86_64 | 30.5 GB | H1-Quattro card | 4 | Gen3 ×4 | powersave | vaapidecodebin (HW) |
+| **DX-AIPlayer-N97_M1** | Intel N97 (4-core) | x86_64 | 7.5 GB | M1 module | 1 | Gen3 ×2 | powersave | vah264dec (HW) |
+| **OrangePi5+_M1** | Rockchip RK3588 (A76/A55) | aarch64 | 15.6 GB | M1 module | 1 | Gen3 ×4 | ondemand | mppvideodec (HW) |
+| **ROCK5B+_M1** | Rockchip RK3588 (A76/A55) | aarch64 | 7.8 GB | M1 module | 1 | Gen3 ×2 | ondemand | mppvideodec (HW) |
+| **RPi5B_M1** | Broadcom BCM2712 (Cortex-A76) | aarch64 | 7.9 GB | M1 module | 1 | Gen3 ×1 | ondemand | avdec_h264 (SW) |
+| **RPi5B_M1M** | Broadcom BCM2712 (Cortex-A76) | aarch64 | 7.9 GB | **M1M** module | 1 | Gen3 ×1 | ondemand | avdec_h264 (SW) |
 
-모든 NPU는 nominal 1000 MHz로 동작합니다. 환경 × 릴리스별 software stack:
+> **출처:** 각 v2.4.0 `environment.json`의 `host` / `npu` 필드와
+> `pipeline_results.json`의 `decoder` 필드.
 
-| 환경 | 릴리스 | Runtime | Firmware | RT driver | PCIe driver | dx_stream |
-|------|:------:|:-------:|:--------:|:---------:|:-----------:|:---------:|
-| BIOSTAR_H1-Quattro | v2.2.2 | v3.2.0 | v2.5.6 | v2.1.0 | v2.0.1 | 3.1.0 |
-| BIOSTAR_H1-Quattro | v2.3.3 | v3.3.2 | v2.5.6 | v2.4.1 | v2.2.0 | 3.1.0 |
-| BIOSTAR_H1-Quattro | v2.4.0 | v3.4.0 | v2.7.1 | v2.5.1 | v2.4.1 | 3.1.0 |
-| DX-AIPlayer-N97_M1 | v2.4.0 | v3.4.0 | v2.7.1 | v2.5.1 | v2.4.1 | 3.1.0 |
-| OrangePi5+_M1 | v2.4.0 | v3.4.0 | v2.7.1 | v2.5.1 | v2.4.1 | 3.1.0 |
-| ROCK5B+_M1 | v2.4.0 | v3.4.0 | v2.7.1 | v2.5.1 | v2.4.1 | 3.1.0 |
-| RPi5B_M1 | v2.4.0 | v3.4.0 | v2.7.1 | v2.5.1 | v2.4.1 | 3.1.0 |
-| RPi5B_M1M | v2.4.0 | v3.4.0 | v2.7.1 | v2.5.1 | v2.4.1 | 3.1.0 |
+모든 NPU는 nominal 1000 MHz로 동작한다. software stack은 각 release 내에서 6개 환경 전부
+동일하다.
 
-> 출처: 각 run의 `environment.json`. 5개 single-M1 환경의 v2.3.3·v2.2.2 행은
-> BIOSTAR와 동일한 runtime/firmware 패턴을 따릅니다(v2.3.3 → runtime v3.3.2 /
-> firmware v2.5.6; v2.2.2 → runtime v3.2.0 / firmware v2.5.0, 단 §2.5의 BIOSTAR
-> firmware 예외). 전체 run별 값은 각 `environment.json`에 있습니다.
+| Release | Runtime | Firmware | RT driver | PCIe driver | dx_stream |
+|:-------:|:-------:|:--------:|:---------:|:-----------:|:---------:|
+| v2.3.3 | v3.3.2 | v2.5.6 | v2.4.1 | v2.2.0 | 3.0.1 |
+| v2.4.0 | v3.4.0 | v2.7.3 | v2.5.1 | v2.4.1 | 3.1.0 |
+
+> **출처:** 각 run `environment.json`의 `npu` / `software` 필드. 6개 환경 모두 release별로
+> 이 버전을 정확히 공유한다.
 
 ---
 
 ## 5. NPU 연산 성능 (Model-Level Throughput)
 
-**DEEPX NPU의 가장 순수한 척도**입니다 — `run_model`의 지속 multi-core throughput,
-경로에 영상 decode나 그리기가 없습니다.
+**DEEPX NPU의 가장 순수한 측정치**로, 영상 decoding이나 rendering이 없는 경로에서
+`run_model`이 산출하는 지속 multi-core throughput이다.
 
-**Object detection throughput (fps), ONNX-Runtime OFF, 최신 릴리스(v2.4.0):**
+**Object detection, throughput (fps), ORT OFF, 현재 release(v2.4.0):**
 
 | 환경 | n | s | m | l | x |
 |------|--:|--:|--:|--:|--:|
-| BIOSTAR_H1-Quattro | 1285.0 | 774.6 | 471.3 | 352.8 | 193.9 |
-| DX-AIPlayer-N97_M1 | 235.9 | 193.4 | 115.2 | 86.7 | 47.6 |
-| OrangePi5+_M1 | 164.6 | 147.3 | 115.8 | 88.8 | 48.0 |
-| ROCK5B+_M1 | 264.7 | 194.9 | 116.2 | 86.6 | 47.3 |
-| RPi5B_M1 | 179.0 | 172.8 | 119.1 | 86.5 | 48.6 |
-| RPi5B_M1M | 178.2 | 148.7 | 72.4 | 57.7 | 28.4 |
+| BIOSTAR_H1-Quattro | 1326.0 | 794.0 | 491.1 | 372.5 | 201.8 |
+| DX-AIPlayer-N97_M1 | 314.9 | 197.8 | 120.1 | 85.6 | 47.4 |
+| OrangePi5+_M1 | 320.3 | 197.6 | 117.4 | 87.2 | 48.0 |
+| ROCK5B+_M1 | 319.3 | 188.0 | 107.5 | 84.9 | 42.7 |
+| RPi5B_M1 | 179.5 | 179.1 | 118.7 | 86.8 | 49.2 |
+| RPi5B_M1M | 179.2 | 153.2 | 73.5 | 60.0 | 26.3 |
 
-> 출처: `results/<env>/<v2.4.0 run>/model_results.json`, task = object_detection,
+> **출처:** `results/<env>/<v2.4.0 run>/model_results.json`, task = object_detection,
 > family = throughput, `use_ort` = false.
 
-### 5.1 NPU가 기준점이다: 네 host에서 medium/large/x-large가 거의 동일
+### 5.1 NPU가 성능의 기준점이다
 
-네 대의 single-M1 머신에서, NPU가 병목인 medium 이상 model은 놀랄 만큼 근접합니다:
+4개의 single-M1 machine에서 medium 이상 model, 즉 NPU가 bottleneck인 구간은 근접하게
+일치하며, 가벼운 model은 전적으로 host 측 요인으로 편차가 벌어진다.
 
 | Size | N97 | OrangePi | ROCK5B | RPi5B_M1 | 평균 | 편차 (coefficient of variation) |
 |------|----:|---------:|-------:|---------:|-----:|:-------------------------------:|
-| m | 115.2 | 115.8 | 116.2 | 119.1 | 116.6 | **1.3 %** |
-| l | 86.7 | 88.8 | 86.6 | 86.5 | 87.2 | **1.1 %** |
-| x | 47.6 | 48.0 | 47.3 | 48.6 | 47.9 | **1.0 %** |
-| s | 193.4 | 147.3 | 194.9 | 172.8 | 177.1 | 10.9 % |
-| n | 235.9 | 164.6 | 264.7 | 179.0 | 211.1 | 19.4 % |
+| l | 85.6 | 87.2 | 84.9 | 86.8 | 86.1 | **1.0 %** |
+| m | 120.1 | 117.4 | 107.5 | 118.7 | 115.9 | 4.3 % |
+| x | 47.4 | 48.0 | 42.7 | 49.2 | 46.8 | 5.3 % |
+| s | 197.8 | 197.6 | 188.0 | 179.1 | 190.6 | 4.1 % |
+| n | 314.9 | 320.3 | 319.3 | 179.5 | 283.5 | 21.2 % |
 
-> 출처: 위 object-detection v2.4.0 ORT-OFF 표. coefficient of variation = 네 M1
-> host에 걸친 표준편차 ÷ 평균.
+> **출처:** 위 object-detection v2.4.0 ORT-OFF 표. coefficient of variation = 4개 M1 host
+> 값의 **모표준편차(population standard deviation) ÷ 평균**이며, 반올림 전 raw fps로
+> 계산했다.
 
-**해석.** m/l/x에서 coefficient of variation은 ~1%로, host의 영향이 거의 없습니다.
-DEEPX NPU가 사실상 모든 작업을 수행하고 그 module이 동일하기 때문입니다. nano/small
-에서는 편차가 11–19%로 커지는데, 이 model들이 너무 빨리 끝나서 NPU에 데이터를
-공급하는 **host CPU**가 병목의 일부가 되기 때문입니다(그리고 한 host — v2.4.0의
-OrangePi — 는 §2.5의 host-side 이상까지 겹칩니다). 용량 산정 시 요점: **배포 규모는
-host 간 이식성이 좋은 m/l/x 수치로 잡고, nano/small 수치는 host CPU에 의존한다는 점을
-감안하세요.**
+**해석.**
 
-### 5.2 H1-Quattro는 4개 chip으로 ~4× 확장
+- size **l**에서 네 host는 **1.0%** 이내로 일치한다. DEEPX NPU가 사실상 모든 연산을
+  수행하고 module이 동일하므로 host의 영향이 거의 없다.
+- **m**과 **x**의 잔여 편차는 `ROCK5B+_M1`의 thermal
+  throttling([§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다))에서
+  비롯되며, 해당 board의 수치를 나머지 세 대보다 낮게 만든다.
+- **nano**의 큰 편차는 host CPU 효과가 아니라 **PCIe 대역폭** 효과다. `RPi5B_M1`은
+  single-lane(Gen3 ×1) board로 약 179 fps가 상한이며, 이는 다른 ×1 board인
+  `RPi5B_M1M`과 정확히 일치한다. 반면 ×2/×4 board는 약 315–320 fps에
+  도달한다. 이 구간에서 `RPi5B_M1`의 NPU 평균 활용률은 44%에 불과해, 상한이 NPU가 아니라
+  link라는 점이 확인된다([§2.4](#24-일부-지표는-npu-bound가-아니라-host-bound다)).
 
-H1-Quattro card는 4개의 NPU chip을 가집니다. NPU-bound 작업에서 single M1의 4배에
-근접합니다:
+**용량 설계 시 시사점.** 배포 규모는 host 간 이식성이 있는 medium·large·x-large 수치를
+기준으로 산정해야 한다. nano/small 수치는 host의 PCIe link와 CPU에 의존한다.
+
+### 5.2 H1-Quattro는 chip 4개로 model-level throughput을 약 4× 확장한다
+
+H1-Quattro card는 M1 chip 4개를 탑재한다. 아래 비교는 **`run_model` model-level
+throughput**(object detection, ORT OFF)만을 대상으로 하며, NPU가 bottleneck인
+medium·large·x-large에서 single M1 4대 평균의 약 4배에 도달한다.
 
 | Object detection (v2.4.0, ORT OFF) | H1-Quattro | M1 평균 | 배율 |
 |------------------------------------|-----------:|--------:|:----:|
-| m | 471.3 | 116.6 | 4.04× |
-| l | 352.8 | 87.2 | 4.05× |
-| x | 193.9 | 47.9 | 4.05× |
+| m | 491.1 | 115.9 | 4.24× |
+| l | 372.5 | 86.1 | 4.32× |
+| x | 201.8 | 46.8 | 4.31× |
 
-> 출처: object-detection v2.4.0 ORT-OFF 표(§5); M1 평균은 네 M1 host 평균.
+> **출처:** [§5](#5-npu-연산-성능-model-level-throughput)의 object-detection v2.4.0
+> ORT-OFF 표. M1 평균은 4개 M1 host의 평균이다. 배율이 4×를 다소 상회하는 것은 single-M1
+> 평균이 ROCK5B throttling으로 낮아진 점, 그리고 H1의 host가 더 빠른 점에 일부 기인한다.
 
-### 5.3 Task 난이도 순서는 일관적
+이 배율은 **model-level throughput에만** 적용된다. 단일 stream end-to-end FPS는 host 공급
+한계가 먼저 걸리므로 nano에서 throughput의 47%에 머물고, 4-chip의 여력은 multi-stream
+채널 수(nano 17채널)로 나타난다([§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다),
+[§8](#8-multi-stream-채널-수용량)).
 
-무거운 post-processing과 큰 입력은 throughput을 깎습니다. medium size, v2.4.0,
-ONNX-Runtime OFF에서 순서는 모든 환경에서 동일합니다(`BIOSTAR_H1-Quattro` /
-`RPi5B_M1` 값):
+### 5.3 Task 난이도 순서는 모든 환경에서 일관적이다
 
-- Classification (224×224, 단순 head): 5470.5 / 1369.1 fps
-- Object detection (640×640): 471.3 / 119.1 fps
-- Pose estimation (640×640): 458.4 / 114.4 fps
-- Segmentation (640×640, mask 출력): 321.5 / 78.6 fps
-- Oriented bounding box (1024×1024, 최대 입력): 166.0 / 40.9 fps
+출력 head가 복잡하고 입력이 클수록 throughput이 감소한다. size m, v2.4.0, ORT OFF
+기준으로 그 순서는 모든 환경에서 동일하다(`BIOSTAR_H1-Quattro` / `RPi5B_M1` 값).
 
-> 출처: `model_results.json`, size = m, family = throughput, ORT OFF, 명시된 두
-> 환경의 v2.4.0 run.
+| Task | 입력 | H1-Quattro | RPi5B_M1 |
+|------|:----:|-----------:|---------:|
+| Classification (최소 head) | 224×224 | 5514.7 fps | 1401.1 fps |
+| Object detection | 640×640 | 491.1 fps | 118.7 fps |
+| Pose estimation | 640×640 | 468.6 fps | 112.6 fps |
+| Segmentation (mask 출력) | 640×640 | 321.5 fps | 80.0 fps |
+| Oriented bounding box (최대 입력) | 1024×1024 | 174.4 fps | 42.2 fps |
+
+> **출처:** `model_results.json`, size = m, family = throughput, ORT OFF, 명시된 두 환경의
+> v2.4.0 run.
 
 ---
 
 ## 6. Inference Latency
 
-Latency는 단일 frame·single-core 시간으로 **반응성** 지표이며 부분적으로
-**host/interconnect-bound**입니다.
+Latency는 single-frame·single-core 측정치다. **응답성** 지표이며 부분적으로 **host·
+interconnect-bound**다.
 
-**Object detection latency (ms), ONNX-Runtime OFF, v2.4.0:**
+**Object detection latency (ms), ORT OFF, v2.4.0:**
 
 | 환경 | n | s | m | l | x |
 |------|--:|--:|--:|--:|--:|
-| BIOSTAR_H1-Quattro | 10.45 | 16.27 | 23.35 | 30.46 | 56.17 |
-| DX-AIPlayer-N97_M1 | 23.00 | 29.82 | 37.09 | 44.21 | 69.94 |
-| OrangePi5+_M1 | 42.88 | 49.90 | 59.03 | 64.89 | 92.06 |
-| ROCK5B+_M1 | 36.17 | 43.31 | 49.47 | 58.77 | 91.68 |
-| RPi5B_M1 | 21.19 | 27.07 | 34.84 | 40.80 | 68.39 |
-| RPi5B_M1M | 24.14 | 29.60 | 38.56 | 46.10 | 75.43 |
+| BIOSTAR_H1-Quattro | 10.38 | 16.28 | 23.31 | 30.80 | 56.22 |
+| DX-AIPlayer-N97_M1 | 22.35 | 28.78 | 36.43 | 43.64 | 69.57 |
+| OrangePi5+_M1 | 37.07 | 44.01 | 42.93 | 57.78 | 86.21 |
+| ROCK5B+_M1 | 34.29 | 35.72 | 50.14 | 59.30 | 88.51 |
+| RPi5B_M1 | 21.13 | 27.04 | 33.26 | 41.32 | 66.79 |
+| RPi5B_M1M | 22.50 | 29.20 | 39.60 | 46.40 | 75.43 |
 
-> 출처: `results/<env>/<v2.4.0 run>/model_results.json`, task = object_detection,
+> **출처:** `results/<env>/<v2.4.0 run>/model_results.json`, task = object_detection,
 > family = latency, ORT OFF.
 
-**해석.** throughput과 달리 latency는 M1 host 간에 크게 달라집니다(nano:
-RPi5B_M1 21.2 ms vs OrangePi5+_M1 42.9 ms — *동일 NPU module·릴리스*에서 2배 차이).
-단일 synchronous 호출은 raw NPU 연산이 아니라 host CPU와 host↔NPU interconnect가
-지배하기 때문입니다. 단일 요청 반응성은 **당신의** host에서 latency로 판단하고, NPU
-용량은 throughput([§5](#5-npu-연산-성능-model-level-throughput))으로 판단하세요.
+**해석.** throughput과 달리 latency는 M1 host 간 편차가 크다. nano 기준으로 `RPi5B_M1`은
+21.1 ms, `OrangePi5+_M1`은 37.1 ms이며, 이는 *동일한 NPU module·release* 조건에서의
+결과다. 단일 synchronous 호출은 raw NPU 연산이 아니라 host CPU와 host↔NPU interconnect가
+지배하기 때문이다 — NPU module이 동일함에도 Raspberry Pi 5 host 두 대가 RK3588 board보다
+낮은 latency를 기록한다.
+
+따라서 latency는 특정 host에서의 단일 요청 응답성을 판단하는 데 사용하고, NPU 용량은
+throughput([§5](#5-npu-연산-성능-model-level-throughput))으로 판단하는 것이 적절하다.
+
+**ORT ON의 latency에는 host CPU 구간이 포함된다.** ORT ON 측정에서 `run_model`은 model의
+CPU 구간 실행 시간(`cpu_0_ms`)을 함께 보고한다. object detection n·m·x 기준으로 그 값은 x86
+board에서 0.26–1.38 ms, ARM board에서 2.3–8.0 ms다. 응답성이 중요한 application에서는 ORT
+ON이 제공하는 편의성과 이 추가 시간을 함께 고려해야 한다
+([§3.2](#32-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
+
+> **출처:** 각 v2.4.0 run `model_results.json`, task = object_detection, family = latency,
+> `use_ort` = true의 `cpu_0_ms`.
 
 ---
 
 ## 7. End-to-End 영상 파이프라인 (Single Stream)
 
-End-to-end FPS는 단일 Full HD 30 fps stream에서 전체 pipeline(decode →
-preprocess → NPU → post-process)을 측정합니다 — 실제 application이 보는 값입니다.
+End-to-end FPS는 single Full HD 30 fps stream에서 전체 pipeline(decode → preprocess →
+NPU → post-process)을 측정한 값으로, 실제 application이 관측하는 수치다.
 
-**Object detection end-to-end FPS, v2.4.0, ONNX-Runtime mode별:**
+**Object detection end-to-end FPS, v2.4.0, 더 나은 ORT mode 기준:**
 
-| 환경 | ORT | n | s | m | l | x | 영상 decoder |
-|------|:---:|--:|--:|--:|--:|--:|--------------|
-| BIOSTAR_H1-Quattro | ON | 478.1 | 475.7 | 476.6 | 367.3 | 200.1 | vaapidecodebin (HW) |
-| DX-AIPlayer-N97_M1 | OFF | 181.4 | 163.8 | 116.0 | 85.8 | 45.2 | vah264dec (HW) |
-| OrangePi5+_M1 | ON | 112.3 | 95.4 | 78.3 | 68.3 | 47.1 | mppvideodec (HW) |
-| ROCK5B+_M1 | ON | 140.6 | 132.6 | 94.9 | 74.6 | 33.3 | mppvideodec (HW) |
-| RPi5B_M1 | OFF | 77.2 | 77.5 | 76.8 | 76.2 | 48.9 | avdec_h264 (SW) |
-| RPi5B_M1M | OFF | 67.0 | 66.6 | 56.5 | 50.1 | 15.8 | avdec_h264 (SW) |
+| 환경 | ORT | n | s | m | l | x | Video decoder |
+|------|:---:|--:|--:|--:|--:|--:|---------------|
+| BIOSTAR_H1-Quattro | ON | 496.8 | 494.4 | 491.7 | 367.8 | 202.6 | vaapidecodebin (HW) |
+| DX-AIPlayer-N97_M1 | OFF | 184.9 | 164.1 | 116.6 | 85.1 | 49.0 | vah264dec (HW) |
+| OrangePi5+_M1 | ON | 148.1 | 125.0 | 98.5 | 80.1 | 48.1 | mppvideodec (HW) |
+| ROCK5B+_M1 | ON | 141.5 | 130.4 | 108.1 | 85.5 | 36.5 | mppvideodec (HW) |
+| RPi5B_M1 | OFF | 80.1 | 80.1 | 79.5 | 80.3 | 48.8 | avdec_h264 (SW) |
+| RPi5B_M1M | OFF | 79.8 | 80.2 | 77.8 | 57.6 | 21.2 | avdec_h264 (SW) |
 
-> 출처: `results/<env>/<v2.4.0 run>/pipeline_results.json`, task = object_detection.
-> 행별 ONNX-Runtime mode는 nano FPS가 더 높았던 쪽입니다("HW"/"SW"는 hardware/
-> software 영상 decoder). 모든 환경의 두 mode 모두 raw 데이터와 dashboard에 있습니다.
-> 참고로 BIOSTAR_H1-Quattro의 ONNX-Runtime OFF는 421.5 / 425.0 / 424.9 / 367.7 /
-> 200.4 fps(n→x)입니다.
+> **출처:** `results/<env>/<v2.4.0 run>/pipeline_results.json`, task = object_detection.
+> 각 행에 표시된 ORT mode는 nano FPS가 더 높았던 쪽이며, "HW"/"SW"는 hardware/software
+> video decoder를 표시한다. 모든 환경의 두 mode 결과는 raw 데이터와 dashboard에 포함되어
+> 있다.
 
 **해석.**
 
-- **영상 decoder가 가벼운 model을 제한할 수 있다.** `RPi5B_M1`에서는 nano부터
-  large까지 model size와 무관하게 모두 ~77 fps에 수렴합니다 — 가벼운 model에서는
-  NPU가 아니라 **software** H.264 decoder(`avdec_h264`)가 상한입니다. hardware
-  decoder(`vaapidecodebin`, `vah264dec`, `mppvideodec`)를 쓰는 board는 훨씬 높은
-  rate까지 이 벽에 부딪히지 않습니다.
-- **무거운 model에서는 다시 NPU가 상한**이 되어 end-to-end FPS가
-  [§5](#5-npu-연산-성능-model-level-throughput)의 throughput 순서를 따릅니다.
-  `RPi5B_M1`에서 x-large는 end-to-end 48.9 fps로 ~77 fps decoder 상한 아래인데,
-  이제 NPU가 느린 부분이기 때문입니다.
-- **ONNX-Runtime ON vs OFF**는 end-to-end에서 model·host 의존적입니다. ARM board
-  에서는 가벼운 model에서 ON이 종종 유리하고(추가 host post-processing이 NPU idle
-  시간과 겹침), 빠른 x86 board에서는 차이가 좁아지거나 역전됩니다.
+- **Video decoder가 가벼운 model을 제한할 수 있다.** `RPi5B_M1`에서는 nano부터 large까지
+  model size와 무관하게 약 80 fps에 수렴한다. 가벼운 model의 상한은 NPU가 아니라
+  **software** H.264 decoder(`avdec_h264`)다. hardware decoder를 탑재한
+  board(`vaapidecodebin`, `vah264dec`, `mppvideodec`)는 훨씬 높은 rate에 이르기까지 이
+  제약에 도달하지 않는다.
+
+- **무거운 model에서는 다시 NPU가 상한이 되며**, end-to-end FPS는
+  [§5](#5-npu-연산-성능-model-level-throughput)의 throughput 순서를 따른다. `RPi5B_M1`의
+  x-large는 end-to-end 48.8 fps로 약 80 fps인 decoder 상한보다 낮은데, 이 구간에서는 NPU가
+  더 느린 단계이기 때문이다. `RPi5B_M1M`의 large·x-large는 느린 SKU와 throttling이 겹쳐
+  더 낮다(57.6 / 21.2 fps).
+
+- **어느 ORT mode가 유리한지는 환경과 task에 따라 뒤집힌다.** 경량 model에서 그 차이는 최대
+  +48.8%에 이르며, 단일 기본값이 존재하지 않는다. 상세 비교와 원인은
+  [§7.2](#72-ort-mode-선택은-환경--task-조합으로-결정된다)에서 다룬다.
+
+### 7.1 경량 model의 end-to-end 상한은 NPU가 아니라 host다
+
+end-to-end FPS를 동일 ORT mode의 model
+throughput([§5](#5-npu-연산-성능-model-level-throughput))과 비교하면, 경량 model에서 NPU 연산
+능력의 절반 이상이 사용되지 않는다는 사실이 드러난다.
+
+**object detection, v2.4.0 — `end-to-end ÷ model throughput` / end-to-end 구간의 NPU 평균 활용률:**
+
+| Size | BIOSTAR_H1-Quattro | OrangePi5+_M1 | RPi5B_M1 |
+|:----:|:------------------:|:-------------:|:--------:|
+| n | 47 % / NPU 21 % | 82 % / NPU 37 % | 45 % / NPU 18 % |
+| s | 63 % / NPU 41 % | 69 % / NPU 58 % | 45 % / NPU 34 % |
+| m | 100 % / NPU 70 % | 84 % / NPU 73 % | 67 % / NPU 55 % |
+| l | 99 % / NPU 74 % | 101 % / NPU 91 % | 92 % / NPU 80 % |
+| x | 100 % / NPU 83 % | 99 % / NPU 93 % | 99 % / NPU 94 % |
+
+> **출처:** `pipeline_results.json`의 `avg_e2e_fps` ÷ `model_results.json`의 동일 ORT mode
+> throughput `fps`, 그리고 `pipeline_results.json`의 `npu_total_avg_pct`. 각 size는 두 ORT
+> mode 중 end-to-end가 더 높은 쪽을 사용했다.
+
+**해석.**
+
+- 경량 model(n·s)에서는 비율이 45–82%에 그치고 NPU 활용률이 18–41%에 머문다. 상한은 NPU가
+  아니라 단일 pipeline의 host 처리 속도(decode → preprocess → 제출 → post-process)다.
+- medium 이상에서는 비율이 92–101%, 활용률이 55–94%로 상승한다. NPU 연산 시간이 충분히
+  길어져 host가 공급을 따라잡기 때문이다.
+- **배포 시사점:** 경량 model에서 남는 NPU 여력은 **multi-stream으로만 회수된다.**
+  `BIOSTAR_H1-Quattro`의 nano single stream은 throughput의 47%에 불과하지만, multi-stream
+  에서는 17채널을 수용한다([§8](#8-multi-stream-채널-수용량)). 반대로 medium 이상은 단일
+  stream만으로 이미 NPU를 포화시키므로 채널 확장 여지가 작다.
+
+### 7.2 ORT mode 선택은 환경 × task 조합으로 결정된다
+
+경량 model(n·s)에서 두 mode의 end-to-end 차이는 최대 +48.8%(OrangePi5+_M1 object detection
+nano)이며, 어느 쪽이 유리한지는 환경과 task에 따라 반대로 뒤집힌다.
+
+| 환경 | Object Detection | Pose Estimation | Segmentation | OBB | Classification |
+|------|:----------------:|:---------------:|:------------:|:---:|:--------------:|
+| BIOSTAR_H1-Quattro | **ON** (+9.9–10.6 %) | 동등 | **ON** (+12.9–14.6 %) | 동등 | 동등 |
+| DX-AIPlayer-N97_M1 | **OFF** (+14.6–17.4 %) | OFF (+11.4–13.4 %) | **OFF** (+12.2–14.4 %) | 동등 | 동등 |
+| OrangePi5+_M1 | **ON** (+24.9–48.8 %) | OFF (+12.5–21.3 %) | **ON** (+4.4–20.7 %) | OFF (+1.3–8.9 %) | 동등 |
+| ROCK5B+_M1 | **ON** (+36.6–48.8 %) | OFF (+8.8–23.1 %) | **ON** (+4.0–11.5 %) | 동등 | 동등 |
+| RPi5B_M1 | **OFF** (+18.3–18.7 %) | OFF (+36.3–37.4 %) | **OFF** (+23.2–23.5 %) | OFF (+1.1–18.3 %) | 동등 |
+| RPi5B_M1M | **OFF** (+17.5–18.9 %) | OFF (+36.5–37.4 %) | **OFF** (+22.6–23.8 %) | OFF (+0.0–6.9 %) | 동등 |
+
+> **출처:** `results/<env>/<v2.4.0 run>/pipeline_results.json`, size = n·s. 괄호 안은 우세한
+> mode의 상대 이득으로, **nano와 small 두 값의 범위**이며 `avg_e2e_fps`로 직접 계산했다
+> (예: OrangePi5+_M1 object detection nano = 148.1 ÷ 99.6 − 1 = +48.8 %). **"동등"은 nano와
+> small 모두 차이가 5% 이내인 cell**을 뜻한다. Classification은 CPU 구간이 없어 두 mode가
+> 동일하다([§3.2](#32-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
+
+**왜 뒤집히는가.** ORT OFF는 host CPU 작업을 줄이지만, pipeline에서 그 연산이 사라지는 것은
+아니다. application이 담당하는 post-processing 단계로 이동한다. Rockchip board의 object
+detection이 대표적인 사례다.
+
+| OrangePi5+_M1, OD nano (v2.4.0) | ORT ON | ORT OFF |
+|---------------------------------|-------:|--------:|
+| End-to-end FPS | 148.1 | 99.6 |
+| host CPU 사용률 | 250 % | 211 % |
+| NPU 평균 활용률 | 37.3 % | 22.0 % |
+
+> **출처:** `pipeline_results.json`의 `avg_e2e_fps` / `avg_cpu_pct` / `npu_total_avg_pct`,
+> task = object_detection, size = n.
+
+ORT OFF는 CPU 사용률이 *더 낮은데도* FPS와 NPU 활용률이 함께 하락한다. 즉 CPU 포화가 원인이
+아니라, 직렬 단계 하나(post-processing)가 느려진 것이 원인이다. 측정 pipeline의 모든 queue는
+`leaky=no`이므로 이 정체가 상류로 backpressure로 전파되고, NPU에 새 frame이 공급되지 않아
+NPU가 idle 상태에 머문다. ORT ON에서는 model의 CPU 구간을 ONNX Runtime이 처리해 post-processing
+단계로 전달되는 tensor가 이미 정제된 형태이므로 이 정체가 발생하지 않는다.
+
+반대 방향의 사례도 같은 원리다. `RPi5B_M1`·`RPi5B_M1M`은 software decoder가 CPU를 크게
+점유하므로, ORT ON의 추가 CPU 작업이 decode와 경합해 모든 task에서 ORT OFF가 유리하다.
+
+**Segmentation은 host post-processing 비용이 가장 큰 task다.** 동일 환경·동일 nano·ORT ON
+기준으로 `BIOSTAR_H1-Quattro`의 host CPU 사용률은 object detection 213%, segmentation 517%다.
+mask 출력을 host에서 재구성해야 하기 때문이며, 이것이 segmentation의 채널 수용량이 detection
+보다 낮은 주된 이유다([§8](#8-multi-stream-채널-수용량)).
+
+### 7.3 E2E 상한이 host에 있는 환경에서는 model을 키워도 FPS 손실이 없다
+
+[§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다)의 결과를 배포 관점으로
+환산하면, host가 상한인 구간에서는 model size를 올려도 end-to-end FPS가 거의 변하지 않는다.
+정확도를 추가 비용 없이 확보할 수 있는 구간이다.
+
+| 환경 | nano 대비 5% 이내를 유지하는 최대 size | 근거 (object detection end-to-end FPS) |
+|------|:--------------------------------------:|----------------------------------------|
+| BIOSTAR_H1-Quattro | **m** | n 496.8 → s 494.4 → m 491.7 → l 367.8 |
+| DX-AIPlayer-N97_M1 | n | n 184.9 → s 164.1 (−11 %) |
+| OrangePi5+_M1 | n | n 148.1 → s 125.0 (−16 %) |
+| ROCK5B+_M1 | n | n 141.5 → s 130.4 (−8 %) |
+| RPi5B_M1 | **l** | n 80.1 → s 80.1 → m 79.5 → l 80.3 |
+| RPi5B_M1M | **m** | n 79.8 → s 80.2 → m 77.8 → l 57.6 |
+
+> **출처:** `pipeline_results.json`, task = object_detection, 각 size에서 두 ORT mode 중 더
+> 높은 값. 기준은 nano 값의 95% 이상 유지다.
+
+Task별로도 동일한 계산이 성립한다. `RPi5B_M1`은 pose estimation에서 medium, segmentation에서
+large까지 무상이며, `BIOSTAR_H1-Quattro`는 pose estimation·segmentation 모두 small까지다.
+반면 `DX-AIPlayer-N97_M1`·`OrangePi5+_M1`·`ROCK5B+_M1`은 nano에서 이미 NPU 또는 pipeline이
+상한이므로 size를 올리면 곧바로 FPS가 하락한다.
+
+**배포 지침:** 목표 FPS를 만족하는 가장 큰 model을 선택하면 동일 hardware에서 정확도를 높일 수
+있다. 단, 이 여유는 host 상한에서 비롯되므로 host를 개선(hardware decoder, 더 넓은 PCIe link)
+하면 다시 model size가 FPS를 지배한다.
 
 ---
 
 ## 8. Multi-Stream 채널 수용량
 
-각 stream이 30 fps 이상을 유지하는 Full HD 30 fps stream의 최대 개수입니다.
+채널 수용량은 각 stream이 30 fps 이상을 유지하는 조건에서의 Full HD 30 fps stream 최대
+개수다.
 
-**Object detection 최대 채널 수, v2.4.0 (ONNX-Runtime ON/OFF 중 우수):**
+**Object detection, 최대 채널 수, v2.4.0 (ORT ON/OFF 중 더 나은 쪽):**
 
 | 환경 | n | s | m | l | x |
 |------|--:|--:|--:|--:|--:|
 | BIOSTAR_H1-Quattro | 17 | 17 | 16 | 12 | 6 |
 | DX-AIPlayer-N97_M1 | 6 | 5 | 3 | 2 | 1 |
-| OrangePi5+_M1 | 3 | 3 | 3 | 2 | 1 |
-| ROCK5B+_M1 | 4 | 4 | 2 | 2 | 1 |
+| OrangePi5+_M1 | 4 | 4 | 3 | 2 | 1 |
+| ROCK5B+_M1 | 4 | 4 | 2 | 1 | 1 |
 | RPi5B_M1 | 2 | 2 | 2 | 2 | 1 |
 | RPi5B_M1M | 2 | 2 | 1 | 1 | 0 |
 
-> 출처: `results/<env>/<v2.4.0 run>/multi_stream_results.json`, task =
-> object_detection, 30 fps/채널 threshold에서 `capacity_streams`.
+> **출처:** `results/<env>/<v2.4.0 run>/multi_stream_results.json`, task =
+> object_detection, stable-capacity rule(status ok + 모든 run 완료 + per-channel FPS ≥ 30)을
+> 만족하는 최대 `stream_count`.
 
-**해석.** 채널 수용량은 end-to-end FPS의 multi-stream 일반화이며 같은 병목을
-물려받습니다: H1-Quattro의 4개 chip이 큰 우위를 줍니다(nano object detection 최대 17
-채널). single-M1 ARM board는 host와 cooling에 따라 2–6 채널 범위입니다.
-`RPi5B_M1M`은 x-large에서 0 채널인데, 더 느린 M1M SKU(§2.2)와 thermal
-throttling(§2.3)이 겹쳐 x-large 1 stream도 30 fps로 유지하지 못하기 때문입니다.
-**Classification은 multi-stream에서 의도적으로 측정하지 않습니다.** 224×224
-classifier는 실제 multi-stream 영상 분석 workload를 대표하지 않고, 그 end-to-end
-수치는 decoder-bound이기 때문입니다(§2.4).
+**해석.** 채널 수용량은 end-to-end FPS의 multi-stream 일반화이며 동일한 bottleneck을
+그대로 반영한다.
+
+- H1-Quattro의 4개 chip이 큰 우위를 제공한다(nano object detection에서 최대 17채널).
+  single-M1 board는 host CPU·PCIe link·cooling에 따라 2–6채널 범위다.
+- Gen3 ×1 board 두 대(`RPi5B_M1`, `RPi5B_M1M`)는 PCIe link 제약으로 가벼운 detection에서
+  2채널이 상한이다([§2.4](#24-일부-지표는-npu-bound가-아니라-host-bound다)).
+- `RPi5B_M1M`은 x-large에서 0채널로 기록되었다. 느린 M1M
+  SKU([§2.2](#22-m1과-m1m은-서로-다른-제품이며-수치를-섞어서는-안-된다))와
+  throttling([§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다))이
+  겹쳐 x-large stream 하나조차 30 fps로 유지하지 못한다.
+
+**Classification은 multi-stream을 의도적으로 측정하지 않는다.** 224×224 classifier는 실제
+multi-stream 영상 분석 workload를 대표하지 못하며, 그 end-to-end 수치는
+decoder-bound([§2.4](#24-일부-지표는-npu-bound가-아니라-host-bound다))이기 때문이다.
 
 ---
 
-## 9. dx-all-suite 릴리스별 성능 추이
+## 9. dx-all-suite release별 성능 추이
 
-동일한 환경들을 세 릴리스에서 측정했습니다. 각 릴리스가 model도 재컴파일했으므로
-(§2.1), 이 추이는 runtime + firmware + 재컴파일된 model의 **결합** 개선을 반영합니다.
+동일한 환경들을 `results/`에 commit된 두 release(v2.3.3, v2.4.0)에서 측정했다. 두 측정 사이에는
+DX-COM(model 재컴파일)·DX-RT runtime·RT driver·PCIe driver·NPU firmware가 모두 변경되었으므로
+([§2.1](#21-버전-추이는-release-stack-전체가-함께-바뀐-결과다)), 이 추이는 해당 stack 전체의
+**복합** 개선을 반영하며 개별 구성요소로 분리할 수 없다.
 
-**Object detection throughput (fps), ONNX-Runtime OFF, 릴리스별:**
+**Object detection throughput (fps), ORT OFF, v2.3.3 → v2.4.0:**
 
-| 환경 | Size | v2.2.2 | v2.3.3 | v2.4.0 | 변화 (v2.2.2 → v2.4.0) |
-|------|:----:|-------:|-------:|-------:|:----------------------:|
-| BIOSTAR_H1-Quattro | m | 308.8 | 372.3 | 471.3 | **+52.6 %** |
-| BIOSTAR_H1-Quattro | l | 230.6 | 273.1 | 352.8 | **+53.0 %** |
-| BIOSTAR_H1-Quattro | x | 132.3 | 156.2 | 193.9 | **+46.6 %** |
-| DX-AIPlayer-N97_M1 | m | 76.5 | 90.8 | 115.2 | +50.5 % |
-| DX-AIPlayer-N97_M1 | l | 57.3 | 66.6 | 86.7 | +51.4 % |
-| RPi5B_M1 | m | 76.3 | 90.3 | 119.1 | +56.1 % |
-| RPi5B_M1 | l | 57.1 | 66.3 | 86.5 | +51.5 % |
-| RPi5B_M1M | m | 52.5 | 62.4 | 72.4 | +37.8 % |
-| RPi5B_M1M | x | 23.4 | 27.3 | 28.4 | +21.6 % |
+| 환경 | Size | v2.3.3 | v2.4.0 | 변화 |
+|------|:----:|-------:|-------:|:----:|
+| BIOSTAR_H1-Quattro | m | 376.6 | 491.1 | **+30.4 %** |
+| BIOSTAR_H1-Quattro | l | 277.2 | 372.5 | **+34.3 %** |
+| BIOSTAR_H1-Quattro | x | 158.2 | 201.8 | **+27.5 %** |
+| DX-AIPlayer-N97_M1 | m | 91.1 | 120.1 | +31.8 % |
+| DX-AIPlayer-N97_M1 | l | 66.9 | 85.6 | +27.9 % |
+| OrangePi5+_M1 | m | 90.5 | 117.4 | +29.7 % |
+| OrangePi5+_M1 | l | 67.3 | 87.2 | +29.5 % |
+| RPi5B_M1 | m | 90.8 | 118.7 | +30.6 % |
+| RPi5B_M1 | l | 67.4 | 86.8 | +28.9 % |
+| RPi5B_M1M | m | 55.7 | 73.5 | +32.0 % |
+| RPi5B_M1M | l | 41.8 | 60.0 | +43.4 % |
 
-> 출처: 각 환경의 v2.2.2 / v2.3.3 / v2.4.0 run `model_results.json`, task =
-> object_detection, family = throughput, ORT OFF. 전체 6개 환경 표는 dashboard의
-> **Version Trend** 탭에 있습니다.
+> **출처:** 각 환경의 v2.3.3 / v2.4.0 run `model_results.json`, task = object_detection,
+> family = throughput, ORT OFF. release 간 model 파일명이 변경되었으므로 (task, size, ORT
+> mode) 기준으로 매칭했다. 전체 6개 환경 표는 dashboard의 **Version Trend** 탭에 있다.
 
-**해석.** NPU-bound model은 v2.2.2 → v2.4.0에서 모든 active-cooling / M1 환경에 걸쳐
-일관되게 **~45–56%** 향상되었고, 그 향상은 **단조(monotonic)**입니다(각 릴리스 ≥ 이전
-릴리스). `RPi5B_M1M`의 가장 큰 model 향상 폭이 작은 것(x-large +21.6%)은 v2.4.0 run이
-thermal throttling되었기 때문(§2.3)으로, module의 *thermal 제한* 결과가 실제 릴리스
-간 향상을 과소평가한 것입니다. 이것이 **최신 dx-all-suite 릴리스로 업그레이드**해야
-하는 가장 분명한 근거입니다: 같은 hardware가 확연히 빨라집니다.
+**해석.** NPU-bound 구간(medium·large·x-large) 18개 cell의 model-level throughput 변화는
+중앙값 **+28.4%** 이며, 18개 중 14개가 +25–35% 구간에 든다. 최저는 `ROCK5B+_M1` x-large의
++12.9%로 해당 v2.4.0 run이 throttling한 결과이고
+([§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다)), 최고는
+`RPi5B_M1M` large의 +43.4%다. 모든 cell에서 향상 방향은 일관된다.
+
+경량 model(nano·small) 12개 cell의 변화폭은 −0.1%~+63.2%로 훨씬 넓다. 이 구간은 NPU가 아니라
+host·PCIe 상한에 지배되므로([§2.4](#24-일부-지표는-npu-bound가-아니라-host-bound다),
+[§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다)) 단일 범위로 요약하지 않는다.
+`RPi5B_M1`의 nano는 −0.1%로, 두 release 모두 Gen3 ×1 link 상한(약 179 fps)에 걸려 있다.
+
+이는 **최신 dx-all-suite release로의 업그레이드**를 뒷받침하는 가장 명확한 근거다. 동일
+hardware가 확연히 빠르게 동작한다. 현재 데이터셋은 두 release 지점을 담고 있으며, 이후
+release가 측정되면 dashboard의 Version Trend 탭이 자동으로 확장된다.
 
 ---
 
 ## 10. 환경별 배포 가이드
 
-위 표들에 근거한 실무 가이드입니다(모두 v2.4.0).
+아래 가이드는 위 표들에 근거하며, 모든 수치는 v2.4.0 기준이다.
 
-- **BIOSTAR_H1-Quattro (4-chip x86 server).** 고밀도 선택지: nano에서 object
-  detection 16–17 채널 또는 pose 19 채널. active cooling이라 clock을
-  유지합니다(throttled cell 0). 채널 밀도가 가장 중요한 곳에 사용하세요.
-- **DX-AIPlayer-N97_M1 (소형 x86 AI box).** 균형 잡힌 single-M1 appliance: nano에서
-  object detection 6 / pose 7 채널, hardware decoder와 active cooling 보유. 범용
-  edge box로 적합.
-- **ROCK5B+_M1 / OrangePi5+_M1 (ARM SBC, single M1).** 유능한 single-NPU
-  board(nano에서 object detection 3–4, pose 5–7 채널). 둘 다 passive cooling이므로,
-  무거운 model을 지속 실행하려면 §2.3의 후반 throttling을 피하기 위해 cooling을
-  추가하세요. OrangePi의 v2.4.0 small-model 수치는 잠정치입니다(§2.5).
-- **RPi5B_M1 (Raspberry Pi 5, single M1).** 입문용으로, detection/segmentation 1–2
-  채널에 적합. **software** 영상 decoder가 가벼운 model의 end-to-end FPS를 ~77 fps
-  부근으로 제한한다는 점에 유의하세요 — hardware decode host는 이 상한을 없앱니다.
-- **RPi5B_M1M (Raspberry Pi 5, M1M module).** 여기서 최하위 tier: M1M SKU는 무거운
-  model에서 M1보다 ~30–40% 느리고(§2.2) 이 unit은 추가로 throttling되었습니다(§2.3).
-  배포는 보수적으로 산정하고 무거운 model 수치는 하한으로 간주하세요.
+- **BIOSTAR_H1-Quattro (4-chip x86 server).** 고밀도 구성 선택지다. nano에서 object
+  detection 16–17채널 또는 pose 20채널을 처리한다. active cooling이 적용되어 model 단계 전
+  구간에서 clock을 유지한다(throttling된 model cell 0개). 채널 밀도가 가장 중요한 용도에
+  권장된다.
 
-**일반 원칙:**
-- NPU 용량은 host 이식성이 좋은 **m/l/x throughput** 수치로 계획하세요(§5.1). nano/
-  small은 host CPU가 따라오는지 검증한 경우에만 사용하세요.
-- 표준·즉시 사용 가능한 model 출력이 필요하면 **ONNX-Runtime ON**을, raw NPU 출력을
-  직접 post-processing 할 수 있고 최대 속도를 원하면 **OFF**를 사용하세요(§3).
-- passive cooling board에서 지속 multi-stream을 하려면 cooling을 확보하거나, peak가
-  아니라 throttled 수치를 기준으로 잡으세요.
+- **DX-AIPlayer-N97_M1 (compact x86 AI box).** 균형 잡힌 single-M1 appliance다. nano에서
+  object detection 6채널, pose 7채널을 처리하며 hardware decoder와 active cooling을 갖춘다.
+  범용 edge box로 적합하다.
+
+- **OrangePi5+_M1 (ARM SBC, single M1).** ×4 PCIe link와 hardware decoder를 갖춘 우수한
+  single-NPU board다. nano에서 object detection 4채널, pose 8채널을 처리하며, ARM board 중
+  nano/small model throughput이 가장 높다. model 단계 전 구간에서 clock을 유지했으며, 지속
+  multi-stream 운용에는 cooling 보강이 권장된다.
+
+- **ROCK5B+_M1 (ARM SBC, single M1).** OrangePi와 동일한 RK3588 계열이지만, 이 unit은
+  thermal limit에 더 이르게 도달해(model-level cell 24개 throttling) medium·large·x-large
+  수치가 낮아졌다. detection 2–4채널, pose 최대 8채널을 처리할 수 있으며, throttling으로
+  손실된 headroom을 회복하려면 **active cooling 보강이 필요하다.**
+
+- **RPi5B_M1 (Raspberry Pi 5, single M1).** entry-level 구성으로, detection 또는
+  segmentation 1–2채널에 적합하다. 두 가지 상한이 존재한다. **software** video decoder가
+  가벼운 model의 end-to-end FPS를 약 80 fps로 제한하고, **Gen3 ×1** PCIe link가 nano/small
+  model throughput을 약 179 fps로 제한한다. hardware decoding과 더 넓은 PCIe link를 갖춘
+  host에서는 두 제약이 모두 해소된다.
+
+- **RPi5B_M1M (Raspberry Pi 5, M1M module).** 본 측정 대상 중 가장 낮은 tier다. M1M SKU는
+  무거운 model에서 M1보다 31–47%
+  느리고([§2.2](#22-m1과-m1m은-서로-다른-제품이며-수치를-섞어서는-안-된다)), 이 unit은 추가로
+  throttling했다([§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다)).
+  배포 규모를 보수적으로 산정하고, 무거운 model 수치는 하한으로 해석해야 한다.
+
+### 일반 지침
+
+- NPU 용량은 host 간 이식성이 있는 **medium·large·x-large throughput** 수치를 기준으로
+  설계한다([§5.1](#51-npu가-성능의-기준점이다)). nano/small 수치는 host의 PCIe link와 CPU가
+  이를 따라갈 수 있음을 검증한 경우에만 적용한다.
+- **경량 model에서 NPU 여력을 모두 사용하려면 multi-stream이 필요하다.** 단일 stream은
+  throughput의 45–82%에 머문다([§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다)).
+- **목표 FPS를 만족하는 가장 큰 model을 선택한다.** host가 상한인 환경에서는 size를 올려도
+  FPS 손실이 거의 없으므로 정확도를 무상으로 확보할 수
+  있다([§7.3](#73-e2e-상한이-host에-있는-환경에서는-model을-키워도-fps-손실이-없다)).
+- **ORT mode는 환경 × task 조합으로 결정한다**
+  ([§7.2](#72-ort-mode-선택은-환경--task-조합으로-결정된다)). 다만 application이 원본 ONNX
+  model과 동일한 출력을 요구하면 성능과 무관하게 **ORT ON**이 필요하고, 동등한 연산을 직접
+  구현할 수 있다면 **ORT OFF**도 선택
+  가능하다([§3.2](#32-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
+- passive cooling board에서 지속 multi-stream을 운용하는 경우에는 cooling을 예산에
+  반영하거나, peak가 아닌 throttling된 수치를 기준으로 계획한다. 측정 편차가 큰 구간은
+  thermal 문제의 신호로 함께 확인한다
+  ([§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다)).
 
 ---
 
@@ -473,7 +762,8 @@ thermal throttling되었기 때문(§2.3)으로, module의 *thermal 제한* 결�
 
 ### 11.1 벤치마크 재현
 
-`dx-benchmark/` 디렉터리에서(설정은 tool의 `README.md` 참조):
+아래 명령은 `dx-benchmark/` 디렉토리에서 실행한다. 설치·설정 절차는 tool의
+[`README.md`](../README.md)에 있다.
 
 ```bash
 # 환경 점검 + fingerprint 출력
@@ -488,59 +778,70 @@ thermal throttling되었기 때문(§2.3)으로, module의 *thermal 제한* 결�
 # 특정 size / task만 실행
 ./run.sh run --sizes n,s --task object_detection
 
-# 기존 결과 디렉터리에서 실패한 항목만 재실행
+# 기존 결과 디렉토리에서 실패 항목만 재실행
 ./run.sh run --resume results/<env>/<run_id> --retry-failed
 
-# 전체 결과로부터 dashboard 재빌드
-./run.sh dashboard results
+# 기존 결과 디렉토리에서 report 재생성
+python3 -m benchmark report results/<env>/<run_id>
+
+# 전체 결과로 dashboard 재생성
+python3 -m benchmark dashboard results
 ```
 
-### 11.2 측정 Protocol — 핵심 Parameter
+### 11.2 측정 Protocol — 주요 Parameter
 
 | Parameter | 값 |
 |-----------|-----|
+| Protocol 버전 | v3 (thermal mode: steady) |
 | Throughput 측정 시간 | 30초 |
-| Latency loop 수 | 300 loop (single-core synchronous) |
-| Throughput 반복 | 3회 |
-| End-to-end 반복 | 3회 |
-| Warm-up run | 1회 (버림) |
-| Multi-stream 채널당 threshold | 30 fps |
-| Thermal hot-start 차단 | 60 °C (이상이면 run 거부) |
-| model별 cooldown 목표 | min(idle + 10 °C, 55 °C) |
-| 영상 입력 | Full HD (1920×1080), 30 fps |
+| Latency loop 수 | 300 loops (single-core, synchronous) |
+| Throughput 반복 | 3 |
+| End-to-end 반복 | 3 |
+| Warm-up run | 1 (버림) |
+| Multi-stream per-channel threshold | 30 fps |
+| Stable-capacity rule | status ok + 모든 run 완료 + per-channel FPS ≥ 30 |
+| Thermal hot-start block | 60 °C (초과 시 run 거부) |
+| Cooldown 지점 | model × ORT cell 시작 시 1회 + E2E 단계 직전 1회 (protocol v3) |
+| Cooldown 목표 | min(idle + 10 °C, 55 °C) |
+| Video 입력 | Full HD (1920×1080), 30 fps |
 
-### 11.3 환경별 상세 결과 (최신 릴리스)
+> **출처:** 각 run `environment.json`의 `protocol` block.
 
-각 환경의 최신(v2.4.0) run에 대한 machine-readable 상세 결과:
+### 11.3 환경별 상세 결과 (현재 release)
+
+각 환경 v2.4.0 run의 전체 machine-readable 결과는 다음과 같다.
 
 | 환경 | Report |
 |------|--------|
-| BIOSTAR_H1-Quattro | [`results/BIOSTAR_H1-Quattro/20260710_180653/REPORT.md`](../results/BIOSTAR_H1-Quattro/20260710_180653/REPORT.md) |
-| DX-AIPlayer-N97_M1 | [`results/DX-AIPlayer-N97_M1/20260710_180416/REPORT.md`](../results/DX-AIPlayer-N97_M1/20260710_180416/REPORT.md) |
-| OrangePi5+_M1 | [`results/OrangePi5+_M1/20260713_132657/REPORT.md`](../results/OrangePi5+_M1/20260713_132657/REPORT.md) |
-| ROCK5B+_M1 | [`results/ROCK5B+_M1/20260710_090255/REPORT.md`](../results/ROCK5B+_M1/20260710_090255/REPORT.md) |
-| RPi5B_M1 | [`results/RPi5B_M1/20260713_115536/REPORT.md`](../results/RPi5B_M1/20260713_115536/REPORT.md) |
-| RPi5B_M1M | [`results/RPi5B_M1M/20260710_180022/REPORT.md`](../results/RPi5B_M1M/20260710_180022/REPORT.md) |
+| BIOSTAR_H1-Quattro | [`results/BIOSTAR_H1-Quattro/20260722_151413/REPORT.md`](../results/BIOSTAR_H1-Quattro/20260722_151413/REPORT.md) |
+| DX-AIPlayer-N97_M1 | [`results/DX-AIPlayer-N97_M1/20260722_151104/REPORT.md`](../results/DX-AIPlayer-N97_M1/20260722_151104/REPORT.md) |
+| OrangePi5+_M1 | [`results/OrangePi5+_M1/20260722_165355/REPORT.md`](../results/OrangePi5+_M1/20260722_165355/REPORT.md) |
+| ROCK5B+_M1 | [`results/ROCK5B+_M1/20260722_080528/REPORT.md`](../results/ROCK5B+_M1/20260722_080528/REPORT.md) |
+| RPi5B_M1 | [`results/RPi5B_M1/20260722_150437/REPORT.md`](../results/RPi5B_M1/20260722_150437/REPORT.md) |
+| RPi5B_M1M | [`results/RPi5B_M1M/20260723_142408/REPORT.md`](../results/RPi5B_M1M/20260723_142408/REPORT.md) |
 
-각 환경에는 `results/<env>/` 아래에 v2.2.2·v2.3.3 run도 있습니다. interactive
-dashboard(`results/dashboard/index.html`)에서 임의의 환경 / 버전 / task / size /
-ONNX-Runtime 조합을 비교할 수 있습니다.
+각 환경은 `results/<env>/` 아래에 v2.3.3 run도 보유한다. interactive
+dashboard([`results/dashboard/index.html`](../results/dashboard/index.html))에서 환경 /
+버전 / task / size / ORT mode의 모든 조합을 비교할 수 있다.
 
 ### 11.4 용어집
 
 | 용어 | 의미 |
 |------|------|
-| **NPU (Neural Processing Unit)** | 신경망을 실행하는 DEEPX accelerator(M1 / M1M module, 또는 H1-Quattro 4-chip card) |
-| **Throughput** | `run_model`의 지속 multi-core asynchronous NPU frame rate (순수 NPU 연산) |
-| **Latency** | 단일 frame·single-core inference 시간 (반응성) |
+| **NPU (Neural Processing Unit)** | neural network를 실행하는 DEEPX accelerator (M1 / M1M module, 또는 4-chip H1-Quattro card) |
+| **CPU 구간 (CPU offload)** | 컴파일된 model graph 중 NPU가 실행할 수 없는 부분. YOLO26에서는 NMS와 keypoint/mask decode에 해당한다. ORT ON일 때만 host CPU에서 실행되며, pipeline의 post-processing 단계와는 구분된다. |
+| **ORT (ONNX-Runtime mode)** | ON = model의 CPU 구간을 ONNX Runtime을 통해 host CPU로 offload하여 원본 ONNX model과 동일한 출력을 얻음. OFF = NPU 구간만 실행(더 빠르지만 동등한 연산을 application이 구현해야 함) |
+| **Throughput** | `run_model`이 산출하는 지속 multi-core asynchronous NPU frame rate (순수 NPU 연산) |
+| **Latency** | single-frame, single-core inference 시간 (응답성) |
 | **End-to-end FPS** | 전체 영상 pipeline frame rate (decode → preprocess → NPU → post-process) |
 | **최대 채널 수** | 각 stream이 30 fps 이상을 유지하는 최대 동시 stream 수 |
-| **ONNX-Runtime ON/OFF (ORT)** | ON = 남은 post-processing layer를 ONNX Runtime으로 host CPU에서 실행(표준 출력); OFF = raw NPU 출력만(더 빠름, 별도 post-processor 필요) |
-| **Thermal throttling** | 고온(대략 85–90 °C)에서의 NPU clock 감소 |
-| **Coefficient of variation** | 표준편차 ÷ 평균의 백분율 — 여기서는 host 간 편차 정량화에 사용 |
+| **NPU 활용률** | 측정 구간 동안 dxtop이 sampling한 NPU core 평균 사용률(`npu_total_avg_pct`). 값이 낮으면 NPU가 입력을 기다리는 host-bound 상태를 의미한다 |
+| **Backpressure** | GStreamer pipeline에서 하류 element의 처리 지연이 non-leaky queue를 통해 상류로 전파되어 전체 처리량과 NPU 공급을 함께 제한하는 현상. 본 측정 pipeline의 모든 queue는 `leaky=no`다 |
+| **Thermal throttling** | 고온에서의 NPU clock 하강 (NPU가 1000 MHz에서 clock을 낮춤) |
+| **Coefficient of variation** | 표준편차 ÷ 평균을 백분율로 표시한 값 — 환경 간 편차를 정량화하는 데 사용 |
 
 ---
 
-*`dx-benchmark` tool에 커밋된 측정 데이터(`dx-benchmark/results/`)로부터 생성됨.
-기반 수치를 재생성하거나 interactive하게 탐색하려면 [§11.1](#111-벤치마크-재현)과
-dashboard를 참조하세요.*
+*본 보고서는 `dx-benchmark` tool이 commit한 측정
+데이터([`dx-benchmark/results/`](../results/))로부터 작성되었다. 기저 수치를 재생성하거나
+interactive하게 탐색하려면 [§11.1](#111-벤치마크-재현)과 dashboard를 참고한다.*

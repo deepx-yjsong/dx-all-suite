@@ -219,7 +219,7 @@ function renderHostInfo(el, env) {
   el.innerHTML = _infoRows(rows);
 }
 function renderToolsInfo(el, env) {
-  var rows = [['dx_stream',cleanVer(env.dx_stream_version)||'-'],['GStreamer',cleanVer(env.gstreamer_version)||'-']];
+  var rows = [['DX-Benchmark',cleanVer(env.benchmark_tool_version)||'-'],['DX-Stream',cleanVer(env.dx_stream_version)||'-'],['GStreamer',cleanVer(env.gstreamer_version)||'-']];
   el.innerHTML = _infoRows(rows);
 }
 function renderNpuInfo(el, env) {
@@ -332,6 +332,7 @@ var Chart = {
     /* Bars */
     data.forEach(function(d,i){
       var sel=d.envId===self._selectedId;var hi=sel||i===self._hoverIdx;
+      if(d.missing){var mgx=P.left+i*gW;ctx.save();ctx.fillStyle='rgba(0,0,0,0.045)';ctx.fillRect(mgx+2,P.top,gW-4,CH);ctx.fillStyle='#9aa0a6';ctx.font='italic 11px sans-serif';ctx.textAlign='center';ctx.fillText('no '+(state.selectedVersion||'data'),mgx+gW/2,P.top+CH/2);ctx.restore();return;}
       if(d.throughput!=null){var bx=gX(i),by=fpsY(d.throughput),bh=P.top+CH-by;ctx.fillStyle=sel?C_TP.hi:(self._selectedId&&!sel?C_TP.dim:(hi?C_TP.hi:C_TP.fill));ctx.fillRect(bx,by,bW-2,bh);ctx.strokeStyle=C_TP.line;ctx.lineWidth=sel?2:1;ctx.strokeRect(bx,by,bW-2,bh);ctx.fillStyle=C_TP.line;ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(Math.round(d.throughput),bx+(bW-2)/2,by-4);}
       if(d.e2eFps!=null){var bx2=gX(i)+bW,by2=fpsY(d.e2eFps),bh2=P.top+CH-by2;ctx.fillStyle=sel?C_E2E.hi:(self._selectedId&&!sel?C_E2E.dim:(hi?C_E2E.hi:C_E2E.fill));ctx.fillRect(bx2+1,by2,bW-2,bh2);ctx.strokeStyle=C_E2E.line;ctx.lineWidth=sel?2:1;ctx.strokeRect(bx2+1,by2,bW-2,bh2);ctx.fillStyle='#1a1a1a';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.fillText(Math.round(d.e2eFps),bx2+1+(bW-2)/2,by2-4);}
       if(d.maxChannels!=null&&d.e2eFps!=null){var badgeX=gX(i)+bW+(bW-2)/2;var badgeY=fpsY(d.e2eFps)-20;var txt='Max '+d.maxChannels+'ch';ctx.font='bold 9px sans-serif';var tw=ctx.measureText(txt).width;var px=4,py=2,rr=4;var rx=badgeX-tw/2-px,ry=badgeY-8-py;var rw=tw+px*2,rh=12+py*2;ctx.fillStyle='rgba(136,84,208,0.15)';ctx.beginPath();ctx.moveTo(rx+rr,ry);ctx.lineTo(rx+rw-rr,ry);ctx.quadraticCurveTo(rx+rw,ry,rx+rw,ry+rr);ctx.lineTo(rx+rw,ry+rh-rr);ctx.quadraticCurveTo(rx+rw,ry+rh,rx+rw-rr,ry+rh);ctx.lineTo(rx+rr,ry+rh);ctx.quadraticCurveTo(rx,ry+rh,rx,ry+rh-rr);ctx.lineTo(rx,ry+rr);ctx.quadraticCurveTo(rx,ry,rx+rr,ry);ctx.closePath();ctx.fill();ctx.strokeStyle=C_MAX;ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=C_MAX;ctx.textAlign='center';ctx.fillText(txt,badgeX,badgeY);}
@@ -402,6 +403,7 @@ var FpsChart = {
     /* Bars */
     data.forEach(function(d,i){
       var sel=d.envId===self._selectedId;var hi=sel||i===self._hoverIdx;
+      if(d.missing){var mgx=P.left+i*gW;ctx.save();ctx.fillStyle='rgba(0,0,0,0.045)';ctx.fillRect(mgx+2,P.top,gW-4,CH);ctx.fillStyle='#9aa0a6';ctx.font='italic 11px sans-serif';ctx.textAlign='center';ctx.fillText('no '+(state.selectedVersion||'data'),mgx+gW/2,P.top+CH/2);ctx.restore();return;}
       SIZE_KEYS.forEach(function(sz,si){
         var v=d.sizes[sz];if(v==null)return;
         var bx=gX(i,si),by=fpsY(v),bh=P.top+CH-by;var sc=SIZE_COLORS[sz];
@@ -441,13 +443,17 @@ function getChartData() {
   var modelRows=_history('model');var e2eRows=_history('e2e_single');var capRows=_history('e2e_multi_capacity');
   (state.dataset.environments||[]).forEach(function(env){
     var eid=env.env_id;var runId=_getSelectedRunId(eid);
+    // No run at the selected suite version -> keep the env as a placeholder column
+    // (drawn greyed with a "no <version>" label) instead of silently dropping it.
+    if(runId==null){results.push({env:env,envId:eid,label:envLabel(env),missing:true,throughput:null,e2eFps:null,latency:null,maxChannels:null});return;}
     var tRow=modelRows.find(function(r){return r.env_id===eid&&r.run_id===runId&&r.size===sz&&r.task===task&&r.use_ort===useOrt&&r.family==='throughput';});
     var lRow=modelRows.find(function(r){return r.env_id===eid&&r.run_id===runId&&r.size===sz&&r.task===task&&r.use_ort===useOrt&&r.family==='latency';});
     var eRow=e2eRows.find(function(r){return r.env_id===eid&&r.run_id===runId&&r.size===sz&&r.task===task&&r.use_ort===useOrt;});
     var cRow=capRows.find(function(r){return r.env_id===eid&&r.run_id===runId&&r.size===sz&&r.task===task&&r.use_ort===useOrt;});
     if(tRow||eRow){results.push({env:env,envId:eid,label:envLabel(env),throughput:tRow?tRow.fps:null,e2eFps:eRow?eRow.avg_e2e_fps:null,latency:lRow?lRow.latency_ms:null,maxChannels:cRow?cRow.capacity_streams:null});}
   });
-  results.sort(function(a,b){return(a.e2eFps||0)-(b.e2eFps||0);});return results;
+  // Real entries ascending by E2E FPS; missing-version placeholders pushed to the right.
+  results.sort(function(a,b){if(!!a.missing!==!!b.missing)return a.missing?1:-1;return(a.e2eFps||0)-(b.e2eFps||0);});return results;
 }
 function refreshChart(preferredEnvId) {
   var data=getChartData();state.chartData=data;
@@ -458,19 +464,23 @@ function refreshChart(preferredEnvId) {
     document.getElementById('overviewDetail').style.display='none';
     Chart.update(data,null);return;
   }
-  var selected=data[0];
-  if(preferredEnvId){for(var i=0;i<data.length;i++){if(data[i].envId===preferredEnvId){selected=data[i];break;}}}
-  state.selectedEnvId=selected.envId;renderEnvDetail(selected.env,{scroll:false});
+  var selected=null;
+  if(preferredEnvId){for(var i=0;i<data.length;i++){if(data[i].envId===preferredEnvId&&!data[i].missing){selected=data[i];break;}}}
+  if(!selected){for(var j=0;j<data.length;j++){if(!data[j].missing){selected=data[j];break;}}}
+  if(selected){state.selectedEnvId=selected.envId;renderEnvDetail(selected.env,{scroll:false});}
+  else{state.selectedEnvId=null;document.getElementById('overviewDetail').style.display='none';}
   Chart.update(data,state.selectedEnvId);
 }
 function getFpsCompareData() {
   var useOrt=state.fpsOrt;var task=state.fpsTask;var results=[];var e2eRows=_history('e2e_single');
   (state.dataset.environments||[]).forEach(function(env){
     var eid=env.env_id;var runId=_getSelectedRunId(eid);var sizes={};var hasAny=false;
+    // No run at the selected suite version -> greyed "no <version>" placeholder column.
+    if(runId==null){SIZE_KEYS.forEach(function(sz){sizes[sz]=null;});results.push({env:env,envId:eid,label:envLabel(env),sizes:sizes,missing:true});return;}
     SIZE_KEYS.forEach(function(sz){var eRow=e2eRows.find(function(r){return r.env_id===eid&&r.run_id===runId&&r.size===sz&&r.task===task&&r.use_ort===useOrt;});if(eRow){sizes[sz]=eRow.avg_e2e_fps;hasAny=true;}else{sizes[sz]=null;}});
     if(hasAny){results.push({env:env,envId:eid,label:envLabel(env),sizes:sizes});}
   });
-  results.sort(function(a,b){var sum=function(d){var s=0;SIZE_KEYS.forEach(function(sz){if(d.sizes[sz]!=null)s+=d.sizes[sz];});return s;};return sum(a)-sum(b);});return results;
+  results.sort(function(a,b){if(!!a.missing!==!!b.missing)return a.missing?1:-1;var sum=function(d){var s=0;SIZE_KEYS.forEach(function(sz){if(d.sizes[sz]!=null)s+=d.sizes[sz];});return s;};return sum(a)-sum(b);});return results;
 }
 function refreshFpsCompare(preferredEnvId) {
   var data=getFpsCompareData();state.fpsChartData=data;
@@ -481,13 +491,16 @@ function refreshFpsCompare(preferredEnvId) {
     FpsChart.update(data,null);
     return;
   }
-  var selected=data[0];var idx=0;
-  if(preferredEnvId){for(var i=0;i<data.length;i++){if(data[i].envId===preferredEnvId){selected=data[i];idx=i;break;}}}
-  handleFpsEnvClick(idx,selected,{scroll:false});
+  var selected=null,idx=-1;
+  if(preferredEnvId){for(var i=0;i<data.length;i++){if(data[i].envId===preferredEnvId&&!data[i].missing){selected=data[i];idx=i;break;}}}
+  if(!selected){for(var j=0;j<data.length;j++){if(!data[j].missing){selected=data[j];idx=j;break;}}}
+  if(selected){handleFpsEnvClick(idx,selected,{scroll:false});}
+  else{state.fpsSelectedEnvId=null;document.getElementById('fpsDetail').style.display='none';FpsChart.update(data,null);}
 }
 
 function handleFpsEnvClick(idx,d,options) {
   options=options||{};
+  if(d&&d.missing)return;
   state.fpsSelectedEnvId=d.envId;
   var panel=document.getElementById('fpsDetail');panel.style.display='';
   document.getElementById('fpsDetailTitle').textContent='Details — '+(d.env.env_id||d.env.hostname);
@@ -678,11 +691,17 @@ function renderDetailTables() {
 }
 
 /* ===== Meta ===== */
+// Build hash read from this page's own app.js?v=<hash> ref (stamped by the builder).
+// Lets a viewer confirm at a glance whether a reload picked up a rebuild (the date
+// alone is day-granular and can't distinguish two builds on the same day).
+function _buildStamp(){var s=document.querySelector('script[src*="app.js"]');if(!s)return null;var m=/[?&]v=([0-9a-f]{6,})/.exec(s.getAttribute('src')||'');return m?m[1]:null;}
 function renderMeta() {
   var m=state.dataset.meta||{};
+  var build=_buildStamp();
   document.getElementById('meta').innerHTML=
     '<div><strong>Environments</strong><span>'+(m.environment_count||0)+'</span></div>'+
-    '<div><strong>Generated</strong><span>'+(m.generated_at?new Date(m.generated_at).toLocaleDateString():'-')+'</span></div>';
+    '<div><strong>Generated</strong><span>'+(m.generated_at?new Date(m.generated_at).toLocaleDateString():'-')+'</span></div>'+
+    (build?'<div><strong>Build</strong><span title="dashboard content hash — changes on every rebuild">'+escHtml(build)+'</span></div>':'');
 }
 
 /* ===== Version Trend helpers ===== */
@@ -903,7 +922,7 @@ async function main() {
   try{state.dataset=await loadDataset();}catch(e){document.querySelector('.chart-container').innerHTML='<div class="empty-state" style="margin:80px auto">Failed to load dataset: '+e.message+'</div>';return;}
   _initSelectedRunIds();renderMeta();initTabs();renderRunSelectors('fpsRunSelectors');renderRunSelectors('overviewRunSelectors');initFpsFilters();initOverviewFilters();
   FpsChart.init(document.getElementById('fpsCompareChart'),handleFpsEnvClick);
-  Chart.init(document.getElementById('mainChart'),function(idx,d){state.selectedEnvId=d.envId;renderEnvDetail(d.env,{scroll:true});Chart.update(state.chartData,state.selectedEnvId);});
+  Chart.init(document.getElementById('mainChart'),function(idx,d){if(d&&d.missing)return;state.selectedEnvId=d.envId;renderEnvDetail(d.env,{scroll:true});Chart.update(state.chartData,state.selectedEnvId);});
   refreshFpsCompare();refreshChart();initDetailTab();
   /* Version Trend tab */
   if((state.dataset.snapshots||[]).length){

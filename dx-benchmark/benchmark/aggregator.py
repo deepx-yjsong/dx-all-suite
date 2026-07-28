@@ -77,6 +77,7 @@ def _build_environment_summary(env_id: str, run_id: str, fingerprint: dict) -> d
     return {
         "env_id": env_id,
         "dx_all_suite_version": fingerprint.get("dx_all_suite_version"),
+        "benchmark_tool_version": fingerprint.get("benchmark_tool_version"),
         "hw_id": env_id,                     # legacy alias == env_id (folder)
         "latest_run_id": run_id,
         "product_name": fingerprint.get("product_name"),
@@ -112,6 +113,7 @@ def _normalize_run(run_id: str, env_id: str, result_dir: Path, fingerprint: dict
         "run_id": run_id,
         "env_id": env_id,
         "dx_all_suite_version": fingerprint.get("dx_all_suite_version"),
+        "benchmark_tool_version": fingerprint.get("benchmark_tool_version"),
         # Relative "<env_id>/<run_id>" — never an absolute path (no username /
         # internal-repo leak in the published dataset.json; unused by the dashboard).
         "path": f"{env_id}/{run_id}",

@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+from . import __version__ as BENCHMARK_TOOL_VERSION
 from .npu_catalog import classify_devices, format_badge, format_sku
 
 
@@ -161,6 +162,7 @@ def collect_fingerprint() -> dict[str, Any]:
     uname = platform.uname()
     fp: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "benchmark_tool_version": BENCHMARK_TOOL_VERSION,
         "host": {
             "hostname": uname.node,
             "os": _get_os_pretty_name(),

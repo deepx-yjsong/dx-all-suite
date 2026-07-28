@@ -601,6 +601,7 @@ def _add_environment_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| RAM | {host.get('ram_gb', 'N/A')} GB |")
     lines.append(f"| NPU SKU | {npu.get('sku', 'N/A')} |")
     lines.append(f"| DX-AllSuite | {fingerprint.get('dx_all_suite_version') or 'N/A'} |")
+    lines.append(f"| Benchmark Tool | {fingerprint.get('benchmark_tool_version') or 'N/A'} |")
     lines.append(f"| NPU RT | {npu.get('rt_version', 'N/A')} |")
     if npu.get("rt_version_raw") and npu.get("rt_version_raw") != npu.get("rt_version"):
         lines.append(f"| NPU RT (commit) | {npu.get('rt_version_raw')} |")

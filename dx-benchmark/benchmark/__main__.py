@@ -23,6 +23,7 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
+from . import __version__
 from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
 from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
@@ -1460,6 +1461,11 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="python3 -m benchmark",
         description="YOLO26 Benchmark Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--version", action="version",
+        version=f"dx-benchmark {__version__}",
+        help="Show the dx-benchmark tool version and exit",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
