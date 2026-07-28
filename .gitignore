@@ -11,6 +11,10 @@ dx-benchmark/results/**/*.csv
 dx-benchmark/results/dashboard/dashboard_standalone.html
 # internal-only quality review (배포 금지)
 dx-benchmark/docs/QUALITY_REVIEW_2026-07-14_KOR.md
+# internal-only buffer-count sweep deep-dive + PDF (배포 금지)
+dx-benchmark/docs/BUFFER_COUNT_SWEEP_ANALYSIS_*
+# internal-only legacy analysis PDF — superseded by docs/ANALYSIS_* (배포 금지)
+dx-benchmark/docs/YOLO26_BENCHMARK_ANALYSIS_*
 # local http.server access log (leftover from `python3 -m http.server` dashboard preview)
 dx-benchmark/results/*.log
 dx-benchmark/results/**/*.log
