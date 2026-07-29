@@ -139,6 +139,17 @@ therefore "**model-level throughput** in the medium-to-x-large range improved by
 +28.4% on the v2.4.0 stack relative to the v2.3.3 stack", and **the contribution of any
 individual component cannot be separated out from this dataset.**
 
+The same trend must also **not be applied to single-stream E2E FPS.** As the last column of
+the table above shows, the components differ in which path they affect, and in cells where
+the host is already the ceiling a model-level gain has nowhere to land
+([§2.4](#24-several-metrics-are-host-bound-rather-than-npu-bound),
+[§7.1](#71-for-light-models-the-ceiling-is-the-host-not-the-npu)). For those cells E2E FPS is
+comparable between the two releases, and in some environment/task combinations it measures
+slightly lower. That difference arises inside the E2E path (decode → preprocess → inference →
+post-process) rather than in NPU performance, but **attributing it to an individual component
+requires further measurement, so this document does not assert a cause.** It will be updated
+in a later release's document.
+
 ### 2.2 M1 and M1M are different products and must not be combined
 
 `RPi5B_M1` and `RPi5B_M1M` are the **same Raspberry Pi 5 host** fitted with **two
@@ -737,7 +748,9 @@ a single band. `RPi5B_M1` at nano is −0.1%: both releases sit at the same Gen3
 ceiling of ~179 fps.
 
 This is the clearest single argument for **upgrading to the latest dx-all-suite
-release**: identical hardware runs materially faster.
+release**: **at the model level**, identical hardware runs materially faster. Single-stream
+E2E, however, does not track this improvement rate in cells governed by the host ceiling
+([§2.1](#21-the-version-trend-reflects-the-entire-release-stack-not-one-component)).
 
 ---
 

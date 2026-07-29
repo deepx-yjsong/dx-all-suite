@@ -127,6 +127,15 @@ host OS·kernel은 변경되지 않았고, 측정 protocol 값(30초 throughput,
 **model-level throughput**이 v2.3.3 stack 대비 v2.4.0 stack에서 중앙값 +28.4% 향상되었다"이며,
 **개별 구성요소의 기여도는 본 데이터로 분리할 수 없다.**
 
+또한 이 추이를 **single-stream E2E FPS에 그대로 적용해서는 안 된다.** 위 표의 마지막 열이
+보여주듯 구성요소별로 영향 경로가 다르며, host가 이미 상한인 셀에서는 model-level 향상이
+E2E로 전이될 자리가 없다([§2.4](#24-일부-지표는-npu-bound가-아니라-host-bound다),
+[§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다)). 그런 셀의 E2E FPS는 두
+release 사이에서 동등하거나, 환경·task 조합에 따라 소폭 낮게 측정되기도 한다. 이 차이는 NPU
+성능이 아니라 E2E 경로(decode → preprocess → inference → postprocess) 내부에서 발생하지만,
+**구성요소 단위 귀속에는 추가 측정이 필요하므로 본 문서에서는 원인을 단정하지 않는다.**
+후속 release 문서에서 갱신할 예정이다.
+
 ### 2.2 M1과 M1M은 서로 다른 제품이며 수치를 섞어서는 안 된다
 
 `RPi5B_M1`과 `RPi5B_M1M`은 **동일한 Raspberry Pi 5 host**에 **서로 다른 두 DEEPX
@@ -691,8 +700,10 @@ host·PCIe 상한에 지배되므로([§2.4](#24-일부-지표는-npu-bound가-�
 [§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다)) 단일 범위로 요약하지 않는다.
 `RPi5B_M1`의 nano는 −0.1%로, 두 release 모두 Gen3 ×1 link 상한(약 179 fps)에 걸려 있다.
 
-이는 **최신 dx-all-suite release로의 업그레이드**를 뒷받침하는 가장 명확한 근거다. 동일
-hardware가 확연히 빠르게 동작한다.
+이는 **최신 dx-all-suite release로의 업그레이드**를 뒷받침하는 가장 명확한 근거다.
+**model-level 기준으로** 동일 hardware가 확연히 빠르게 동작한다. 단, single-stream E2E는 host
+상한에 지배되는 셀에서 이 향상률을 그대로 따라가지 않는다
+([§2.1](#21-버전-추이는-release-stack-전체가-함께-바뀐-결과다)).
 
 ---
 
