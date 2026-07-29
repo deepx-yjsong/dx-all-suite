@@ -194,12 +194,6 @@ badge로 표시된다.
 multi-stream 구간에서 어느 정도 throttling하며, active cooling이 적용된 x86 board와
 `RPi5B_M1`은 model 단계 전 구간에서 clock을 유지한다.
 
-`ROCK5B+_M1`은 측정 시작 시점부터 여유가 없었다. v2.4.0 run의 fingerprint는 측정 전 상태를
-**600 MHz / 55–56 °C** 로 기록했는데, 다른 환경과 같은 board의 v2.3.3 run은 모두 idle에서
-1000 MHz(34–50 °C)를 기록했다. 이 board의 medium 이상 수치를 해석할 때 함께 고려해야 한다.
-
-> **출처:** 각 run `environment.json`의 `npu.clock_mhz` / `npu.cores`.
-
 Thermal limit에 도달한 두 board의 medium·large·x-large 수치는 module의 상한이 아니라
 **지속 부하 하한**으로 해석해야 한다. cooling을 개선하면 상승한다.
 

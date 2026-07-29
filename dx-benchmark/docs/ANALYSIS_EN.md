@@ -209,13 +209,6 @@ throughput runs that follow a single cooldown: **ROCK5B+_M1** (24 cells) and **R
 (28 cells). Every board throttles to some degree in the multi-stream phase, while the
 actively cooled x86 boards and `RPi5B_M1` hold their clock throughout the model phase.
 
-`ROCK5B+_M1` had no headroom from the start of its measurements: the fingerprint of its v2.4.0
-run recorded the pre-measurement state as **600 MHz / 55–56 °C**, whereas every other
-environment — and the same board's v2.3.3 run — recorded 1000 MHz at idle (34–50 °C). This
-should be taken into account when reading that board's medium and larger figures.
-
-> **Source:** `npu.clock_mhz` / `npu.cores` of each run's `environment.json`.
-
 For the two thermally limited boards, their medium, large and x-large figures should be
 read as a **sustained-load floor** rather than the module's ceiling — improved cooling
 raises them.
