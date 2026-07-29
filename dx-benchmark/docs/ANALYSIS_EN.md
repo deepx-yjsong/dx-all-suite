@@ -70,8 +70,6 @@ Reading the table:
 
 ### Principal findings
 
-Each finding is documented later in the report together with its source data.
-
 1. **The DEEPX M1 NPU delivers near-identical compute across markedly different host
    CPUs.** For the medium, large and x-large models — where the NPU rather than the host
    is the bottleneck — the four single-M1 machines (an Intel N97, a Rockchip OrangePi, a
@@ -110,9 +108,7 @@ Each finding is documented later in the report together with its source data.
 
 ## 2. How to Read These Numbers
 
-The four points below should be read before drawing conclusions from any individual
-figure. They summarise a full audit of the raw logs and profiler traces behind this
-dataset.
+The five points below should be read before drawing conclusions from any individual figure.
 
 ### 2.1 The version trend reflects the entire release stack, not one component
 
@@ -135,20 +131,13 @@ dx-all-suite ships**. The differences recorded in each run's metadata are:
 The following conditions were held constant: the DXNN binary format is `v8` in both sets
 of runs, each environment's host OS and kernel are unchanged, and the measurement
 protocol values (30-second throughput, 300-loop latency, repetition counts, the 30 fps
-threshold, the cooldown targets) are identical. The only additions to the tool used for the
-v2.4.0 runs are failure-handling safeguards (circuit breaker, buffer-count zero-fps
-retry, device-probe timeout); the procedure for a successful measurement did not change.
+threshold, the cooldown targets) are identical. The only tool changes were internal
+failure-handling safeguards; the procedure for a successful measurement did not change.
 
 The accurate reading of [§9](#9-performance-trend-across-dx-all-suite-releases) is
 therefore "**model-level throughput** in the medium-to-x-large range improved by a median of
 +28.4% on the v2.4.0 stack relative to the v2.3.3 stack", and **the contribution of any
-individual component cannot be separated out from this dataset.** Attributing the gain to
-one component is not supported by the data.
-
-The composition of the two paths also differs. The figures in §9 are `run_model`
-model-level throughput, so DX-Stream is not in that path, whereas the end-to-end and
-multi-stream figures of [§7](#7-end-to-end-video-pipeline-single-stream) and
-[§8](#8-multi-stream-channel-capacity) do include DX-Stream.
+individual component cannot be separated out from this dataset.**
 
 ### 2.2 M1 and M1M are different products and must not be combined
 
@@ -185,12 +174,10 @@ points**:
 ① cooldown → ② latency → ③ throughput → ④ cooldown (before E2E) → ⑤ E2E → ⑥ multi-stream
 ```
 
-The E2E phase therefore does not inherit the residual heat of the preceding phases. The
-cooldown at ④ targets min(idle + 10 °C, 55 °C); in the v2.4.0 runs the E2E entry
-temperature had a per-environment median of 44–55 °C (39–55 °C across individual cells),
-with a per-environment median wait of 250–522 s (maximum 773 s). Throttling during the E2E
-phase is consequently caused by **the sustained load of the E2E phase itself**, not by heat
-accumulated in the earlier phases.
+The E2E phase therefore does not inherit the residual heat of the preceding phases: the
+cooldown at ④ returns each board to min(idle + 10 °C, 55 °C), and E2E entry temperatures in
+the v2.4.0 runs were 39–55 °C. Throttling during the E2E phase is consequently caused by
+**the sustained load of the E2E phase itself**, not by heat accumulated in the earlier phases.
 
 **There is, however, no cooldown between ⑤ E2E and ⑥ multi-stream.** Multi-stream starts
 from the thermal state left by E2E and then processes N concurrent streams, making it the
@@ -202,11 +189,8 @@ limit and reduces its clock from 1000 MHz into the 200–800 MHz range. This is 
 behaviour, not a software regression. Throttled cells carry `npu_throttled = true` in the
 raw data and a clock badge in the dashboard.
 
-> **Source:** the cooldown placement is protocol v1 (the model-level cooldown plus the
-> pre-E2E cooldown in `benchmark/__main__.py`); the entry temperatures and wait times are
-> `cooldown_temp_c` / `cooldown_wait_sec` in each v2.4.0 `pipeline_results.json` (50 cells
-> per environment); the clock floor is `npu_clock_mhz_min` over the 291 throttled cells of
-> the three result files.
+> **Source:** `cooldown_temp_c` / `cooldown_wait_sec` in each v2.4.0 `pipeline_results.json`;
+> `npu_clock_mhz_min` in the three result files.
 
 | Environment (v2.4.0) | Model-level cells throttled | End-to-end cells throttled | Multi-stream cells throttled | Max NPU temp |
 |----------------------|:---------------------------:|:--------------------------:|:----------------------------:|:------------:|
@@ -240,7 +224,8 @@ Throttling does not only lower the mean; it also **widens the measurement spread
 the 300 model-throughput cells of the v2.4.0 runs, the run-to-run spread (fps standard
 deviation ÷ mean) has a median of 0.31% for the 249 cells that did not throttle (90th
 percentile 1.15%), against a median of 5.46% and a maximum of 17.0% for the 51 cells that
-did. The clock steps down to different points in the 300–800 MHz range on different runs.
+did — among those model-level cells the clock settles anywhere in the 300–800 MHz range from
+one run to the next.
 **A cell with an unusually wide spread is therefore itself a thermal signal.**
 
 > **Source:** `fps_std` / `fps` / `npu_throttled` / `npu_clock_mhz_min` of every
@@ -352,24 +337,12 @@ protocol parameters are listed in the [Appendix](#112-measurement-protocol--key-
 
 ### 3.5 Buffer-count — how the throughput ceiling is found
 
-`run_model --buffer-count` sets how many inference buffers are queued to the NPU, and throughput
-against buffer-count is a saturation curve — the default (6) does not necessarily sit at the peak.
-**Every throughput cell is therefore a sweep**: the tool probes a range of buffer-counts and
-reports the **ceiling** (the highest measured throughput). `REPORT.md` marks the winner with ★ and
-prints the full per-buffer-count curve.
-
-**Scope — model-level throughput only.** The flag applies to the asynchronous, multi-core
-`run_model` path. Latency (single-core, synchronous) does not set it, and neither do the
-E2E/multi-stream pipelines — which is why `REPORT.md` reports a buffer-count for throughput
-cells only. In a dx_stream pipeline the equivalent flow control is the GStreamer queues and
-`dxinfer`'s own buffering, not this flag.
-
-**Reproducing these numbers.** The published throughput is the value at the best buffer-count, not
-at a default. Lighter models need a deeper queue to stay saturated; heavier models saturate early —
-across the v2.4.0 cells the winning buffer-count had a median of **7 (nano, small) → 6 (medium) →
-5 (large) → 4 (x-large)**. An application that drives asynchronous inference itself (`dx_engine` /
-`run_model`) and leaves this at an arbitrary default can fall short of these figures. The exact
-winner matters less than the ceiling — tied buffer-counts deliver effectively equal throughput.
+Throughput against `run_model --buffer-count` is a saturation curve, so **every throughput cell
+here is a sweep**: the published figure is the ceiling, not the value at the default (6). Across the
+v2.4.0 cells the best buffer-count trended **7 (nano, small) → 4 (x-large)**, so an application that
+drives asynchronous inference itself and leaves the flag at a default can fall short of these
+numbers. The flag applies to the model-level path only — not to latency, and not to the
+E2E/multi-stream pipelines.
 
 ---
 
@@ -391,16 +364,8 @@ throughout this report and the dashboard — encodes both the host and the NPU m
 > **Source:** `host` / `npu` fields of each v2.4.0 `environment.json`, and the `decoder`
 > field of `pipeline_results.json`.
 
-All NPUs run at a nominal 1000 MHz. Within each release, the software stack is identical
-across all six environments:
-
-| Release | Runtime | Firmware | RT driver | PCIe driver | dx_stream |
-|:-------:|:-------:|:--------:|:---------:|:-----------:|:---------:|
-| v2.3.3 | v3.3.2 | v2.5.6 | v2.4.1 | v2.2.0 | 3.0.1 |
-| v2.4.0 | v3.4.0 | v2.7.3 | v2.5.1 | v2.4.1 | 3.1.0 |
-
-> **Source:** `npu` / `software` fields of each run's `environment.json`. All six
-> environments share these exact versions per release.
+Within each release, all six environments ran the identical software stack listed in
+[§2.1](#21-the-version-trend-reflects-the-entire-release-stack-not-one-component).
 
 ---
 
@@ -448,11 +413,8 @@ entirely host-side:
 - The residual spread at **m** and **x** is driven by `ROCK5B+_M1` thermal throttling
   ([§2.3](#23-boards-that-reach-their-thermal-limit-throttle-in-the-sustained-phases)),
   which trims that board's figures below the other three.
-- The wide spread at **nano** is not a host-CPU effect but a **PCIe bandwidth** effect:
-  `RPi5B_M1` is a single-lane (Gen3 ×1) board and reaches a ceiling of ~179 fps —
-  precisely matching the other ×1 board, `RPi5B_M1M` — while the ×2 and ×4 boards reach
-  ~315–320 fps. In this cell `RPi5B_M1`'s average NPU utilisation is only 44%, confirming
-  that the ceiling is the link rather than the NPU
+- The wide spread at **nano** is a PCIe-bandwidth effect, not a host-CPU one: the ×1 boards
+  cap at ~179 fps against ~315–320 fps on the ×2/×4 boards, with NPU utilisation at only 44%
   ([§2.4](#24-several-metrics-are-host-bound-rather-than-npu-bound)).
 
 **Implication for capacity planning.** Deployments should be sized on the medium, large
@@ -474,9 +436,7 @@ single-M1 hosts:
 
 > **Source:** the object-detection v2.4.0 ORT-OFF table in
 > [§5](#5-npu-compute-performance-model-level-throughput); M1 mean taken over the four
-> M1 hosts. The ratio sits slightly above 4× in part because
-> the single-M1 mean is pulled down by ROCK5B throttling, and in part because the H1 host
-> is faster.
+> M1 hosts (which include ROCK5B's throttled figures).
 
 This ratio applies to **model-level throughput only.** Single-stream end-to-end FPS runs
 into the host supply limit first and reaches just 47% of throughput at nano; the four chips'
@@ -768,9 +728,7 @@ any individual component.
 | RPi5B_M1M | l | 41.8 | 60.0 | +43.4 % |
 
 > **Source:** `model_results.json` of each environment's v2.3.3 and v2.4.0 runs, task =
-> object_detection, family = throughput, ORT OFF, matched by (task, size, ORT mode)
-> because the model filenames were renamed between releases. The full six-environment
-> table is available in the dashboard's **Version Trend** tab.
+> object_detection, family = throughput, ORT OFF, matched by (task, size, ORT mode).
 
 **Interpretation.** Across the 18 cells of the NPU-bound range (medium, large, x-large) the
 model-level throughput change has a median of **+28.4%**, with 14 of the 18 in the +25–35%
@@ -786,9 +744,7 @@ a single band. `RPi5B_M1` at nano is −0.1%: both releases sit at the same Gen3
 ceiling of ~179 fps.
 
 This is the clearest single argument for **upgrading to the latest dx-all-suite
-release**: identical hardware runs materially faster. The dataset currently carries two
-release points, and the dashboard's Version Trend tab extends automatically as further
-releases are measured.
+release**: identical hardware runs materially faster.
 
 ---
 
@@ -943,13 +899,8 @@ combination of environment, version, task, size and ORT mode to be compared.
 
 | Term | Meaning |
 |------|---------|
-| **NPU (Neural Processing Unit)** | The DEEPX accelerator that executes the neural network (M1 / M1M module, or the four-chip H1-Quattro card) |
+| **NPU · ORT · Throughput · Latency · End-to-end FPS · Maximum channels** | Defined in [§3](#3-what-was-measured--terms-and-method) |
 | **CPU part (CPU offload)** | The portion of a compiled model's graph that the NPU cannot execute — for YOLO26, NMS plus the keypoint or mask decode. Executed on the host CPU only when ORT is ON. Distinct from the pipeline's post-processing stage. |
-| **ORT (ONNX-Runtime mode)** | ON = the model's CPU part is offloaded to the host CPU through ONNX Runtime, so the output is identical to the source ONNX model; OFF = NPU part only (faster; the application must implement the equivalent computation) |
-| **Throughput** | Sustained multi-core asynchronous NPU frame rate from `run_model` (pure NPU compute) |
-| **Latency** | Single-frame, single-core inference time (responsiveness) |
-| **End-to-end FPS** | Full video-pipeline frame rate (decode → preprocess → NPU → post-process) |
-| **Maximum channels** | The most simultaneous streams for which each stream sustains ≥30 fps |
 | **NPU utilisation** | Average NPU core utilisation sampled by dxtop over the measurement window (`npu_total_avg_pct`). A low value indicates a host-bound state in which the NPU is waiting for input |
 | **Backpressure** | The mechanism by which a downstream element's processing delay propagates upstream through non-leaky queues, limiting both overall throughput and the supply of frames to the NPU. Every queue in the measured pipeline is `leaky=no` |
 | **Thermal throttling** | NPU clock reduction under high temperature (the NPU steps its clock down from 1000 MHz) |

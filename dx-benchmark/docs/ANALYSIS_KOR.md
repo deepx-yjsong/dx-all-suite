@@ -66,8 +66,6 @@ model**이 보이는 실용 성능이다. 입력은 **Full HD(1920×1080) 30 fps
 
 ### 핵심 발견
 
-각 항목은 본문 해당 절에서 출처 데이터와 함께 상술한다.
-
 1. **DEEPX M1 NPU는 사양이 크게 다른 host CPU에서도 거의 동일한 연산 성능을 제공한다.**
    medium·large·x-large model, 즉 host가 아니라 NPU가 bottleneck인 구간에서는 4개의
    single-M1 machine(Intel N97, Rockchip OrangePi, Rockchip ROCK5B, Raspberry Pi 5)이
@@ -100,8 +98,7 @@ model**이 보이는 실용 성능이다. 입력은 **Full HD(1920×1080) 30 fps
 
 ## 2. 수치를 읽는 법
 
-아래 네 항목은 개별 수치로 결론을 내리기 전에 반드시 확인해야 할 사항이다. 본 데이터셋의
-raw log와 profiler trace를 전수 검토한 결과를 정리한 것이다.
+아래 다섯 항목은 개별 수치로 결론을 내리기 전에 반드시 확인해야 할 사항이다.
 
 ### 2.1 버전 추이는 release stack 전체가 함께 바뀐 결과다
 
@@ -123,19 +120,12 @@ raw log와 profiler trace를 전수 검토한 결과를 정리한 것이다.
 
 동일하게 유지된 조건은 다음과 같다. DXNN binary format은 두 측정 모두 `v8`이며, 각 환경의
 host OS·kernel은 변경되지 않았고, 측정 protocol 값(30초 throughput, 300-loop latency, 반복
-횟수, 30 fps threshold, cooldown 목표) 역시 동일하다. v2.4.0 측정에 사용된 tool에 추가된 항목은
-실패 처리용 안정화 parameter(circuit breaker, buffer-count zero-fps 재시도, device probe timeout)
-뿐이며, 정상 측정 절차 자체는 바뀌지 않았다.
+횟수, 30 fps threshold, cooldown 목표) 역시 동일하다. tool 변경은 내부 실패 처리 안정화에 국한되며,
+정상 측정 절차 자체는 바뀌지 않았다.
 
 따라서 [§9](#9-dx-all-suite-release별-성능-추이)의 정확한 해석은 "medium·large·x-large 구간의
 **model-level throughput**이 v2.3.3 stack 대비 v2.4.0 stack에서 중앙값 +28.4% 향상되었다"이며,
-**개별 구성요소의 기여도는 본 데이터로 분리할 수 없다.** 특정 구성요소 하나의 개선 효과로
-서술하는 것은 근거가 없다.
-
-두 경로의 구성이 다르다는 점도 함께 고려해야 한다. §9의 수치는 `run_model` 기반 model-level
-throughput이므로 DX-Stream은 그 경로에 포함되지 않는다. 반면
-[§7](#7-end-to-end-영상-파이프라인-single-stream)·[§8](#8-multi-stream-채널-수용량)의
-end-to-end·multi-stream 수치는 DX-Stream까지 포함한 결과다.
+**개별 구성요소의 기여도는 본 데이터로 분리할 수 없다.**
 
 ### 2.2 M1과 M1M은 서로 다른 제품이며 수치를 섞어서는 안 된다
 
@@ -171,11 +161,9 @@ protocol(v3)은 각 model × ORT cell을 다음 순서로 실행하며, **cooldo
 ① cooldown → ② latency → ③ throughput → ④ cooldown(E2E 직전) → ⑤ E2E → ⑥ multi-stream
 ```
 
-즉 E2E는 앞 단계의 잔열을 그대로 물려받지 않는다. ④의 cooldown 목표는
-min(idle + 10 °C, 55 °C)이며, v2.4.0 측정의 E2E 진입 온도는 환경별 중앙값 44–55 °C(개별
-cell 39–55 °C), 대기 시간은 환경별 중앙값 250–522초(최대 773초)로 기록되었다. 따라서 E2E
-단계의 throttling은 이전 단계에서 누적된 열이 아니라 **E2E 자체의 지속 부하** 때문에
-발생한다.
+즉 E2E는 앞 단계의 잔열을 그대로 물려받지 않는다. ④의 cooldown이 각 board를
+min(idle + 10 °C, 55 °C)로 되돌리며, v2.4.0 측정의 E2E 진입 온도는 39–55 °C였다. 따라서 E2E
+단계의 throttling은 이전 단계에서 누적된 열이 아니라 **E2E 자체의 지속 부하** 때문에 발생한다.
 
 반면 **⑤ E2E와 ⑥ multi-stream 사이에는 cooldown이 없다.** multi-stream은 E2E의 열 상태를
 이어받은 상태에서 N개 stream을 동시에 처리하므로, 본 측정에서 부하가 가장 큰 구간이다. 모든
@@ -186,10 +174,8 @@ cell 39–55 °C), 대기 시간은 환경별 중앙값 250–522초(최대 773�
 Throttling된 cell은 raw 데이터에 `npu_throttled = true`로 기록되며, dashboard에는 clock
 badge로 표시된다.
 
-> **출처:** cooldown 배치는 protocol v1(`benchmark/__main__.py`의 model-level cooldown +
-> pre-E2E cooldown), 진입 온도·대기 시간은 각 v2.4.0 run `pipeline_results.json`의
-> `cooldown_temp_c` / `cooldown_wait_sec`(환경당 50 cell), clock 하한은 3개 결과 파일의
-> throttled cell 291개 `npu_clock_mhz_min`.
+> **출처:** 각 v2.4.0 run `pipeline_results.json`의 `cooldown_temp_c` / `cooldown_wait_sec`,
+> 3개 결과 파일의 `npu_clock_mhz_min`.
 
 | 환경 (v2.4.0) | Model-level throttled | End-to-end throttled | Multi-stream throttled | Max NPU temp |
 |----------------|:---------------------:|:--------------------:|:----------------------:|:------------:|
@@ -220,7 +206,8 @@ Thermal limit에 도달한 두 board의 medium·large·x-large 수치는 module�
 Throttling은 평균 성능만 낮추는 것이 아니라 **측정 편차도 함께 키운다.** v2.4.0의 model
 throughput cell 300개를 대상으로 run 간 편차(fps 표준편차 ÷ 평균)를 계산하면, throttling되지
 않은 cell(249개)은 중앙값 0.31%(상위 10% 경계 1.15%)인 반면 throttling된 cell(51개)은 중앙값
-5.46%, 최대 17.0%다. Clock이 300–800 MHz 구간에서 run마다 다른 지점으로 하향되기 때문이다.
+5.46%, 최대 17.0%다. 이 model-level cell들에서 clock이 run마다 300–800 MHz 구간의 서로 다른
+지점으로 하향되기 때문이다.
 따라서 **편차가 큰 cell은 그 자체로 thermal 문제의 신호**로 활용할 수 있다.
 
 > **출처:** 각 v2.4.0 run `model_results.json`의 `fps_std` / `fps` / `npu_throttled` /
@@ -326,16 +313,8 @@ Full HD(1920×1080) 30 fps다.
 
 ### 3.5 Buffer-count — throughput 상한을 찾는 방법
 
-`run_model --buffer-count`는 NPU에 queue되는 inference buffer 개수를 지정한다. throughput과
-buffer-count의 관계는 포화 곡선이며 기본값(6)이 반드시 정점은 아니다. 그래서 **모든 throughput
-cell은 sweep 결과다.** tool이 buffer-count 구간을 probe해 **상한(ceiling)** 을 보고하며,
-`REPORT.md`는 승자를 ★로 표시하고 buffer-count별 전체 곡선을 함께 출력한다.
-
-**적용 범위 — model-level throughput 전용.** 이 flag는 asynchronous·multi-core `run_model`
-경로에만 적용된다. latency(single-core·synchronous)는 이 값을 설정하지 않으며 E2E·multi-stream
-pipeline도 설정하지 않는다. 그래서 `REPORT.md`는 throughput cell에만 buffer-count를 표기한다.
-dx_stream pipeline에서 이에 대응하는 흐름 제어는 이 flag가 아니라 GStreamer queue와 `dxinfer`
-자체 buffering이다.
+`run_model --buffer-count`에 대한 throughput은 포화 곡선이므로 **본 보고서의 모든 throughput
+cell은 sweep 결과다.** 공개된 수치는 기본값(6)에서의 값이 아니라 상한(ceiling)이다.
 
 **이 수치를 재현하려는 경우.** 공개된 throughput은 기본값이 아니라 최적 buffer-count에서의 값이다.
 경량 model은 포화를 유지하려면 더 깊은 queue가 필요하고 무거운 model은 일찍 포화한다 — v2.4.0 cell
@@ -364,16 +343,9 @@ asynchronous inference를 직접 구동하는 application(`dx_engine` / `run_mod
 > **출처:** 각 v2.4.0 `environment.json`의 `host` / `npu` 필드와
 > `pipeline_results.json`의 `decoder` 필드.
 
-모든 NPU는 nominal 1000 MHz로 동작한다. software stack은 각 release 내에서 6개 환경 전부
-동일하다.
-
-| Release | Runtime | Firmware | RT driver | PCIe driver | dx_stream |
-|:-------:|:-------:|:--------:|:---------:|:-----------:|:---------:|
-| v2.3.3 | v3.3.2 | v2.5.6 | v2.4.1 | v2.2.0 | 3.0.1 |
-| v2.4.0 | v3.4.0 | v2.7.3 | v2.5.1 | v2.4.1 | 3.1.0 |
-
-> **출처:** 각 run `environment.json`의 `npu` / `software` 필드. 6개 환경 모두 release별로
-> 이 버전을 정확히 공유한다.
+모든 NPU는 nominal 1000 MHz로 동작하며, 각 release 내에서 6개 환경은
+[§2.1](#21-버전-추이는-release-stack-전체가-함께-바뀐-결과다)에 정리한 동일한 software stack으로
+측정되었다.
 
 ---
 
@@ -420,11 +392,9 @@ asynchronous inference를 직접 구동하는 application(`dx_engine` / `run_mod
 - **m**과 **x**의 잔여 편차는 `ROCK5B+_M1`의 thermal
   throttling([§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다))에서
   비롯되며, 해당 board의 수치를 나머지 세 대보다 낮게 만든다.
-- **nano**의 큰 편차는 host CPU 효과가 아니라 **PCIe 대역폭** 효과다. `RPi5B_M1`은
-  single-lane(Gen3 ×1) board로 약 179 fps가 상한이며, 이는 다른 ×1 board인
-  `RPi5B_M1M`과 정확히 일치한다. 반면 ×2/×4 board는 약 315–320 fps에
-  도달한다. 이 구간에서 `RPi5B_M1`의 NPU 평균 활용률은 44%에 불과해, 상한이 NPU가 아니라
-  link라는 점이 확인된다([§2.4](#24-일부-지표는-npu-bound가-아니라-host-bound다)).
+- **nano**의 큰 편차는 host CPU 효과가 아니라 **PCIe 대역폭** 효과다. ×1 board는 약 179 fps가
+  상한인 반면 ×2/×4 board는 약 315–320 fps에 도달하며, 이때 NPU 활용률은 44%에 불과하다
+  ([§2.4](#24-일부-지표는-npu-bound가-아니라-host-bound다)).
 
 **용량 설계 시 시사점.** 배포 규모는 host 간 이식성이 있는 medium·large·x-large 수치를
 기준으로 산정해야 한다. nano/small 수치는 host의 PCIe link와 CPU에 의존한다.
@@ -442,8 +412,7 @@ medium·large·x-large에서 single M1 4대 평균의 약 4배에 도달한다.
 | x | 201.8 | 46.8 | 4.31× |
 
 > **출처:** [§5](#5-npu-연산-성능-model-level-throughput)의 object-detection v2.4.0
-> ORT-OFF 표. M1 평균은 4개 M1 host의 평균이다. 배율이 4×를 다소 상회하는 것은 single-M1
-> 평균이 ROCK5B throttling으로 낮아진 점, 그리고 H1의 host가 더 빠른 점에 일부 기인한다.
+> ORT-OFF 표. M1 평균은 4개 M1 host의 평균이며 ROCK5B의 throttling된 수치를 포함한다.
 
 이 배율은 **model-level throughput에만** 적용된다. 단일 stream end-to-end FPS는 host 공급
 한계가 먼저 걸리므로 nano에서 throughput의 47%에 머물고, 4-chip의 여력은 multi-stream
@@ -715,8 +684,7 @@ DX-COM(model 재컴파일)·DX-RT runtime·RT driver·PCIe driver·NPU firmware�
 | RPi5B_M1M | l | 41.8 | 60.0 | +43.4 % |
 
 > **출처:** 각 환경의 v2.3.3 / v2.4.0 run `model_results.json`, task = object_detection,
-> family = throughput, ORT OFF. release 간 model 파일명이 변경되었으므로 (task, size, ORT
-> mode) 기준으로 매칭했다. 전체 6개 환경 표는 dashboard의 **Version Trend** 탭에 있다.
+> family = throughput, ORT OFF, (task, size, ORT mode) 기준 매칭.
 
 **해석.** NPU-bound 구간(medium·large·x-large) 18개 cell의 model-level throughput 변화는
 중앙값 **+28.4%** 이며, 18개 중 14개가 +25–35% 구간에 든다. 최저는 `ROCK5B+_M1` x-large의
@@ -730,8 +698,7 @@ host·PCIe 상한에 지배되므로([§2.4](#24-일부-지표는-npu-bound가-�
 `RPi5B_M1`의 nano는 −0.1%로, 두 release 모두 Gen3 ×1 link 상한(약 179 fps)에 걸려 있다.
 
 이는 **최신 dx-all-suite release로의 업그레이드**를 뒷받침하는 가장 명확한 근거다. 동일
-hardware가 확연히 빠르게 동작한다. 현재 데이터셋은 두 release 지점을 담고 있으며, 이후
-release가 측정되면 dashboard의 Version Trend 탭이 자동으로 확장된다.
+hardware가 확연히 빠르게 동작한다.
 
 ---
 
@@ -878,13 +845,8 @@ dashboard([`results/dashboard/index.html`](../results/dashboard/index.html))에�
 
 | 용어 | 의미 |
 |------|------|
-| **NPU (Neural Processing Unit)** | neural network를 실행하는 DEEPX accelerator (M1 / M1M module, 또는 4-chip H1-Quattro card) |
+| **NPU · ORT · Throughput · Latency · End-to-end FPS · 최대 채널 수** | [§3](#3-무엇을-측정했는가--용어와-방법)에서 정의 |
 | **CPU 구간 (CPU offload)** | 컴파일된 model graph 중 NPU가 실행할 수 없는 부분. YOLO26에서는 NMS와 keypoint/mask decode에 해당한다. ORT ON일 때만 host CPU에서 실행되며, pipeline의 post-processing 단계와는 구분된다. |
-| **ORT (ONNX-Runtime mode)** | ON = model의 CPU 구간을 ONNX Runtime을 통해 host CPU로 offload하여 원본 ONNX model과 동일한 출력을 얻음. OFF = NPU 구간만 실행(더 빠르지만 동등한 연산을 application이 구현해야 함) |
-| **Throughput** | `run_model`이 산출하는 지속 multi-core asynchronous NPU frame rate (순수 NPU 연산) |
-| **Latency** | single-frame, single-core inference 시간 (응답성) |
-| **End-to-end FPS** | 전체 영상 pipeline frame rate (decode → preprocess → NPU → post-process) |
-| **최대 채널 수** | 각 stream이 30 fps 이상을 유지하는 최대 동시 stream 수 |
 | **NPU 활용률** | 측정 구간 동안 dxtop이 sampling한 NPU core 평균 사용률(`npu_total_avg_pct`). 값이 낮으면 NPU가 입력을 기다리는 host-bound 상태를 의미한다 |
 | **Backpressure** | GStreamer pipeline에서 하류 element의 처리 지연이 non-leaky queue를 통해 상류로 전파되어 전체 처리량과 NPU 공급을 함께 제한하는 현상. 본 측정 pipeline의 모든 queue는 `leaky=no`다 |
 | **Thermal throttling** | 고온에서의 NPU clock 하강 (NPU가 1000 MHz에서 clock을 낮춤) |
