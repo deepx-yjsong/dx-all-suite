@@ -357,6 +357,7 @@ results/{hw_id}/{run_id}/
 
 | Parameter | Value |
 |-----------|-------|
+| Protocol version | v1 |
 | Throughput duration (`-t`) | 30s |
 | Latency loops (`-l`) | 300 loops (`run_model -s` mode ignores `-t`, uses `-l` only) |
 | Warmup | 1 run |
