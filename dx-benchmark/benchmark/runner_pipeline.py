@@ -1399,4 +1399,3 @@ def _make_sc1_from_single_stream(single_result: dict) -> PipelineResult:
         status=single_result.get("status", "ok"),
         source="single_stream",
     )
-
