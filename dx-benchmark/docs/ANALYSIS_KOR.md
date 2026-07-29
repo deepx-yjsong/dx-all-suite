@@ -337,7 +337,7 @@ asynchronous inference를 직접 구동하는 application(`dx_engine` / `run_mod
 > **출처:** 각 v2.4.0 `environment.json`의 `host` / `npu` 필드와
 > `pipeline_results.json`의 `decoder` 필드.
 
-모든 NPU는 nominal 1000 MHz로 동작하며, 각 release 내에서 6개 환경은
+각 release 내에서 6개 환경은
 [§2.1](#21-버전-추이는-release-stack-전체가-함께-바뀐-결과다)에 정리한 동일한 software stack으로
 측정되었다.
 
