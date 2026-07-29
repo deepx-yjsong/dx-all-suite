@@ -1,4 +1,4 @@
-"""Adaptive buffer-count sweep (protocol v3).
+"""Adaptive buffer-count sweep (protocol v1).
 
 Phase 1 always probes the floor range start..floor_max (default 3..8) so the
 default buffer-count (6) and its neighborhood are ALWAYS measured. Phase 2

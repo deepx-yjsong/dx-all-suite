@@ -578,7 +578,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                     print(f"  [SKIP] model-level all failed → skipping e2e/multi ({remaining} steps)")
                 continue
 
-            # Cooldown before the E2E phase (protocol v3): shed the throughput phase's
+            # Cooldown before the E2E phase (protocol v1): shed the throughput phase's
             # residual heat so E2E/multi measure their OWN sustained steady-state, not a
             # state inflated by the preceding throughput burst. Non-fatal: the model-level
             # ① cooldown already aborts on a persistent thermal problem; here we just warn.

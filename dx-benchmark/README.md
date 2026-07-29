@@ -363,7 +363,7 @@ results/{hw_id}/{run_id}/
 | ORT modes | ON + OFF |
 | Thermal mode | steady |
 | Hot-start block | 60°C (benchmark start rejected if exceeded) |
-| Cooldown points | ① before model-level (fatal) · ④ before E2E/multi — protocol v3 (non-fatal) |
+| Cooldown points | ① before model-level (fatal) · ④ before E2E/multi — protocol v1 (non-fatal) |
 | Cooldown target | `min(idle + Δ10°C, 55°C)` |
 | Cooldown timeout | 1000s — model-level: RuntimeError; pre-E2E: warn + proceed |
 | NPU warmup / drain | 1.0s / 0.5s |
@@ -395,7 +395,7 @@ measurement runs at a controlled thermal state:
   ① Cooldown → reject start above 60°C; wait until ≤ min(idle + Δ10°C, 55°C)   (when the model family is included)
   ② Latency    → single-core sync mode (-l 300 loops), profiler-based NPU/CPU ms   (cold state)
   ③ Throughput → multi-core async mode, FPS (3 runs)                              (sustained load heats the NPU)
-  ④ Cooldown (protocol v3) → shed the throughput burst's residual heat            (when the e2e/multi family is included)
+  ④ Cooldown (protocol v1) → shed the throughput burst's residual heat            (when the e2e/multi family is included)
   ⑤ E2E Single-Stream → full GStreamer pipeline FPS (3 runs)
   ⑥ Multi-Stream Sweep → estimate start from single-stream FPS, then boundary search
 
@@ -404,7 +404,7 @@ measurement runs at a controlled thermal state:
 
 - ② Latency runs from cold — the profiler cleanly separates NPU/CPU time with minimal heating.
 - ③ Throughput (30s × 3) heats the NPU to a sustained load.
-- ④ The **pre-E2E cooldown (protocol v3)** sheds the throughput burst's residual heat so
+- ④ The **pre-E2E cooldown (protocol v1)** sheds the throughput burst's residual heat so
   E2E and multi-stream measure their *own* sustained steady state, rather than a state
   inflated by the preceding throughput burst.
 - ⑤/⑥ E2E then multi-stream run back-to-back at that steady state (no cooldown between them).

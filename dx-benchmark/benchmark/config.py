@@ -25,7 +25,7 @@ POSTPROCESS_LIB_DIR = Path("/usr/local/share/gstdxstream/lib")
 # Self-describing model manifest (single source of truth for download + catalog).
 MODEL_LIST_JSON = APP_DIR / "model_list.json"
 
-PROTOCOL_VERSION = "v3"  # v3: adaptive buffer-count probe + pre-E2E cooldown
+PROTOCOL_VERSION = "v1"  # v1: first public measurement methodology — adaptive buffer-count probe + pre-E2E cooldown
 MULTI_STREAM_SEARCH_MODE = "single-stream-estimate-linear-boundary"
 STABLE_CAPACITY_RULE = "status_ok_and_all_runs_success_and_avg_per_channel_fps_ge_threshold"
 
@@ -205,7 +205,7 @@ class BenchmarkConfig:
     model_latency_runs: int = 1     # repeated measurements per latency benchmark
     model_throughput_runs: int = 3  # repeated measurements per throughput benchmark
 
-    # ── buffer-count adaptive probe (protocol v3, throughput only) ────
+    # ── buffer-count adaptive probe (protocol v1, throughput only) ────
     # Throughput vs run_model --buffer-count is a unimodal saturation curve; probe
     # ascending from the per-chip core-count floor and measure at the knee.
     buffer_count_probe_start: int = 3      # M1/M1M/H1 = 3 cores per chip

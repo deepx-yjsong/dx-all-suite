@@ -1,7 +1,7 @@
 {
   "meta": {
     "dataset_version": "v2",
-    "generated_at": "2026-07-28T08:03:36.612194+00:00",
+    "generated_at": "2026-07-29T01:29:15.510835+00:00",
     "run_count": 12,
     "environment_count": 6,
     "warnings": []
@@ -3081,7 +3081,7 @@
       "firmware": "v2.5.6",
       "dx_stream_version": "3.0.1",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3142,7 +3142,7 @@
       "firmware": "v2.5.6",
       "dx_stream_version": "3.0.1",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3203,7 +3203,7 @@
       "firmware": "v2.5.6",
       "dx_stream_version": "3.0.1",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3264,7 +3264,7 @@
       "firmware": "v2.5.6",
       "dx_stream_version": "3.0.1",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3325,7 +3325,7 @@
       "firmware": "v2.5.6",
       "dx_stream_version": "3.0.1",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3388,7 +3388,7 @@
       "firmware": "v2.5.6",
       "dx_stream_version": "3.0.1",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3453,7 +3453,7 @@
       "firmware": "v2.7.3",
       "dx_stream_version": "3.1.0",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3518,7 +3518,7 @@
       "firmware": "v2.7.3",
       "dx_stream_version": "3.1.0",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3583,7 +3583,7 @@
       "firmware": "v2.7.3",
       "dx_stream_version": "3.1.0",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3648,7 +3648,7 @@
       "firmware": "v2.7.3",
       "dx_stream_version": "3.1.0",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3713,7 +3713,7 @@
       "firmware": "v2.7.3",
       "dx_stream_version": "3.1.0",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,
@@ -3778,7 +3778,7 @@
       "firmware": "v2.7.3",
       "dx_stream_version": "3.1.0",
       "protocol": {
-        "version": "v3",
+        "version": "v1",
         "thermal_mode": "steady",
         "model_time_sec": 30,
         "model_latency_loops": 300,

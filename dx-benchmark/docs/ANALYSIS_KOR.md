@@ -186,7 +186,7 @@ cell 39–55 °C), 대기 시간은 환경별 중앙값 250–522초(최대 773�
 Throttling된 cell은 raw 데이터에 `npu_throttled = true`로 기록되며, dashboard에는 clock
 badge로 표시된다.
 
-> **출처:** cooldown 배치는 protocol v3(`benchmark/__main__.py`의 model-level cooldown +
+> **출처:** cooldown 배치는 protocol v1(`benchmark/__main__.py`의 model-level cooldown +
 > pre-E2E cooldown), 진입 온도·대기 시간은 각 v2.4.0 run `pipeline_results.json`의
 > `cooldown_temp_c` / `cooldown_wait_sec`(환경당 50 cell), clock 하한은 3개 결과 파일의
 > throttled cell 291개 `npu_clock_mhz_min`.
@@ -792,7 +792,7 @@ python3 -m benchmark dashboard results
 
 | Parameter | 값 |
 |-----------|-----|
-| Protocol 버전 | v3 (thermal mode: steady) |
+| Protocol 버전 | v1 (thermal mode: steady) |
 | Throughput 측정 시간 | 30초 |
 | Latency loop 수 | 300 loops (single-core, synchronous) |
 | Throughput 반복 | 3 |
@@ -801,7 +801,7 @@ python3 -m benchmark dashboard results
 | Multi-stream per-channel threshold | 30 fps |
 | Stable-capacity rule | status ok + 모든 run 완료 + per-channel FPS ≥ 30 |
 | Thermal hot-start block | 60 °C (초과 시 run 거부) |
-| Cooldown 지점 | model × ORT cell 시작 시 1회 + E2E 단계 직전 1회 (protocol v3) |
+| Cooldown 지점 | model × ORT cell 시작 시 1회 + E2E 단계 직전 1회 (protocol v1) |
 | Cooldown 목표 | min(idle + 10 °C, 55 °C) |
 | Video 입력 | Full HD (1920×1080), 30 fps |
 

@@ -178,7 +178,7 @@ M1M figures must never be averaged together.**
 
 ### 2.3 Boards that reach their thermal limit throttle in the sustained phases
 
-Protocol v3 runs each model × ORT cell in the following order, with **a cooldown at two
+Protocol v1 runs each model × ORT cell in the following order, with **a cooldown at two
 points**:
 
 ```
@@ -202,7 +202,7 @@ limit and reduces its clock from 1000 MHz into the 200–800 MHz range. This is 
 behaviour, not a software regression. Throttled cells carry `npu_throttled = true` in the
 raw data and a clock badge in the dashboard.
 
-> **Source:** the cooldown placement is protocol v3 (the model-level cooldown plus the
+> **Source:** the cooldown placement is protocol v1 (the model-level cooldown plus the
 > pre-E2E cooldown in `benchmark/__main__.py`); the entry temperatures and wait times are
 > `cooldown_temp_c` / `cooldown_wait_sec` in each v2.4.0 `pipeline_results.json` (50 cells
 > per environment); the clock floor is `npu_clock_mhz_min` over the 291 throttled cells of
@@ -854,7 +854,7 @@ python3 -m benchmark dashboard results
 
 | Parameter | Value |
 |-----------|-------|
-| Protocol version | v3 (thermal mode: steady) |
+| Protocol version | v1 (thermal mode: steady) |
 | Throughput measurement duration | 30 seconds |
 | Latency loop count | 300 loops (single-core, synchronous) |
 | Throughput repetitions | 3 |
@@ -863,7 +863,7 @@ python3 -m benchmark dashboard results
 | Multi-stream per-channel threshold | 30 fps |
 | Stable-capacity rule | status ok + all runs completed + per-channel FPS ≥ 30 |
 | Thermal hot-start block | 60 °C (run rejected above this) |
-| Cooldown points | once at the start of each model × ORT cell + once immediately before the E2E phase (protocol v3) |
+| Cooldown points | once at the start of each model × ORT cell + once immediately before the E2E phase (protocol v1) |
 | Cooldown target | min(idle + 10 °C, 55 °C) |
 | Video input | Full HD (1920×1080), 30 fps |
 

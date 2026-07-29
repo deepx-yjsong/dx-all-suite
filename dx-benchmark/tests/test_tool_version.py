@@ -44,6 +44,13 @@ def test_tool_version_distinct_from_protocol_version():
     assert benchmark.__version__ != PROTOCOL_VERSION
 
 
+def test_protocol_version_starts_at_v1_for_public_release():
+    # The measurement-protocol version is public-facing (REPORT.md, ANALYSIS). It starts at
+    # v1 for the first public release — internal pre-release iterations are not exposed.
+    from benchmark.config import PROTOCOL_VERSION
+    assert PROTOCOL_VERSION == "v1"
+
+
 def test_release_ver_file_is_source_of_truth():
     # Suite convention: every component ships a `release.ver` (v-prefixed) — the single
     # source of truth for its version. __version__ derives from it (v stripped).
