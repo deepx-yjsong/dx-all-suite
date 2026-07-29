@@ -276,6 +276,18 @@ did. The clock steps down to different points in the 300–800 MHz range on diff
   Classification end-to-end FPS should therefore be read as a *pipeline and decoder*
   figure, not as an NPU-capability figure.
 
+### 2.5 These are normalised benchmark conditions, not a production duty cycle
+
+The protocol deliberately controls conditions so that numbers are comparable. A production
+deployment differs in four ways that matter when sizing a system:
+
+| Benchmark condition | Production reality | Implication |
+|---|---|---|
+| Each model × ORT cell starts from a controlled thermal state (cooldown to ≤ min(idle + Δ10 °C, 55 °C); a start above 60 °C is rejected) | A 24/7 pipeline never cools down between models | On thermally-limited boards, sustained operation can throttle **more** than [§2.3](#23-boards-that-reach-their-thermal-limit-throttle-in-the-sustained-phases) shows. Treat those figures as an upper bound for continuous duty. |
+| One Full HD (1920×1080) 30 fps **H.264** clip per task | Other codecs (H.265), resolutions, bitrates, and object densities | The decoder and post-processing load change with the stream. H.265 or higher resolutions shift the host-bound ceiling of [§7.1](#71-for-light-models-the-ceiling-is-the-host-not-the-npu). |
+| Latency is a cold, single-core, synchronous single-shot | A warm, asynchronous, multi-core serving path | Use latency for *relative* host responsiveness ([§6](#6-inference-latency)), not as a production per-frame budget. |
+| Channel capacity uses a **30 fps per-channel** threshold | An SLA of 15 fps or 60 fps per channel | Capacity is threshold-dependent. Re-run with `--fps-threshold <fps>` to size against your own SLA. |
+
 ---
 
 ## 3. What Was Measured — Terms and Method
@@ -333,8 +345,31 @@ Full HD (1920×1080) at 30 fps.
 
 **Repetitions.** Latency = one run of 300 loops; throughput = mean of three 30-second
 runs; end-to-end = mean of three runs. Each measurement is preceded by one warm-up run,
-which is discarded. The full protocol parameters are listed in the
-[Appendix](#112-measurement-protocol--key-parameters).
+which is discarded. Tables quote the mean with `±` the standard deviation of those runs; how
+that dispersion relates to throttling is covered in
+[§2.3](#23-boards-that-reach-their-thermal-limit-throttle-in-the-sustained-phases). The full
+protocol parameters are listed in the [Appendix](#112-measurement-protocol--key-parameters).
+
+### 3.5 Buffer-count — how the throughput ceiling is found
+
+`run_model --buffer-count` sets how many inference buffers are queued to the NPU, and throughput
+against buffer-count is a saturation curve — the default (6) does not necessarily sit at the peak.
+**Every throughput cell is therefore a sweep**: the tool probes a range of buffer-counts and
+reports the **ceiling** (the highest measured throughput). `REPORT.md` marks the winner with ★ and
+prints the full per-buffer-count curve.
+
+**Scope — model-level throughput only.** The flag applies to the asynchronous, multi-core
+`run_model` path. Latency (single-core, synchronous) does not set it, and neither do the
+E2E/multi-stream pipelines — which is why `REPORT.md` reports a buffer-count for throughput
+cells only. In a dx_stream pipeline the equivalent flow control is the GStreamer queues and
+`dxinfer`'s own buffering, not this flag.
+
+**Reproducing these numbers.** The published throughput is the value at the best buffer-count, not
+at a default. Lighter models need a deeper queue to stay saturated; heavier models saturate early —
+across the v2.4.0 cells the winning buffer-count had a median of **7 (nano, small) → 6 (medium) →
+5 (large) → 4 (x-large)**. An application that drives asynchronous inference itself (`dx_engine` /
+`run_model`) and leaves this at an arbitrary default can fall short of these figures. The exact
+winner matters less than the ceiling — tied buffer-counts deliver effectively equal throughput.
 
 ---
 
@@ -794,6 +829,24 @@ The guidance below is grounded in the tables above; all figures are v2.4.0.
   ([§2.3](#23-boards-that-reach-their-thermal-limit-throttle-in-the-sustained-phases)).
   Deployments should be sized conservatively, treating its heavy-model figures as a
   floor.
+
+### Memory footprint and deployment fit
+
+Compute is not the only constraint: host RAM also has to be budgeted, and NPU-side memory has to
+be verified on the target.
+
+**Host memory scales with channel count.** At the measured channel-capacity points, pipeline RSS
+ranged from **≈211 MiB** (OrangePi5+_M1, detection nano, 4 channels) to **≈1376 MiB**
+(BIOSTAR_H1-Quattro, segmentation x-large, 5 channels), with each additional channel adding roughly
+tens of MiB. High channel counts and heavy models therefore need host RAM budgeted alongside NPU
+capacity — on an 8 GB SBC, host memory can bind before the NPU does.
+
+**NPU memory budgets differ by module.** The M1 carries LPDDR5 3.92 GiB, the M1M LPDDR4
+1.92 GiB — roughly half
+([§2.2](#22-m1-and-m1m-are-different-products-and-must-not-be-combined)). A model's NPU footprint
+grows with input resolution and size, so choose the task/size combination — and whether several
+models must be resident at once — against the budget of the module being deployed on. Confirm the
+actual figure on the target device.
 
 ### General rules of thumb
 

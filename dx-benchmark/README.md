@@ -3,8 +3,8 @@
 Reproducible YOLO26 performance benchmarking on the DEEPX NPU — one standardized
 procedure across any Host PC + NPU combination. It measures two tiers:
 
-- **Model-Level** (direct `run_model`) — **Latency** (single-core, sync) and **Throughput** (multi-core, async)
-- **E2E Pipeline** (full GStreamer / DX-Stream) — **Single-Stream** FPS and **Multi-Stream** channel capacity
+- **Model-Level** (`run_model`) — **Latency** (single-core, sync) and **Throughput** (multi-core, async)
+- **E2E Pipeline** (DX-Stream) — **Single-Stream** FPS and **Multi-Stream** channel capacity
 
 Both tiers run automatic ONNX-Runtime ON/OFF comparison with thermal-throttle detection,
 then render an interactive dashboard for cross-environment and cross-version comparison.
@@ -31,11 +31,14 @@ concurrent channels`** (better of ORT ON/OFF):
 **Three headline findings** (full data + method in [`docs/ANALYSIS_EN.md`](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md)):
 
 1. **The DEEPX M1 NPU is the performance anchor.** On medium/large/x-large models the four
-   very different single-M1 hosts agree to within a few percent — the host mostly affects
-   only the lightest models and the video pipeline.
-2. **v2.3.3 → v2.4.0 gained ~25–35%** on NPU-bound detection models, consistently across
-   every environment.
-3. **H1-Quattro scales ~4.2–4.3×** a single M1 with its four NPU chips.
+   very different single-M1 hosts agree to within a few percent — the host mainly affects the
+   lightest models and the surrounding video pipeline.
+2. **Model-level throughput improved a median +28.4% from v2.3.3 to v2.4.0** — every
+   NPU-bound cell improved (14 of 18 in the +25–35% band), as the whole release stack
+   (DX-COM, DX-RT, drivers, firmware) advanced together.
+3. **H1-Quattro scales model-level throughput ~4× with its four chips** (4.24–4.32× a single
+   M1). For light models, single-stream end-to-end FPS is host-limited (NPU utilization
+   18–41%) — that NPU headroom is recovered through multi-stream operation.
 
 ---
 
@@ -131,7 +134,9 @@ own steady state. Throttling is detected and flagged, never hidden. Full detail 
 
 - **Model-Level Benchmarks** — NPU throughput/latency via direct `run_model` execution.
 - **E2E Pipeline Benchmarks** — full GStreamer pipeline FPS through DX-Stream (single-stream).
-- **Multi-Stream Benchmarks** — boundary channel-count search from single-stream FPS.
+- **Multi-Stream Benchmarks** — maximum concurrent channels (each stream sustaining ≥ 30 fps).
+  It *jumps* to an FPS-based estimate (single-stream FPS ÷ threshold) and boundary-searches
+  up/down from there to pin the exact limit — it does **not** test every channel count from 1.
 - **Thermal monitoring & steady-state normalization** — NPU temp/clock (MHz) tracking,
   hot-start rejection, per-model cooldown, and automatic throttle detection.
 - **Automatic ORT ON/OFF comparison** — both modes measured in every run.
@@ -274,14 +279,13 @@ computed from the `environment.json` fingerprint during `run`.
 
 The version is captured per run, resolved in this order:
 
-- `--dx-all-suite-version v2.4.0` passed to `run` (explicit — always wins), **or**
-- run in-suite: auto-read from the suite-root `release.ver` (walked up from the package dir), **or**
-- on an interactive terminal with neither available: you are prompted for it, **or**
-- otherwise (headless / unattended): a `[WARN]` is printed and the run is recorded with
-  version `unknown`.
+1. `--dx-all-suite-version v2.4.0` passed to `run` (explicit — always wins), else
+2. in-suite: auto-read from the **suite-root** `release.ver` (above the `dx-benchmark/`
+   folder; dx-benchmark's own `release.ver` is skipped), else
+3. neither available → a `[WARN]` is printed and the run is recorded (and bucketed) as `unknown`.
 
-> **Unattended runs:** always pass `--dx-all-suite-version` explicitly for headless jobs —
-> otherwise, on a TTY with no `release.ver`, the run pauses at the interactive prompt.
+> There is **no interactive prompt** — an unattended run never blocks. On a machine without
+> `release.ver`, pass `--dx-all-suite-version` explicitly for an accurate Version Trend.
 
 ## CLI Options
 
@@ -344,11 +348,10 @@ results/{hw_id}/{run_id}/
 └── incidents/                    # git-ignored — timeout diagnostic snapshots (when applicable)
 ```
 
-> **What ships in git:** the compact per-run JSON summaries + `REPORT.md`, plus the built
-> dashboard. The large `raw/` logs, `incidents/` diagnostics, and the `*.csv` mirrors are
-> regenerated locally by `run`/`report` and are **git-ignored**. The `*_results.json` files
-> are the lossless source of truth (the CSVs carry identical columns), so `aggregate`,
-> `dashboard`, `report`, and `--resume` all read JSON — a fresh clone can rebuild everything.
+> **What ships in git:** per-run `*_results.json` + `environment.json` + `REPORT.md`, and the
+> built dashboard. `raw/`, `incidents/`, and `*.csv` mirrors are git-ignored (regenerated
+> locally). JSON is the lossless source of truth — every command reads it, so a fresh clone
+> rebuilds everything.
 
 ## Measurement Protocol
 
@@ -363,18 +366,20 @@ results/{hw_id}/{run_id}/
 | ORT modes | ON + OFF |
 | Thermal mode | steady |
 | Hot-start block | 60°C (benchmark start rejected if exceeded) |
-| Cooldown points | ① before model-level (fatal) · ④ before E2E/multi — protocol v1 (non-fatal) |
+| Cooldown points | ① before model-level (fatal) · ④ before E2E/multi |
 | Cooldown target | `min(idle + Δ10°C, 55°C)` |
 | Cooldown timeout | 1000s — model-level: RuntimeError; pre-E2E: warn + proceed |
 | NPU warmup / drain | 1.0s / 0.5s |
 | NPU clock monitoring | dxtop Core Clock MHz (during measurement) + dxrt-cli pre/post snapshots |
 | CPU clock monitoring | sysfs scaling_cur_freq pre/post snapshots |
 | Multi-stream 1ch | Reuses single-stream result |
+| Multi-stream search | jump to a single-stream-FPS ÷ 30 estimate, then boundary-walk up/down (not 1-by-1) |
 | Multi-stream max streams | 128 (safety cap) |
 | Process timeout | `run_model`: 600s/run; E2E/multi: 90s no-progress stall + 1800s hard cap |
-| Graceful shutdown | SIGTERM → 10s wait → SIGKILL (2-phase) |
+| Graceful shutdown | SIGTERM → 10s wait → SIGKILL → 5s reap |
 | Retry (model / E2E / multi) | warmup: 1 retry on timeout; measured runs: up to 2 backfill attempts |
 | NPU recovery | Automatic dxrt.service restart after SIGKILL |
+| Circuit breaker | abort the run if the device probes dead, or after 2 consecutive fully-failed models |
 
 > **Reading NPU %** — Throughput/E2E/Multi report NPU **core utilization** sampled by
 > dxtop over the run (sustained load). Latency reports NPU **occupancy**
@@ -395,16 +400,20 @@ measurement runs at a controlled thermal state:
   ① Cooldown → reject start above 60°C; wait until ≤ min(idle + Δ10°C, 55°C)   (when the model family is included)
   ② Latency    → single-core sync mode (-l 300 loops), profiler-based NPU/CPU ms   (cold state)
   ③ Throughput → multi-core async mode, FPS (3 runs)                              (sustained load heats the NPU)
-  ④ Cooldown (protocol v1) → shed the throughput burst's residual heat            (when the e2e/multi family is included)
+  ④ Cooldown → shed the throughput burst's residual heat            (when the e2e/multi family is included)
   ⑤ E2E Single-Stream → full GStreamer pipeline FPS (3 runs)
-  ⑥ Multi-Stream Sweep → estimate start from single-stream FPS, then boundary search
+  ⑥ Multi-Stream → jump to an FPS-based estimate (single-stream FPS ÷ 30), then boundary-search
+                    up/down for the max channels (each ≥ 30 fps) — not measured 1-by-1
 
 → next model × ORT combination (repeat from ①)
 ```
 
+- ① Cooldown gives each model a comparable thermal baseline — the run is rejected if it
+  starts above 60 °C, then waits until the NPU is at ≤ min(idle + Δ10 °C, 55 °C), so a
+  previous model's residual heat cannot bias the next one.
 - ② Latency runs from cold — the profiler cleanly separates NPU/CPU time with minimal heating.
 - ③ Throughput (30s × 3) heats the NPU to a sustained load.
-- ④ The **pre-E2E cooldown (protocol v1)** sheds the throughput burst's residual heat so
+- ④ The **pre-E2E cooldown** sheds the throughput burst's residual heat so
   E2E and multi-stream measure their *own* sustained steady state, rather than a state
   inflated by the preceding throughput burst.
 - ⑤/⑥ E2E then multi-stream run back-to-back at that steady state (no cooldown between them).
@@ -416,39 +425,55 @@ measurement runs at a controlled thermal state:
 ## Timeout Recovery and Retry Strategy
 
 GStreamer pipelines or `run_model` processes can occasionally hang (deadlock, NPU hang).
-A 3-layer recovery structure handles these cases.
+The tool has **three per-hang recovery layers**, plus a **run-level circuit breaker** that
+aborts early when recovery cannot help.
 
 **Layer 1 — Graceful shutdown (SIGTERM → SIGKILL).** On a `run_model` 600s timeout, an
 E2E/multi 90s no-progress stall, or the 1800s hard cap: SIGTERM to the process group →
-10s wait → SIGKILL if needed → NPU device recovery.
+10s wait → SIGKILL if needed (→ 5s reap) → NPU device recovery (Layer 3).
 
 > Force-killing `gst-launch-1.0` destroys dxrtd's IPC message queue (Error 43: Identifier
 > removed), so all subsequent NPU inference fails — device recovery is mandatory.
 
-**Layer 2 — Python-level retry.** Unified across families via two knobs —
-`model_warmup_retries` (default 1) and `model_run_retries` (default 2):
+**Layer 2 — Python-level retry.** Two parameters — `model_warmup_retries` (default 1) and
+`model_run_retries` (default 2):
 
 | Phase | Retries | Notes |
 |-------|:-------:|-------|
-| Warmup (model / E2E / multi) | 1 | 1 retry on timeout before giving up the cell |
-| Measured run (model / E2E / multi) | up to 2 | Backfill failed/timed-out runs toward the target; remaining successes are averaged |
-| Multi-stream sweep | up to 2 / channel | Same backfill budget per stream count |
+| Warmup (model / E2E / multi) | 1 | one retry on timeout before giving up the cell |
+| Measured runs (model / E2E / multi) | up to 2 | backfill failed/timed-out runs toward the target (`e2e_runs` = 3); the successful runs are averaged |
+| Multi-stream sweep (per stream count) | 1 | a stream count whose whole measurement times out is retried once — on top of the per-run backfill above |
 
-When both model-level phases (latency + throughput) time out, E2E and multi-stream are
-skipped for that model × ORT combination.
+When a model's model-level phase fails on **both** latency and throughput, its E2E and
+multi-stream phases are skipped for that model × ORT combination.
 
-**Incident diagnostics.** On timeout, snapshots are saved to `incidents/`: `dxrt-cli -s`
-status, `systemctl status dxrt.service`, recent `journalctl`/`dmesg`, a process-tree dump,
-and an NPU temperature/clock snapshot.
-
-**NPU device recovery** (when SIGKILL was required): `pkill -9 gst-launch-1.0` /
-`run_model` → `sudo -n systemctl restart dxrt.service` (3s settle).
+**Layer 3 — NPU device recovery** (triggered when Layer 1 needed a SIGKILL): kill orphaned
+`gst-launch-1.0` / `run_model` → `sudo -n systemctl restart dxrt.service` (3s settle).
+Mandatory because the SIGKILL tears down dxrtd's IPC message queue (the Error-43 case above),
+leaving the NPU unusable until the daemon restarts.
 
 > Passwordless sudo is required for NPU recovery and incident diagnostics. Run
 > `sudo ./setup_host.sh` — it writes `/etc/sudoers.d/benchmark-dxrt` granting the current
 > user NOPASSWD for exactly these commands (and nothing else):
 > `systemctl restart dxrt.service`, `dmesg`, `journalctl -u dxrt.service`, and `lspci`
 > (the last three are for incident-diagnostic collection on timeouts).
+
+**Circuit breaker — run-level abort** (`enable_circuit_breaker`, default on). When a model's
+model-level benchmarks both fail, the tool runs Layer-3 recovery once, then a deterministic
+`dxrt-cli -s` liveness probe (15s) and decides:
+
+- device **dead** (cannot be enumerated) → **abort the run** — the NPU needs a cold
+  power-cycle; resume afterwards with `--resume <dir> --retry-failed`.
+- device **alive** but **2 consecutive models fully failed** → abort as an anti-runaway
+  backstop (`circuit_breaker_backstop_models`).
+- otherwise → continue (only the failed model is skipped).
+
+This stops the run from churning for hours when the NPU has actually died mid-run.
+
+**Incident diagnostics** (cross-cutting, not a recovery layer; capped at 40 bundles/run). On a
+timeout or a detected dxrt error, a snapshot is saved to `incidents/`: `dxrt-cli -s` status,
+`systemctl status dxrt.service`, recent `journalctl`/`dmesg`, a process-tree dump, and an NPU
+temperature/clock snapshot.
 
 ## Development / Testing
 

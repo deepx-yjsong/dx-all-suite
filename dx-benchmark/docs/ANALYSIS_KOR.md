@@ -124,7 +124,7 @@ raw log와 profiler trace를 전수 검토한 결과를 정리한 것이다.
 동일하게 유지된 조건은 다음과 같다. DXNN binary format은 두 측정 모두 `v8`이며, 각 환경의
 host OS·kernel은 변경되지 않았고, 측정 protocol 값(30초 throughput, 300-loop latency, 반복
 횟수, 30 fps threshold, cooldown 목표) 역시 동일하다. v2.4.0 측정에 사용된 tool에 추가된 항목은
-실패 처리용 안정화 knob(circuit breaker, buffer-count zero-fps 재시도, device probe timeout)
+실패 처리용 안정화 parameter(circuit breaker, buffer-count zero-fps 재시도, device probe timeout)
 뿐이며, 정상 측정 절차 자체는 바뀌지 않았다.
 
 따라서 [§9](#9-dx-all-suite-release별-성능-추이)의 정확한 해석은 "medium·large·x-large 구간의
@@ -252,6 +252,18 @@ throughput cell 300개를 대상으로 run 간 편차(fps 표준편차 ÷ 평균
   (end-to-end 기준 OrangePi 1072.7 fps, H1-Quattro 772.4 fps). 따라서 classification
   end-to-end FPS는 NPU 능력치가 아니라 *pipeline·decoder* 수치로 해석해야 한다.
 
+### 2.5 이 수치는 정규화된 benchmark 조건이며, production duty cycle이 아니다
+
+protocol은 수치의 비교 가능성을 확보하기 위해 조건을 의도적으로 통제한다. 실제 배포 환경은
+아래 네 가지 점에서 다르며, 시스템 sizing 시 이를 반영해야 한다.
+
+| Benchmark 조건 | 실제 production | 해석 |
+|---|---|---|
+| 각 model × ORT cell이 통제된 thermal 상태에서 시작한다(cooldown target ≤ min(idle + Δ10 °C, 55 °C), 60 °C 초과 시 시작 거부) | 24/7 pipeline은 model 사이에 냉각되지 않는다 | thermal-limited board에서는 지속 운용 시 [§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다)보다 **더 심하게** throttling할 수 있다. 해당 수치는 연속 운용의 상한으로 취급해야 한다. |
+| task별로 Full HD(1920×1080) 30 fps **H.264** clip 1개 | 다른 codec(H.265)·해상도·bitrate·객체 밀도 | decoder와 post-processing 부하가 달라진다. H.265나 더 높은 해상도는 [§7.1](#71-경량-model의-end-to-end-상한은-npu가-아니라-host다)의 host-bound 상한을 이동시킨다. |
+| latency는 cold 상태의 single-core·synchronous 단발 측정 | warm 상태의 asynchronous·multi-core 서빙 경로 | latency는 host 응답성의 *상대 비교*([§6](#6-inference-latency))에 사용하고, production per-frame 예산으로 쓰지 않는다. |
+| 채널 수용량은 **channel당 30 fps** threshold 기준 | channel당 15 fps 또는 60 fps SLA | 수용량은 threshold에 의존한다. 자체 SLA 기준으로 sizing하려면 `--fps-threshold <fps>`로 재측정해야 한다. |
+
 ---
 
 ## 3. 무엇을 측정했는가 — 용어와 방법
@@ -307,8 +319,30 @@ bounding box는 1024×1024, classification은 224×224이다. 모든 영상 입�
 Full HD(1920×1080) 30 fps다.
 
 **반복 횟수.** latency는 300-loop 1회, throughput은 30초 측정 3회 평균, end-to-end는 3회
-평균이다. 각 측정 앞에 warm-up 1회를 실행하고 그 결과는 버린다. 전체 protocol parameter는
-[부록](#112-측정-protocol--주요-parameter)에 있다.
+평균이다. 각 측정 앞에 warm-up 1회를 실행하고 그 결과는 버린다. 표에는 평균과 함께 해당
+측정들의 표준편차를 `±`로 표기하며, 이 편차가 throttling과 어떤 관계인지는
+[§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다)에서 다룬다.
+전체 protocol parameter는 [부록](#112-측정-protocol--주요-parameter)에 있다.
+
+### 3.5 Buffer-count — throughput 상한을 찾는 방법
+
+`run_model --buffer-count`는 NPU에 queue되는 inference buffer 개수를 지정한다. throughput과
+buffer-count의 관계는 포화 곡선이며 기본값(6)이 반드시 정점은 아니다. 그래서 **모든 throughput
+cell은 sweep 결과다.** tool이 buffer-count 구간을 probe해 **상한(ceiling)** 을 보고하며,
+`REPORT.md`는 승자를 ★로 표시하고 buffer-count별 전체 곡선을 함께 출력한다.
+
+**적용 범위 — model-level throughput 전용.** 이 flag는 asynchronous·multi-core `run_model`
+경로에만 적용된다. latency(single-core·synchronous)는 이 값을 설정하지 않으며 E2E·multi-stream
+pipeline도 설정하지 않는다. 그래서 `REPORT.md`는 throughput cell에만 buffer-count를 표기한다.
+dx_stream pipeline에서 이에 대응하는 흐름 제어는 이 flag가 아니라 GStreamer queue와 `dxinfer`
+자체 buffering이다.
+
+**이 수치를 재현하려는 경우.** 공개된 throughput은 기본값이 아니라 최적 buffer-count에서의 값이다.
+경량 model은 포화를 유지하려면 더 깊은 queue가 필요하고 무거운 model은 일찍 포화한다 — v2.4.0 cell
+전체에서 승자 buffer-count의 중앙값은 **7(nano·small) → 6(medium) → 5(large) → 4(x-large)** 였다.
+asynchronous inference를 직접 구동하는 application(`dx_engine` / `run_model`)이 이 값을 임의의
+기본값으로 두면 이 수치에 미달할 수 있다. 승자 값 자체보다 ceiling이 핵심이며, 동률 buffer-count는
+사실상 동일한 throughput을 낸다.
 
 ---
 
@@ -735,6 +769,22 @@ release가 측정되면 dashboard의 Version Trend 탭이 자동으로 확장된
   느리고([§2.2](#22-m1과-m1m은-서로-다른-제품이며-수치를-섞어서는-안-된다)), 이 unit은 추가로
   throttling했다([§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다)).
   배포 규모를 보수적으로 산정하고, 무거운 model 수치는 하한으로 해석해야 한다.
+
+### Memory footprint와 배포 적합성
+
+제약은 연산 성능만이 아니다. host RAM도 예산에 넣어야 하고, NPU 쪽 memory는 대상 장비에서 확인해야
+한다.
+
+**Host memory는 채널 수에 따라 증가한다.** 측정된 채널 수용량 지점에서 pipeline RSS는
+**약 211 MiB**(OrangePi5+_M1, detection nano, 4채널)부터 **약 1376 MiB**(BIOSTAR_H1-Quattro,
+segmentation x-large, 5채널) 범위였고, 채널을 하나 추가할 때 수십 MiB 규모가 증가했다. 따라서 높은
+채널 수와 무거운 model은 NPU 용량과 함께 host RAM도 예산에 넣어야 하며, 8 GB SBC에서는 NPU보다
+host memory가 먼저 제약이 될 수 있다.
+
+**NPU memory 예산은 module마다 다르다.** M1은 LPDDR5 3.92 GiB, M1M은 LPDDR4 1.92 GiB로 약
+절반이다([§2.2](#22-m1과-m1m은-서로-다른-제품이며-수치를-섞어서는-안-된다)). model의 NPU memory
+점유는 입력 해상도와 size가 커질수록 늘어나므로, 배포할 module의 예산에 맞춰 task·size 조합과
+multi-model 동시 상주 여부를 선택해야 한다. 실제 점유량은 대상 장비에서 확인하는 것이 확실하다.
 
 ### 일반 지침
 
