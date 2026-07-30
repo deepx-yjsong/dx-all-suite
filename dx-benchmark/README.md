@@ -22,23 +22,32 @@ concurrent channels`** (better of ORT ON/OFF):
 | Environment | NPU | Object Detection (nano) | Note |
 |-------------|-----|------------------------:|------|
 | **BIOSTAR_H1-Quattro** | H1 (4-chip) | **496.8 fps / 17 ch** | highest channel density |
-| **DX-AIPlayer-N97_M1** | M1 | 184.9 fps / 6 ch | x86, balanced edge box |
+| **DX-AIPlayer-N97_M1** | M1 | 184.9 fps / 6 ch | x86, PCIe ×2 |
 | **OrangePi5+_M1** | M1 | 148.1 fps / 4 ch | RK3588, PCIe ×4 |
 | **ROCK5B+_M1** | M1 | 141.5 fps / 4 ch | RK3588, PCIe ×2 |
 | **RPi5B_M1** | M1 | 80.1 fps / 2 ch | PCIe ×1, SW decode |
-| **RPi5B_M1M** | M1M | 79.8 fps / 2 ch | M1M SKU (slower tier) |
+| **RPi5B_M1M** | M1M | 79.8 fps / 2 ch | M1M SKU — 31–47% slower on m/l/x (nano is host-bound) |
 
-**Three headline findings** (full data + method in [`docs/ANALYSIS_EN.md`](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md)):
+**Five headline findings** — the same five as *Principal findings* in
+[`docs/ANALYSIS_EN.md`](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md), where the full
+data and method are documented:
 
 1. **The DEEPX M1 NPU is the performance anchor.** On medium/large/x-large models the four
    very different single-M1 hosts agree to within a few percent — the host mainly affects the
    lightest models and the surrounding video pipeline.
-2. **Model-level throughput improved a median +28.4% from v2.3.3 to v2.4.0** — every
-   NPU-bound cell improved (14 of 18 in the +25–35% band), as the whole release stack
-   (DX-COM, DX-RT, drivers, firmware) advanced together.
+2. **Model-level throughput improved a median +28.4% from v2.3.3 to v2.4.0 in the NPU-bound
+   sizes (medium/large/x-large)** — all 18 cells improved (14 in the +25–35% band), as the
+   whole release stack (DX-COM, DX-RT, drivers, firmware) advanced together. Single-stream
+   end-to-end FPS does not inherit this gain where the host is already the ceiling.
 3. **H1-Quattro scales model-level throughput ~4× with its four chips** (4.24–4.32× a single
-   M1). For light models, single-stream end-to-end FPS is host-limited (NPU utilization
-   18–41%) — that NPU headroom is recovered through multi-stream operation.
+   M1). Single-stream end-to-end FPS does not scale by the same factor, because the host
+   supply rate limits it first.
+4. **For light models the end-to-end ceiling is the host, not the NPU.** At nano and small
+   sizes, single-stream end-to-end FPS reaches only 45–82% of the model throughput measured
+   under the same conditions, with NPU utilization at 18–41% — that headroom is recovered
+   through multi-stream operation.
+5. **The best ORT mode depends on the environment × task combination** — up to +48.8% on
+   light models, so confirm it before deployment.
 
 ---
 
@@ -373,6 +382,7 @@ results/{hw_id}/{run_id}/
 | NPU warmup / drain | 1.0s / 0.5s |
 | NPU clock monitoring | dxtop Core Clock MHz (during measurement) + dxrt-cli pre/post snapshots |
 | CPU clock monitoring | sysfs scaling_cur_freq pre/post snapshots |
+| Multi-stream per-channel threshold | 30 fps (every channel must sustain ≥ 30 fps) |
 | Multi-stream 1ch | Reuses single-stream result |
 | Multi-stream search | jump to a single-stream-FPS ÷ 30 estimate, then boundary-walk up/down (not 1-by-1) |
 | Multi-stream max streams | 128 (safety cap) |
