@@ -260,25 +260,20 @@ protocol은 수치의 비교 가능성을 확보하기 위해 조건을 의도�
 
 이 절은 이후 사용되는 모든 용어를 정의한다.
 
-### 3.1 하드웨어
+### 3.1 Workload 정의
+
+**Model size.** YOLO26은 5개 size로 제공된다 — `n`(nano) < `s`(small) < `m`(medium) <
+`l`(large) < `x`(extra-large). model이 클수록 정확도가 높고 속도는 느리다.
+
+**입력 해상도.** object detection·pose estimation·segmentation은 640×640, oriented
+bounding box는 1024×1024, classification은 224×224이다. 모든 영상 입력은
+Full HD(1920×1080) 30 fps다.
+
+### 3.2 하드웨어
 
 **NPU (Neural Processing Unit).** neural network를 실행하는 DEEPX accelerator로, module
 `M1` 또는 `M1M`, 또는 4-chip `H1-Quattro` card를 의미한다. 모든 module은 nominal
 1000 MHz core clock으로 동작한다.
-
-### 3.2 ONNX-Runtime mode (ORT ON / OFF) — model의 CPU 구간을 어디서 실행할지
-
-DEEPX compiler는 필요에 따라 model graph를 **NPU 구간**과 **CPU 구간**으로 분할한다. ORT
-mode는 ONNX Runtime으로 이 CPU 구간을 실행할지 여부를 결정한다.
-
-| Mode | runtime이 실행하는 범위 | 반환되는 출력 | 비용 |
-|------|------------------------|--------------|------|
-| **ORT ON** | NPU 구간 **+** CPU 구간(후자는 ONNX Runtime library를 통해 **host CPU**로 offload) | 원본 ONNX model과 동일 — 그대로 사용 가능 | frame마다 host CPU 작업이 추가됨 |
-| **ORT OFF** | NPU 구간만 | raw NPU 출력 tensor | host CPU offload 없음. 동등한 연산을 application이 직접 구현해야 함 |
-
-
-두 mode는 모든 cell에서 함께 측정·공개되므로, application이 원본 ONNX model과 동일한
-출력을 요구하는지 또는 최적 성능에 따라 선택할 수 있다.
 
 ### 3.3 측정 지표
 
@@ -299,14 +294,20 @@ application이 체감하는 수치다.
 떨어지는 지점까지 경계 탐색으로 결정한다. status가 ok이고 모든 반복이 완료되었으며
 per-channel FPS가 threshold를 만족하는 결과만 유효한 것으로 인정한다.
 
-### 3.4 Workload 정의
+### 3.4 ONNX-Runtime mode (ORT ON / OFF) — model의 CPU 구간을 어디서 실행할지
 
-**Model size.** YOLO26은 5개 size로 제공된다 — `n`(nano) < `s`(small) < `m`(medium) <
-`l`(large) < `x`(extra-large). model이 클수록 정확도가 높고 속도는 느리다.
+DEEPX compiler는 필요에 따라 model graph를 **NPU 구간**과 **CPU 구간**으로 분할한다. ORT
+mode는 ONNX Runtime으로 이 CPU 구간을 실행할지 여부를 결정한다.
 
-**입력 해상도.** object detection·pose estimation·segmentation은 640×640, oriented
-bounding box는 1024×1024, classification은 224×224이다. 모든 영상 입력은
-Full HD(1920×1080) 30 fps다.
+| Mode | runtime이 실행하는 범위 | 반환되는 출력 | 비용 |
+|------|------------------------|--------------|------|
+| **ORT ON** | NPU 구간 **+** CPU 구간(후자는 ONNX Runtime library를 통해 **host CPU**로 offload) | 원본 ONNX model과 동일 — 그대로 사용 가능 | frame마다 host CPU 작업이 추가됨 |
+| **ORT OFF** | NPU 구간만 | raw NPU 출력 tensor | host CPU offload 없음. 동등한 연산을 application이 직접 구현해야 함 |
+
+두 mode는 모든 cell에서 함께 측정·공개되므로, application이 원본 ONNX model과 동일한
+출력을 요구하는지 또는 최적 성능에 따라 선택할 수 있다.
+
+### 3.5 측정 상세
 
 **반복 횟수.** latency는 300-loop 1회, throughput은 30초 측정 3회 평균, end-to-end는 3회
 평균이다. 각 측정 앞에 warm-up 1회를 실행하고 그 결과는 버린다. 표에는 평균과 함께 해당
@@ -314,17 +315,12 @@ Full HD(1920×1080) 30 fps다.
 [§2.3](#23-thermal-limit에-도달하는-board는-지속-부하-구간에서-throttling한다)에서 다룬다.
 전체 protocol parameter는 [부록](#112-측정-protocol--주요-parameter)에 있다.
 
-### 3.5 Buffer-count — throughput 상한을 찾는 방법
-
-`run_model --buffer-count`에 대한 throughput은 포화 곡선이므로 **본 보고서의 모든 throughput
-cell은 sweep 결과다.** 공개된 수치는 기본값(6)에서의 값이 아니라 상한(ceiling)이다.
-
-**이 수치를 재현하려는 경우.** 공개된 throughput은 기본값이 아니라 최적 buffer-count에서의 값이다.
-경량 model은 포화를 유지하려면 더 깊은 queue가 필요하고 무거운 model은 일찍 포화한다 — v2.4.0 cell
-전체에서 승자 buffer-count의 중앙값은 **7(nano·small) → 6(medium) → 5(large) → 4(x-large)** 였다.
-asynchronous inference를 직접 구동하는 application(`dx_engine` / `run_model`)이 이 값을 임의의
-기본값으로 두면 이 수치에 미달할 수 있다. 승자 값 자체보다 ceiling이 핵심이며, 동률 buffer-count는
-사실상 동일한 throughput을 낸다.
+**Buffer-count — throughput 상한을 찾는 방법.** `run_model --buffer-count`에 대한 throughput은
+포화 곡선이므로 **본 보고서의 모든 throughput cell은 sweep 결과다.** 공개된 수치는 기본값(6)에서의
+값이 아니라 상한(ceiling)이다. v2.4.0 cell 전체에서 승자 buffer-count의 중앙값은 model이 커질수록
+낮아진다 — **7(nano·small) → 6(medium) → 5(large) → 4(x-large)**. 따라서 asynchronous inference를
+직접 구동하는 application이 이 flag를 기본값으로 두면 이 수치에 미달할 수 있다. 이 flag는
+model-level 경로에만 적용되며, latency와 E2E/multi-stream pipeline에는 적용되지 않는다.
 
 ---
 
@@ -472,7 +468,7 @@ throughput([§5](#5-npu-연산-성능-model-level-throughput))으로 판단하�
 CPU 구간 실행 시간(`cpu_0_ms`)을 함께 보고한다. object detection n·m·x 기준으로 그 값은 x86
 board에서 0.26–1.38 ms, ARM board에서 2.3–8.0 ms다. 응답성이 중요한 application에서는 ORT
 ON이 제공하는 편의성과 이 추가 시간을 함께 고려해야 한다
-([§3.2](#32-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
+([§3.4](#34-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
 
 > **출처:** 각 v2.4.0 run `model_results.json`, task = object_detection, family = latency,
 > `use_ort` = true의 `cpu_0_ms`.
@@ -567,7 +563,7 @@ nano)이며, 어느 쪽이 유리한지는 환경과 task에 따라 반대로 �
 > mode의 상대 이득으로, **nano와 small 두 값의 범위**이며 `avg_e2e_fps`로 직접 계산했다
 > (예: OrangePi5+_M1 object detection nano = 148.1 ÷ 99.6 − 1 = +48.8 %). **"동등"은 nano와
 > small 모두 차이가 5% 이내인 cell**을 뜻한다. Classification은 CPU 구간이 없어 두 mode가
-> 동일하다([§3.2](#32-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
+> 동일하다([§3.4](#34-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
 
 **왜 뒤집히는가.** ORT OFF는 host CPU 작업을 줄이지만, pipeline에서 그 연산이 사라지는 것은
 아니다. application이 담당하는 post-processing 단계로 이동한다. Rockchip board의 object
@@ -772,7 +768,7 @@ multi-model 동시 상주 여부를 선택해야 한다. 실제 점유량은 대
   ([§7.2](#72-ort-mode-선택은-환경--task-조합으로-결정된다)). 다만 application이 원본 ONNX
   model과 동일한 출력을 요구하면 성능과 무관하게 **ORT ON**이 필요하고, 동등한 연산을 직접
   구현할 수 있다면 **ORT OFF**도 선택
-  가능하다([§3.2](#32-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
+  가능하다([§3.4](#34-onnx-runtime-mode-ort-on--off--model의-cpu-구간을-어디서-실행할지)).
 - passive cooling board에서 지속 multi-stream을 운용하는 경우에는 cooling을 예산에
   반영하거나, peak가 아닌 throttling된 수치를 기준으로 계획한다. 측정 편차가 큰 구간은
   thermal 문제의 신호로 함께 확인한다
@@ -850,12 +846,12 @@ dashboard([`results/dashboard/index.html`](../results/dashboard/index.html))에�
 
 | 용어 | 의미 |
 |------|------|
-| **NPU · ORT · Throughput · Latency · End-to-end FPS · 최대 채널 수** | [§3](#3-무엇을-측정했는가--용어와-방법)에서 정의 |
-| **CPU 구간 (CPU offload)** | 컴파일된 model graph 중 NPU가 실행할 수 없는 부분. YOLO26에서는 NMS와 keypoint/mask decode에 해당한다. ORT ON일 때만 host CPU에서 실행되며, pipeline의 post-processing 단계와는 구분된다. |
-| **NPU 활용률** | 측정 구간 동안 dxtop이 sampling한 NPU core 평균 사용률(`npu_total_avg_pct`). 값이 낮으면 NPU가 입력을 기다리는 host-bound 상태를 의미한다 |
 | **Backpressure** | GStreamer pipeline에서 하류 element의 처리 지연이 non-leaky queue를 통해 상류로 전파되어 전체 처리량과 NPU 공급을 함께 제한하는 현상. 본 측정 pipeline의 모든 queue는 `leaky=no`다 |
-| **Thermal throttling** | 고온에서의 NPU clock 하강 (NPU가 1000 MHz에서 clock을 낮춤) |
 | **Coefficient of variation** | 표준편차 ÷ 평균을 백분율로 표시한 값 — 환경 간 편차를 정량화하는 데 사용 |
+| **CPU 구간 (CPU offload)** | 컴파일된 model graph 중 NPU가 실행할 수 없는 부분. YOLO26에서는 NMS와 keypoint/mask decode에 해당한다. ORT ON일 때만 host CPU에서 실행되며, pipeline의 post-processing 단계와는 구분된다. |
+| **NPU · ORT · Throughput · Latency · End-to-end FPS · 최대 채널 수** | [§3](#3-무엇을-측정했는가--용어와-방법)에서 정의 |
+| **NPU 활용률** | 측정 구간 동안 dxtop이 sampling한 NPU core 평균 사용률(`npu_total_avg_pct`). 값이 낮으면 NPU가 입력을 기다리는 host-bound 상태를 의미한다 |
+| **Thermal throttling** | 고온에서의 NPU clock 하강 (NPU가 1000 MHz에서 clock을 낮춤) |
 
 ---
 

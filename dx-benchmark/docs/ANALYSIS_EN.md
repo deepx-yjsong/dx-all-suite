@@ -283,25 +283,20 @@ deployment differs in four ways that matter when sizing a system:
 
 This section defines every term used in the remainder of the report.
 
-### 3.1 Hardware
+### 3.1 Workload
+
+**Model sizes.** YOLO26 ships in five sizes — `n` (nano) < `s` (small) < `m` (medium) <
+`l` (large) < `x` (extra-large). Larger models are more accurate but slower.
+
+**Input resolutions.** Object detection, pose estimation and segmentation use 640×640;
+oriented bounding box uses 1024×1024; classification uses 224×224. All video input is
+Full HD (1920×1080) at 30 fps.
+
+### 3.2 Hardware
 
 **NPU (Neural Processing Unit).** The DEEPX accelerator — module `M1` or `M1M`, or the
 four-chip `H1-Quattro` card — that executes the neural network. All modules run at a
 nominal 1000 MHz core clock.
-
-### 3.2 ONNX-Runtime mode (ORT ON / OFF) — where the model's CPU part is executed
-
-Where necessary, the DEEPX compiler partitions a model graph into an **NPU part** and a
-**CPU part**. The ORT mode selects whether that CPU part is executed through ONNX Runtime:
-
-| Mode | What the runtime executes | Returned output | Cost |
-|------|---------------------------|-----------------|------|
-| **ORT ON** | NPU part **+** CPU part, the latter offloaded to the **host CPU** through the ONNX Runtime library | Identical to the source ONNX model — directly usable | Adds host-CPU work to every frame |
-| **ORT OFF** | NPU part only | Raw NPU output tensors | No host-CPU offload; the application must implement the equivalent computation itself |
-
-Both modes are measured and published for every cell, so the mode can be selected
-according to whether the application requires output identical to the source ONNX model,
-or according to which mode performs better.
 
 ### 3.3 Metrics
 
@@ -323,14 +318,21 @@ by a boundary search that increases the stream count until any stream drops belo
 30 fps. A result is counted only when its status is ok, all repetitions completed, and
 the per-channel FPS meets the threshold.
 
-### 3.4 Workload
+### 3.4 ONNX-Runtime mode (ORT ON / OFF) — where the model's CPU part is executed
 
-**Model sizes.** YOLO26 ships in five sizes — `n` (nano) < `s` (small) < `m` (medium) <
-`l` (large) < `x` (extra-large). Larger models are more accurate but slower.
+Where necessary, the DEEPX compiler partitions a model graph into an **NPU part** and a
+**CPU part**. The ORT mode selects whether that CPU part is executed through ONNX Runtime:
 
-**Input resolutions.** Object detection, pose estimation and segmentation use 640×640;
-oriented bounding box uses 1024×1024; classification uses 224×224. All video input is
-Full HD (1920×1080) at 30 fps.
+| Mode | What the runtime executes | Returned output | Cost |
+|------|---------------------------|-----------------|------|
+| **ORT ON** | NPU part **+** CPU part, the latter offloaded to the **host CPU** through the ONNX Runtime library | Identical to the source ONNX model — directly usable | Adds host-CPU work to every frame |
+| **ORT OFF** | NPU part only | Raw NPU output tensors | No host-CPU offload; the application must implement the equivalent computation itself |
+
+Both modes are measured and published for every cell, so the mode can be selected
+according to whether the application requires output identical to the source ONNX model,
+or according to which mode performs better.
+
+### 3.5 Measurement Details
 
 **Repetitions.** Latency = one run of 300 loops; throughput = mean of three 30-second
 runs; end-to-end = mean of three runs. Each measurement is preceded by one warm-up run,
@@ -339,14 +341,13 @@ that dispersion relates to throttling is covered in
 [§2.3](#23-boards-that-reach-their-thermal-limit-throttle-in-the-sustained-phases). The full
 protocol parameters are listed in the [Appendix](#112-measurement-protocol--key-parameters).
 
-### 3.5 Buffer-count — how the throughput ceiling is found
-
-Throughput against `run_model --buffer-count` is a saturation curve, so **every throughput cell
-here is a sweep**: the published figure is the ceiling, not the value at the default (6). Across the
-v2.4.0 cells the best buffer-count trended **7 (nano, small) → 4 (x-large)**, so an application that
-drives asynchronous inference itself and leaves the flag at a default can fall short of these
-numbers. The flag applies to the model-level path only — not to latency, and not to the
-E2E/multi-stream pipelines.
+**Buffer-count — how the throughput ceiling is found.** Throughput against
+`run_model --buffer-count` is a saturation curve, so **every throughput cell here is a sweep**:
+the published figure is the ceiling, not the value at the default (6). Across the v2.4.0 cells the
+median winning buffer-count falls as the model grows — **7 (nano, small) → 6 (medium) →
+5 (large) → 4 (x-large)** — so an application that drives asynchronous inference itself and
+leaves the flag at a default can fall short of these numbers. The flag applies to the model-level
+path only — not to latency, and not to the E2E/multi-stream pipelines.
 
 ---
 
@@ -501,7 +502,7 @@ also reports the execution time of the model's CPU part (`cpu_0_ms`). For object
 at sizes n, m and x, that time is 0.26–1.38 ms on the x86 boards and 2.3–8.0 ms on the ARM
 boards. Latency-sensitive applications should weigh the convenience of ORT ON against this
 additional time
-([§3.2](#32-onnx-runtime-mode-ort-on--off--where-the-models-cpu-part-is-executed)).
+([§3.4](#34-onnx-runtime-mode-ort-on--off--where-the-models-cpu-part-is-executed)).
 
 > **Source:** `cpu_0_ms` in each v2.4.0 `model_results.json`, task = object_detection,
 > family = latency, `use_ort` = true.
@@ -604,7 +605,7 @@ and the task.
 > and small values** — computed directly from `avg_e2e_fps` (e.g. OrangePi5+_M1 object
 > detection nano = 148.1 ÷ 99.6 − 1 = +48.8 %). **"tie" marks cells where both nano and
 > small differ by less than 5%.** Classification has no CPU part, so the two modes coincide
-> ([§3.2](#32-onnx-runtime-mode-ort-on--off--where-the-models-cpu-part-is-executed)).
+> ([§3.4](#34-onnx-runtime-mode-ort-on--off--where-the-models-cpu-part-is-executed)).
 
 **Why it reverses.** ORT OFF reduces host-CPU work inside the inference element, but the
 computation does not disappear from the pipeline — it moves to the post-processing stage
@@ -682,8 +683,7 @@ still sustains ≥30 fps.
 | RPi5B_M1M | 2 | 2 | 1 | 1 | 0 |
 
 > **Source:** `results/<env>/<v2.4.0 run>/multi_stream_results.json`, task =
-> object_detection, maximum `stream_count` satisfying the stable-capacity rule (status ok
-> + all runs completed + per-channel FPS ≥ 30).
+> object_detection, maximum `stream_count` satisfying the stable-capacity rule (status ok + all runs completed + per-channel FPS ≥ 30).
 
 **Interpretation.** Channel capacity is the multi-stream generalisation of end-to-end FPS
 and inherits the same bottlenecks:
@@ -827,7 +827,7 @@ actual figure on the target device.
   Independently of performance, an application that requires output identical to the source
   ONNX model needs **ORT ON**; one that implements the equivalent computation itself may
   also use **ORT OFF**
-  ([§3.2](#32-onnx-runtime-mode-ort-on--off--where-the-models-cpu-part-is-executed)).
+  ([§3.4](#34-onnx-runtime-mode-ort-on--off--where-the-models-cpu-part-is-executed)).
 - For sustained multi-stream operation on passively cooled boards, budget for cooling or
   plan against the throttled figures rather than the peak ones, and treat an unusually wide
   measurement spread as a thermal signal
@@ -905,12 +905,12 @@ combination of environment, version, task, size and ORT mode to be compared.
 
 | Term | Meaning |
 |------|---------|
-| **NPU · ORT · Throughput · Latency · End-to-end FPS · Maximum channels** | Defined in [§3](#3-what-was-measured--terms-and-method) |
-| **CPU part (CPU offload)** | The portion of a compiled model's graph that the NPU cannot execute — for YOLO26, NMS plus the keypoint or mask decode. Executed on the host CPU only when ORT is ON. Distinct from the pipeline's post-processing stage. |
-| **NPU utilisation** | Average NPU core utilisation sampled by dxtop over the measurement window (`npu_total_avg_pct`). A low value indicates a host-bound state in which the NPU is waiting for input |
 | **Backpressure** | The mechanism by which a downstream element's processing delay propagates upstream through non-leaky queues, limiting both overall throughput and the supply of frames to the NPU. Every queue in the measured pipeline is `leaky=no` |
-| **Thermal throttling** | NPU clock reduction under high temperature (the NPU steps its clock down from 1000 MHz) |
 | **Coefficient of variation** | Standard deviation ÷ mean, expressed as a percentage — used here to quantify cross-host spread |
+| **CPU part (CPU offload)** | The portion of a compiled model's graph that the NPU cannot execute — for YOLO26, NMS plus the keypoint or mask decode. Executed on the host CPU only when ORT is ON. Distinct from the pipeline's post-processing stage. |
+| **NPU · ORT · Throughput · Latency · End-to-end FPS · Maximum channels** | Defined in [§3](#3-what-was-measured--terms-and-method) |
+| **NPU utilisation** | Average NPU core utilisation sampled by dxtop over the measurement window (`npu_total_avg_pct`). A low value indicates a host-bound state in which the NPU is waiting for input |
+| **Thermal throttling** | NPU clock reduction under high temperature (the NPU steps its clock down from 1000 MHz) |
 
 ---
 
