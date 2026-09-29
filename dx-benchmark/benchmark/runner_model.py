@@ -28,6 +28,25 @@ from .runner_pipeline import collect_timeout_incident as _collect_timeout_incide
 from .runner_pipeline import maybe_collect_dxrt_incident as _maybe_collect_dxrt_incident
 
 
+# dxrun --max-throughput 출력 파서.
+#   라운드:  [max-throughput] buffer-count=4 fps=115.55 loops=236 improvement=...
+#   최종:    => Recommended buffer-count : 6
+_SWEEP_ROUND_RE = re.compile(r"\[max-throughput\] buffer-count=(\d+) fps=([\d.]+)")
+_SWEEP_WINNER_RE = re.compile(r"=>\s*Recommended buffer-count\s*:\s*(\d+)")
+
+
+def _parse_sweep(log: str) -> tuple[Optional[int], dict[int, float]]:
+    """dxrun --max-throughput 출력에서 (winner, curve) 를 뽑는다.
+
+    winner 는 추천 buffer count. 추천 라인이 없으면 None — sweep 이 실패했다는 뜻이며
+    호출부는 이를 device unresponsive 로 취급한다.
+    curve 는 {buffer_count: fps} 로, 라운드가 하나도 없으면 빈 dict.
+    """
+    curve = {int(bc): float(fps) for bc, fps in _SWEEP_ROUND_RE.findall(log)}
+    m = _SWEEP_WINNER_RE.search(log)
+    return (int(m.group(1)) if m else None), curve
+
+
 def _stdev(values: list[float]) -> Optional[float]:
     """Return sample stdev if ≥2 values, else None."""
     return statistics.stdev(values) if len(values) >= 2 else None
