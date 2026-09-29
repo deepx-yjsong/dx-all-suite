@@ -147,3 +147,20 @@ def test_minimum_version_is_pinned():
     which pins PROTOCOL_VERSION the same way and for the same reason.
     """
     assert ef.MIN_TOOL_VERSIONS["run_model"] == (3, 5, 0)
+
+
+def test_model_family_gate_applies_to_the_right_families():
+    """Pins D7: the version gate must fire for model/all and NOT for e2e/multi.
+
+    Without this, inverting the condition to ``"e2e" in families`` passes the
+    whole suite -- the same untested-property failure this gate exists to stop.
+    ``test_cmd_run_consults_the_model_family_gate`` above only pins that the
+    gate is looked up; this one pins when it fires.
+    """
+    from benchmark.__main__ import needs_model_family_tools
+    assert needs_model_family_tools(["model"]) is True
+    assert needs_model_family_tools(["all"]) is True
+    assert needs_model_family_tools(["e2e"]) is False
+    assert needs_model_family_tools(["multi"]) is False
+    assert needs_model_family_tools(["e2e", "model"]) is True   # mixed -> gate on
+    assert needs_model_family_tools([]) is False

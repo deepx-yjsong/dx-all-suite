@@ -247,7 +247,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     if _gov_note:
         print(f"[INFO] {_gov_note}", flush=True)
 
-    if "model" in families or "all" in families:
+    if needs_model_family_tools(families):
         m_ok, m_err = check_model_family_readiness(fp)
         if not m_ok:
             print("[FAIL] Model-family prerequisites not met:")
@@ -1220,6 +1220,17 @@ def _get_families(args: argparse.Namespace) -> list[str]:
     if family == "all":
         return ["all"]
     return [family]
+
+
+def needs_model_family_tools(families: list[str]) -> bool:
+    """Whether the selected families include one that invokes run_model directly.
+
+    Only the model family runs ``run_model --max-throughput``; the E2E and
+    multi-stream families drive GStreamer pipelines instead, so an older dx_rt
+    still serves them (see D7). Kept separate from ``cmd_run`` so the decision
+    is testable without starting a benchmark.
+    """
+    return "model" in families or "all" in families
 
 
 def _count_runs(cfg: BenchmarkConfig, models: list, families: list[str]) -> int:
