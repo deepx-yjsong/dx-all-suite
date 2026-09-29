@@ -104,7 +104,7 @@ function _decoderKind(name){
 }
 function _nominalClock(envId){var e=_envById(envId);return (e&&e.npu_clock_mhz)?e.npu_clock_mhz:1000;}
 // Compact per-point SDK label for the Version Trend x-axis (full stack shows in the detail panel).
-function _trendSwLabel(snap){var e=snap&&snap.environment;if(!e)return null;var rt=cleanVer(e.rt_version);return rt?('rt '+rt):null;}
+function _trendSwLabel(snap){var e=snap&&snap.environment;if(!e)return null;var rt=cleanVer(e.rt_version);var pv=(snap.protocol&&snap.protocol.version)||null;var parts=[];if(rt)parts.push('rt '+rt);if(pv)parts.push('proto '+pv);return parts.length?parts.join(' · '):null;}
 // Per-metric subtitle shown directly under each Version Trend chart title: what the metric
 // measures and which performance dimension it reflects (no measurement-protocol detail).
 function _trendMetricSubtitle(key){

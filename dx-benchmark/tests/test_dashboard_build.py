@@ -6,12 +6,15 @@ cached copies after a rebuild, so a plain reload shows stale data (the reported
 "BIOSTAR still visible" confusion). The builder stamps a content hash onto the
 asset refs and emits a no-cache meta so a normal reload always reflects a rebuild.
 """
+import json
 import re
 from pathlib import Path
 
 from benchmark.dashboard_builder import build_static_dashboard
 
 _VER_RE = re.compile(r"(app\.js|styles\.css)\?v=([0-9a-f]{8})\b")
+ROOT = Path(__file__).resolve().parents[1]
+_EMBEDDED_RE = re.compile(r'id="embedded-dataset"[^>]*>(.*?)</script>', re.S)
 
 
 def _minimal_dataset(extra_run=None):
@@ -63,3 +66,35 @@ def test_asset_version_tracks_dataset_content(tmp_path):
     v1 = _VER_RE.search((out1 / "index.html").read_text(encoding="utf-8")).group(2)
     v2 = _VER_RE.search((out2 / "index.html").read_text(encoding="utf-8")).group(2)
     assert v1 != v2, "changed dataset content must change the asset hash so browsers refetch"
+
+
+def test_embedded_dataset_preserves_snapshot_protocol(tmp_path):
+    """A v2 snapshot's protocol block must survive into the embedded dataset.
+
+    The Version Trend label reads `snap.protocol.version` client-side, so if the
+    builder drops the block the label silently degrades to `rt x.y.z` with no
+    error anywhere -- exactly the v1/v2 ambiguity this feature exists to remove.
+    """
+    ds = _minimal_dataset()
+    ds["snapshots"] = [{
+        "run_id": "r1", "hw_id": "hwA",
+        "environment": {"rt_version": "v3.5.0"},
+        "protocol": {"version": "v2", "bc_range_lo": 3, "bc_range_hi": 16},
+    }]
+    build_static_dashboard(ds, tmp_path)
+    html = (tmp_path / "index.html").read_text(encoding="utf-8")
+    embedded = json.loads(_EMBEDDED_RE.search(html).group(1))
+    assert embedded["snapshots"][0]["protocol"]["version"] == "v2"
+
+
+def test_trend_label_reads_protocol_version():
+    """`_trendSwLabel` must consult snap.protocol.
+
+    node is unavailable on this host, so this is a source-level guard rather
+    than an execution test.
+    """
+    js = (ROOT / "benchmark" / "dashboard" / "app.js").read_text(encoding="utf-8")
+    line = next(l for l in js.split("\n") if "function _trendSwLabel" in l)
+    assert "protocol" in line, "_trendSwLabel must read snap.protocol"
+    assert "proto " in line, "_trendSwLabel must render a 'proto vN' segment"
+    assert "rt " in line, "_trendSwLabel must keep the existing rt segment"
