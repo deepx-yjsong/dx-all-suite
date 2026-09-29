@@ -211,7 +211,7 @@ class BenchmarkConfig:
     bc_range_lo: int = 3            # --buffer-count low. Cores per chip = physical floor.
     bc_range_hi: int = 16           # --buffer-count high. Measured optimum exceeded 13 once in 796.
     bc_probe_sec: int = 10          # --probe-time. Mean loss 1.02% at 5s vs 0.76% at 10s.
-    bc_sweep_timeout_sec: int = 300 # Whole-sweep timeout. Worst case 14 rounds ~140s, doubled.
+    bc_sweep_timeout_sec: int = 300 # Whole-sweep timeout FLOOR; see effective_sweep_timeout_sec().
 
     # ── E2E pipeline params ───────────────────────────────────────────
     e2e_runs: int = 3               # repeated measurements per condition
@@ -266,6 +266,19 @@ class BenchmarkConfig:
         return APP_DIR.parent / "results"
 
 
+def effective_sweep_timeout_sec(cfg: "BenchmarkConfig") -> int:
+    """Whole-sweep timeout actually enforced.
+
+    ``bc_sweep_timeout_sec`` is a floor: the sweep still needs room for every
+    candidate in the range at the configured probe time, so raising
+    ``bc_probe_sec`` cannot silently starve it.
+    """
+    return max(
+        cfg.bc_sweep_timeout_sec,
+        (cfg.bc_range_hi - cfg.bc_range_lo + 1) * cfg.bc_probe_sec * 2 + 60,
+    )
+
+
 def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
     """Return the fixed measurement protocol metadata for the current run."""
     return {
@@ -282,6 +295,7 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "bc_range_hi": cfg.bc_range_hi,
         "bc_probe_sec": cfg.bc_probe_sec,
         "bc_sweep_timeout_sec": cfg.bc_sweep_timeout_sec,
+        "bc_sweep_timeout_effective_sec": effective_sweep_timeout_sec(cfg),
         "e2e_runs": cfg.e2e_runs,
         "e2e_stall_timeout": cfg.e2e_stall_timeout,
         "e2e_hard_cap": cfg.e2e_hard_cap,

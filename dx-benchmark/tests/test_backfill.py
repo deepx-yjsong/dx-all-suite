@@ -153,6 +153,52 @@ def test_sweep_nonzero_exit_with_winner_is_discarded(monkeypatch):
     assert "output format may have changed" not in r.reason
 
 
+def test_sweep_timeout_preserves_partial_curve(monkeypatch):
+    """Rounds that finished before the kill must survive -- they name what hung."""
+    partial = ("[max-throughput] buffer-count=3 fps=100.83 loops=205\n"
+               "[max-throughput] buffer-count=4 fps=115.55 loops=236\n"
+               "[max-throughput] Measuring buffer-count=5 for 10s ...\n")
+
+    def _raise(*a, **kw):
+        raise runner_model.subprocess.TimeoutExpired(
+            cmd="run_model", timeout=300, output=partial, stderr="")
+
+    monkeypatch.setattr(runner_model.subprocess, "run", _raise)
+    monkeypatch.setattr(runner_model, "NpuMonitor", _FakeMonitor)
+    monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
+    r = runner_model.run_throughput(_model(), use_ort=False, cfg=_cfg(0), save_dir=None)
+    assert r.status == "no_fps"
+    assert "hung" in r.reason
+    # The curve pins the last buffer count that completed before the hang.
+    # 115.5, not 115.6: 115.55 is stored as 115.5499..., and the curve uses the
+    # same "%.1f" formatting as every other bc_curve_str assertion.
+    assert r.buffer_count_curve == "3:100.8 4:115.5"
+
+
+def test_sweep_timeout_partial_output_may_be_undecoded_bytes(monkeypatch):
+    """A REAL timeout carries bytes, not str.
+
+    subprocess.run skips its decode step when it raises TimeoutExpired, so
+    text=True does not apply to the captured output. A constructed exception
+    (the test above) hands back str, which is why only this test catches the
+    bytes path -- the one that actually occurs on a hung device.
+    """
+    def _raise(*a, **kw):
+        raise runner_model.subprocess.TimeoutExpired(
+            cmd="run_model", timeout=300,
+            output=b"[max-throughput] buffer-count=3 fps=100.83 loops=205\n", stderr=None)
+
+    monkeypatch.setattr(runner_model.subprocess, "run", _raise)
+    monkeypatch.setattr(runner_model, "NpuMonitor", _FakeMonitor)
+    monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
+    r = runner_model.run_throughput(_model(), use_ort=False, cfg=_cfg(0), save_dir=None)
+    assert r.status == "no_fps"
+    assert "hung" in r.reason
+    assert r.buffer_count_curve == "3:100.8"
+
+
 # ── latency backfill (profiler path) ──────────────────────────────────────
 
 class _ProfilerScript:

@@ -77,3 +77,19 @@ def test_aggregator_flattens_buffer_count():
     rows = [{"task": "object_detection", "size": "n", "model": "m", "use_ort": False,
              "family": "throughput", "fps": 300.0, "buffer_count": 5, "status": "ok"}]
     assert _flatten_model_results("r", "e", rows)[0]["buffer_count"] == 5
+
+
+def test_effective_sweep_timeout_is_a_floor_not_a_cap():
+    """Raising probe time must widen the timeout, never starve the sweep."""
+    from benchmark.config import BenchmarkConfig, effective_sweep_timeout_sec, get_protocol_metadata
+
+    # Default: the derived need (14 rounds x 10s x 2 + 60 = 340) exceeds the floor.
+    assert effective_sweep_timeout_sec(BenchmarkConfig()) == 340
+    # A long probe time scales the timeout instead of timing out unconditionally.
+    assert effective_sweep_timeout_sec(BenchmarkConfig(bc_probe_sec=30)) == 900
+    # A narrow range falls back to the configured floor.
+    assert effective_sweep_timeout_sec(BenchmarkConfig(bc_range_hi=4)) == 300
+    # Both the floor and what is actually enforced are recorded.
+    md = get_protocol_metadata(BenchmarkConfig())
+    assert md["bc_sweep_timeout_sec"] == 300
+    assert md["bc_sweep_timeout_effective_sec"] == 340

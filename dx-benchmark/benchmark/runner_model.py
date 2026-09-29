@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from .config import BenchmarkConfig
+from .config import BenchmarkConfig, effective_sweep_timeout_sec
 from .model_catalog import ModelEntry
 from .npu_monitor import NpuMonitor, NpuStats
 from .npu_stats_util import merge_npu_stats as _merge_npu_stats
@@ -31,6 +31,20 @@ from .runner_pipeline import maybe_collect_dxrt_incident as _maybe_collect_dxrt_
 def _stdev(values: list[float]) -> Optional[float]:
     """Return sample stdev if ≥2 values, else None."""
     return statistics.stdev(values) if len(values) >= 2 else None
+
+
+def _as_text(stream: "str | bytes | None") -> str:
+    """Normalize captured subprocess output to text.
+
+    subprocess.run leaves TimeoutExpired.stdout/.stderr UNDECODED even when the
+    call passed text=True (the decode step never runs on the timeout path), so a
+    real hang delivers bytes here while a constructed exception delivers str.
+    """
+    if stream is None:
+        return ""
+    if isinstance(stream, bytes):
+        return stream.decode("utf-8", errors="replace")
+    return stream
 
 
 def _cleanup_run_model(incident_context: str = "") -> None:
@@ -268,20 +282,19 @@ def run_throughput(
             "--probe-time", str(cfg.bc_probe_sec)]
     if use_ort:
         scmd.append("--use-ort")
-    # The configured timeout is a floor: the sweep still needs room for every
-    # candidate in the range, so a raised --probe-time cannot silently starve it.
-    sweep_timeout = max(
-        cfg.bc_sweep_timeout_sec,
-        (cfg.bc_range_hi - cfg.bc_range_lo + 1) * cfg.bc_probe_sec * 2 + 60,
-    )
+    sweep_timeout = effective_sweep_timeout_sec(cfg)
     sweep_timed_out = False
     try:
         sp = subprocess.run(scmd, capture_output=True, text=True, timeout=sweep_timeout)
         sweep_log = sp.stdout + "\n" + sp.stderr
         sweep_rc = sp.returncode
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as e:
         _cleanup_run_model(f"{model.name}.{ort_tag}.bcsweep")
-        sweep_log, sweep_rc, sweep_timed_out = "", -1, True
+        # Keep whatever the sweep printed before the kill: it names the buffer
+        # count that hung, which is the whole diagnostic value of a timeout.
+        # _as_text because this output arrives undecoded on a real timeout.
+        sweep_log = _as_text(e.stdout) + "\n" + _as_text(e.stderr)
+        sweep_rc, sweep_timed_out = -1, True
 
     buffer_count, bc_curve = _parse_sweep(sweep_log)
     bc_curve_str = " ".join(f"{k}:{v:.1f}" for k, v in sorted(bc_curve.items()))
