@@ -122,9 +122,11 @@ def _parse_dxrt_version(ver: str | None) -> tuple[int, int, int] | None:
     `dxrun`), so only the version triple is read. A build stamp
     ('v3.5.0+9ef3f4c-dirty') or a pre-release tag ('v3.5.0-rc.4') still yields
     (3, 5, 0): the question here is whether the feature exists, not semver
-    precedence. Returns None when no version is present at all.
+    precedence. The leading `v` is optional, so a banner that drops it still
+    parses -- an upstream format change must not read as "too old" on every
+    host. Returns None when no version is present at all.
     """
-    m = re.search(r"v(\d+)\.(\d+)\.(\d+)", ver or "")
+    m = re.search(r"v?(\d+)\.(\d+)\.(\d+)", ver or "")
     return (int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else None
 
 
@@ -530,7 +532,10 @@ def _get_npu_info() -> dict[str, Any]:
 
 
 def check_preflight(fingerprint: dict) -> tuple[bool, list[str]]:
-    """Validate that all always-required tools are present and new enough.
+    """Validate that all always-required tools are present.
+
+    Presence only -- minimum versions are per-family, see
+    ``check_model_family_readiness``.
 
     Returns (ok, list_of_error_messages). Each message carries an install hint.
     """
@@ -538,6 +543,18 @@ def check_preflight(fingerprint: dict) -> tuple[bool, list[str]]:
     for tool in fingerprint.get("missing_required", []):
         hint = _remediation(tool)
         errors.append(f"Required tool not found: {tool}" + (f"  → {hint}" if hint else ""))
+    return len(errors) == 0, errors
+
+
+def check_model_family_readiness(fingerprint: dict) -> tuple[bool, list[str]]:
+    """Validate tool versions needed by the model family only.
+
+    The buffer-count sweep delegates to `run_model --max-throughput`, which
+    exists from dx_rt v3.5.0. The E2E / multi-stream families never invoke it,
+    so an older runtime still runs those perfectly well -- gating them would be
+    a false block with no workaround. Mirrors ``check_e2e_readiness``.
+    """
+    errors = []
     for tool, found, need in fingerprint.get("outdated_required", []):
         hint = _remediation(tool)
         errors.append(
