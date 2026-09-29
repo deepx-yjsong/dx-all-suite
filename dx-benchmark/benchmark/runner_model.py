@@ -268,33 +268,51 @@ def run_throughput(
             "--probe-time", str(cfg.bc_probe_sec)]
     if use_ort:
         scmd.append("--use-ort")
+    # The configured timeout is a floor: the sweep still needs room for every
+    # candidate in the range, so a raised --probe-time cannot silently starve it.
+    sweep_timeout = max(
+        cfg.bc_sweep_timeout_sec,
+        (cfg.bc_range_hi - cfg.bc_range_lo + 1) * cfg.bc_probe_sec * 2 + 60,
+    )
+    sweep_timed_out = False
     try:
-        sp = subprocess.run(scmd, capture_output=True, text=True,
-                            timeout=cfg.bc_sweep_timeout_sec)
+        sp = subprocess.run(scmd, capture_output=True, text=True, timeout=sweep_timeout)
         sweep_log = sp.stdout + "\n" + sp.stderr
         sweep_rc = sp.returncode
     except subprocess.TimeoutExpired:
         _cleanup_run_model(f"{model.name}.{ort_tag}.bcsweep")
-        sweep_log, sweep_rc = "", -1
+        sweep_log, sweep_rc, sweep_timed_out = "", -1, True
 
     buffer_count, bc_curve = _parse_sweep(sweep_log)
     bc_curve_str = " ".join(f"{k}:{v:.1f}" for k, v in sorted(bc_curve.items()))
 
-    # No recommendation means the sweep gave us nothing usable. Name the actual
-    # cause in `reason` so a failed campaign is diagnosable from the result file
-    # alone -- a model that failed to load is not the same as a dead device.
+    # No usable recommendation. Name the actual cause in `reason` so a failed
+    # campaign is diagnosable from the result file alone -- a hung device, a
+    # model that failed to load, and a changed output format are different
+    # problems. The branches below are exclusive and exhaustive in that order.
     # The status stays "no_fps" in every case: the circuit breaker treats
     # timeout/error/no_fps alike and decides by probing the device, so the
     # status choice does not affect whether the run aborts.
-    if sweep_rc != 0 or buffer_count is None:
+    if sweep_timed_out or sweep_rc != 0 or buffer_count is None:
         measured = list(bc_curve.values())
-        if not measured:
+        if sweep_timed_out:
+            why = (f"sweep exceeded {sweep_timeout}s and was killed; "
+                   "the device or dxrun hung")
+        elif buffer_count is not None:
+            why = (f"dxrun recommended buffer count {buffer_count} but exited "
+                   f"rc={sweep_rc}; discarding an untrustworthy result")
+        elif not measured:
             why = f"sweep produced no round (rc={sweep_rc}); model load or launch failed"
         elif max(measured) <= 0.0:
             why = "every sweep round measured 0 fps (device unresponsive)"
         else:
             why = (f"sweep ran but gave no recommendation (rc={sweep_rc}); "
                    "dxrun output format may have changed")
+        # Keep the raw sweep output: for a format change it is the only evidence
+        # of what actually differed, and the incident collector matches dxrt
+        # error patterns, not output drift.
+        if save_dir and sweep_log.strip():
+            _save_raw(save_dir, model.name, "throughput.bcsweep", use_ort, sweep_log, "")
         _maybe_collect_dxrt_incident(sweep_log, f"{model.name}.{ort_tag}.bcsweep")
         print(f"    [buffer-count] {why}; skipping throughput "
               f"(curve: {bc_curve_str or 'none'})", flush=True)

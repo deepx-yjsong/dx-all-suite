@@ -130,6 +130,29 @@ def test_sweep_without_recommendation_reports_format_drift(monkeypatch):
     assert "output format may have changed" in r.reason
 
 
+def test_sweep_timeout_reports_hang_not_load_failure(monkeypatch):
+    """A killed sweep is a hang -- it must not be reported as a load failure."""
+    def _raise(*a, **kw):
+        raise runner_model.subprocess.TimeoutExpired(cmd="run_model", timeout=300)
+    monkeypatch.setattr(runner_model.subprocess, "run", _raise)
+    monkeypatch.setattr(runner_model, "NpuMonitor", _FakeMonitor)
+    monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
+    r = runner_model.run_throughput(_model(), use_ort=False, cfg=_cfg(0), save_dir=None)
+    assert r.status == "no_fps"
+    assert "hung" in r.reason
+    assert "load or launch failed" not in r.reason
+
+
+def test_sweep_nonzero_exit_with_winner_is_discarded(monkeypatch):
+    """A recommendation from a failed process is untrustworthy, and says so."""
+    r = _run_with_sweep(monkeypatch, returncode=3, sweep_result=(7, {6: 100.0, 7: 120.0}))
+    assert r.status == "no_fps"
+    assert r.buffer_count is None
+    assert "exited rc=3" in r.reason
+    assert "output format may have changed" not in r.reason
+
+
 # ── latency backfill (profiler path) ──────────────────────────────────────
 
 class _ProfilerScript:
