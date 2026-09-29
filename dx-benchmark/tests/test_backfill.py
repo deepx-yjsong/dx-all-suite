@@ -91,6 +91,45 @@ def test_no_success_is_no_fps(monkeypatch):
     assert r.status == "no_fps"
 
 
+# ── buffer-count sweep failure branches ───────────────────────────────────
+
+def _run_with_sweep(monkeypatch, *, returncode, sweep_result):
+    """Drive run_throughput with a scripted sweep outcome."""
+    class _Proc:
+        stdout = "sweep-stdout"
+        stderr = ""
+    _Proc.returncode = returncode
+    monkeypatch.setattr(runner_model.subprocess, "run", lambda *a, **kw: _Proc())
+    monkeypatch.setattr(runner_model, "NpuMonitor", _FakeMonitor)
+    monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_parse_sweep", lambda *a, **kw: sweep_result)
+    return runner_model.run_throughput(_model(), use_ort=False, cfg=_cfg(0), save_dir=None)
+
+
+def test_sweep_no_round_reports_load_failure(monkeypatch):
+    """Empty curve means nothing ran -- a model load failure, not a dead device."""
+    r = _run_with_sweep(monkeypatch, returncode=255, sweep_result=(None, {}))
+    assert r.status == "no_fps"
+    assert r.buffer_count is None
+    assert "model load or launch failed" in r.reason
+
+
+def test_sweep_all_zero_reports_device_unresponsive(monkeypatch):
+    """Rounds ran but every one measured 0 fps -- the device really is unresponsive."""
+    r = _run_with_sweep(monkeypatch, returncode=255, sweep_result=(None, {3: 0.0, 4: 0.0}))
+    assert r.status == "no_fps"
+    assert "device unresponsive" in r.reason
+    assert r.buffer_count_curve == "3:0.0 4:0.0"
+
+
+def test_sweep_without_recommendation_reports_format_drift(monkeypatch):
+    """Real measurements but no winner line -- dxrun output changed under us."""
+    r = _run_with_sweep(monkeypatch, returncode=0, sweep_result=(None, {3: 100.0, 4: 120.0}))
+    assert r.status == "no_fps"
+    assert "output format may have changed" in r.reason
+
+
 # ── latency backfill (profiler path) ──────────────────────────────────────
 
 class _ProfilerScript:
