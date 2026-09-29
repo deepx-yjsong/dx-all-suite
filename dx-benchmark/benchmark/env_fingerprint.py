@@ -111,9 +111,30 @@ REQUIRED_TOOLS = ["run_model", "dxrt-cli", "gst-launch-1.0", "gst-inspect-1.0", 
 E2E_REQUIRED_TOOLS = ["ffprobe"]
 OPTIONAL_TOOLS = ["dxtop"]
 
+# Minimum versions. run_model needs --max-throughput / --probe-time (dx_rt v3.5.0).
+MIN_TOOL_VERSIONS = {"run_model": (3, 5, 0)}
+
+
+def _parse_dxrt_version(ver: str | None) -> tuple[int, int, int] | None:
+    """Pull (3, 5, 0) out of a banner like 'DXRT v3.5.0 run_model'.
+
+    The tool name in the banner follows argv[0] (`run_model` is a symlink to
+    `dxrun`), so only the version triple is read. A build stamp
+    ('v3.5.0+9ef3f4c-dirty') or a pre-release tag ('v3.5.0-rc.4') still yields
+    (3, 5, 0): the question here is whether the feature exists, not semver
+    precedence. Returns None when no version is present at all.
+    """
+    m = re.search(r"v(\d+)\.(\d+)\.(\d+)", ver or "")
+    return (int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else None
+
+
+def _fmt_ver(v: tuple[int, int, int]) -> str:
+    return "v{}.{}.{}".format(*v)
+
+
 # Actionable install hints surfaced next to a missing tool in preflight output.
 _REMEDIATION = {
-    "run_model": "DEEPX runtime — run: dx-runtime/install.sh --all",
+    "run_model": "DEEPX runtime v3.5.0+ — dx-runtime/install.sh --all, or: sudo dpkg -i libdxrt-bin_3.5.0_amd64.deb",
     "dxrt-cli": "DEEPX runtime — run: dx-runtime/install.sh --all",
     "gst-launch-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
     "gst-inspect-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
@@ -189,11 +210,20 @@ def collect_fingerprint() -> dict[str, Any]:
 
     # Always-required tools
     missing = []
+    outdated = []
     for tool in REQUIRED_TOOLS:
         info = _tool_version(tool)
         fp["tools"][tool] = info
         if not info["available"]:
             missing.append(tool)
+            continue
+        need = MIN_TOOL_VERSIONS.get(tool)
+        if need:
+            found = _parse_dxrt_version(info.get("version"))
+            # Unparseable counts as too old: a present-but-broken binary must
+            # not be allowed to start a campaign (see D5).
+            if found is None or found < need:
+                outdated.append((tool, info.get("version") or "unknown", _fmt_ver(need)))
 
     # E2E-tier tools (record availability; gate only the E2E/multi families)
     for tool in E2E_REQUIRED_TOOLS:
@@ -204,6 +234,7 @@ def collect_fingerprint() -> dict[str, Any]:
         fp["tools"][tool] = _tool_version(tool)
 
     fp["missing_required"] = missing
+    fp["outdated_required"] = outdated
     fp["missing_e2e"] = collect_e2e_missing()
     return fp
 
@@ -499,7 +530,7 @@ def _get_npu_info() -> dict[str, Any]:
 
 
 def check_preflight(fingerprint: dict) -> tuple[bool, list[str]]:
-    """Validate that all always-required tools are present.
+    """Validate that all always-required tools are present and new enough.
 
     Returns (ok, list_of_error_messages). Each message carries an install hint.
     """
@@ -507,6 +538,12 @@ def check_preflight(fingerprint: dict) -> tuple[bool, list[str]]:
     for tool in fingerprint.get("missing_required", []):
         hint = _remediation(tool)
         errors.append(f"Required tool not found: {tool}" + (f"  → {hint}" if hint else ""))
+    for tool, found, need in fingerprint.get("outdated_required", []):
+        hint = _remediation(tool)
+        errors.append(
+            f"Required tool too old: {tool} (found {found}, need >= {need})"
+            + (f"  → {hint}" if hint else "")
+        )
     return len(errors) == 0, errors
 
 
