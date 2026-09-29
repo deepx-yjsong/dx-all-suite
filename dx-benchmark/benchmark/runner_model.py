@@ -338,6 +338,15 @@ def run_throughput(
     print(f"    [buffer-count] winner={buffer_count} "
           f"(sweep {cfg.bc_range_lo}-{cfg.bc_range_hi} @ {cfg.bc_probe_sec}s: "
           + ", ".join(f"{k}:{v:.1f}" for k, v in sorted(bc_curve.items())) + ")", flush=True)
+    # Keep the raw sweep output on success too. Only the derived curve reaches the
+    # result file, so dxrun's own decision signals -- improvement/peak-drop/stall/
+    # loops and the Max FPS line -- would otherwise be gone. Protocol v2 delegates
+    # this decision to a tool we do not control, and a plateau makes the winner
+    # noise-dominated (measured: 12 vs 14 from two identical sweeps), so the raw
+    # text is the only way to audit either after the fact. Cost is a few dozen
+    # lines per cell, and results/**/raw/ is gitignored anyway.
+    if save_dir and sweep_log.strip():
+        _save_raw(save_dir, model.name, "throughput.bcsweep", use_ort, sweep_log, "")
     cmd += ["--buffer-count", str(buffer_count)]
 
     # Warmup run (discard result); retry on transient timeout before giving up the cell

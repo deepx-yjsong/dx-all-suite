@@ -93,11 +93,12 @@ def test_no_success_is_no_fps(monkeypatch):
 
 # ── buffer-count sweep failure branches ───────────────────────────────────
 
-def _run_with_sweep(monkeypatch, *, returncode, sweep_result, save_dir=None):
+def _run_with_sweep(monkeypatch, *, returncode, sweep_result, save_dir=None,
+                    stdout="sweep-stdout"):
     """Drive run_throughput with a scripted sweep outcome."""
     class _Proc:
-        stdout = "sweep-stdout"
         stderr = ""
+    _Proc.stdout = stdout
     _Proc.returncode = returncode
     monkeypatch.setattr(runner_model.subprocess, "run", lambda *a, **kw: _Proc())
     monkeypatch.setattr(runner_model, "NpuMonitor", _FakeMonitor)
@@ -358,3 +359,47 @@ def test_sweep_hang_without_output_saves_nothing(monkeypatch, tmp_path):
 
     assert r.status == "no_fps"
     assert list(tmp_path.iterdir()) == []
+
+
+# Real `dxrun --max-throughput` output (v3.5.0 format), truncated right after the
+# recommendation. The trailing "- FPS :" result block is left out on purpose: with
+# it the scripted measured runs would parse an FPS and pull in the whole NPU mock
+# stack, and what this test is about is the sweep text, not the measured runs.
+SUCCESSFUL_SWEEP_LOG = """\
+Searching I/O Buffer Count range=3-6
+Max-throughput sweep: start=3 step=1 cap=6 round-time=2s peak-drop-threshold=3% (patience 2, stall 3)
+[max-throughput] buffer-count=3 fps=100.83 loops=205
+[max-throughput] buffer-count=4 fps=115.55 loops=236 improvement=14.59% peak-drop=0.00% stall=0
+[max-throughput] buffer-count=5 fps=132.68 loops=271 improvement=14.83% peak-drop=0.00% stall=0
+[max-throughput] buffer-count=6 fps=141.66 loops=290 improvement=6.76% peak-drop=0.00% stall=0
+  Stop reason : reached buffer-count cap (6)
+  => Recommended buffer-count : 6
+     Max FPS                  : 141.66  (loops=290)
+"""
+
+
+def test_successful_sweep_log_is_persisted(monkeypatch, tmp_path):
+    """A successful sweep must leave its raw dxrun output behind.
+
+    Protocol v2 delegates the buffer-count decision to an external tool we do
+    not control. On success only the derived curve survives, so dxrun's own
+    decision signals (improvement / peak-drop / stall / loops, and the Max FPS
+    line) are lost -- and a format change that still parses but means something
+    different becomes invisible after the fact. A measured campaign showed why
+    that matters: two identical sweeps minutes apart on one host and binary
+    picked buffer counts 12 and 14 off a flat plateau, and nothing but the raw
+    text can explain that after the fact.
+    """
+    r = _run_with_sweep(monkeypatch, returncode=0, sweep_result=(6, {3: 100.83, 6: 141.66}),
+                        save_dir=tmp_path, stdout=SUCCESSFUL_SWEEP_LOG)
+    # buffer_count survives only on the success path -- the failure branch nulls it.
+    assert r.buffer_count == 6
+    assert r.buffer_count_curve == "3:100.8 6:141.7"
+
+    # Name comes from _save_raw: "<model>.<family>.<ort_tag>.log".
+    saved = tmp_path / "m.dxnn.throughput.bcsweep.ort_off.log"
+    # The failure branch returns, so one cell saves the sweep at most once.
+    assert [p.name for p in tmp_path.glob("*bcsweep*")] == [saved.name]
+    text = saved.read_text()
+    for signal in ("improvement=", "peak-drop=", "stall=", "loops=", "Max FPS"):
+        assert signal in text, f"{signal!r} missing from the saved sweep log"
