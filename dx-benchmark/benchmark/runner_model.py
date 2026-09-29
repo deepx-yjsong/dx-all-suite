@@ -258,9 +258,13 @@ def _parse_input_tensor_shape(log: str) -> Optional[dict]:
 
 
 def _parse_fps_from_log(log: str) -> Optional[float]:
-    """Extract average FPS from run_model output."""
+    """Average FPS across run_model result blocks.
+
+    Only "  - FPS : N" inside a result block counts. The "Max FPS : N" line in
+    --max-throughput output is a sweep peak, not a measurement, so it is excluded.
+    """
     fps_values = []
-    for m in re.finditer(r"FPS\s*:\s*([\d.]+)", log):
+    for m in re.finditer(r"^\s*-\s*FPS\s*:\s*(\d+(?:\.\d+)?)", log, re.MULTILINE):
         fps_values.append(float(m.group(1)))
     return sum(fps_values) / len(fps_values) if fps_values else None
 

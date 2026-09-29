@@ -1,6 +1,6 @@
 """Unit tests for the `dxrun --max-throughput` output parser."""
 
-from benchmark.runner_model import _parse_sweep
+from benchmark.runner_model import _parse_sweep, _parse_fps_from_log
 
 # Real v3.5.0 output (staging a918c3da). yolo26-n, --buffer-count 3-6 --probe-time 2
 SWEEP_LOG = """\
@@ -52,10 +52,12 @@ Searching I/O Buffer Count range=3-16
 """
 
 
-def test_parse_sweep_extracts_winner_and_curve():
+def test_parse_sweep_extracts_winner_and_curve(capsys):
     winner, curve = _parse_sweep(SWEEP_LOG)
     assert winner == 6
     assert curve == {3: 100.83, 4: 115.55, 5: 132.68, 6: 141.66}
+    # A healthy sweep must not trip the format-drift warning.
+    assert "[WARN]" not in capsys.readouterr().out
 
 
 def test_parse_sweep_returns_none_when_no_recommendation():
@@ -105,4 +107,26 @@ def test_parse_sweep_warns_when_winner_present_without_rounds(capsys):
 def test_parse_sweep_does_not_crash_on_malformed_fps():
     """A malformed fps token must not raise — drift degrades, never crashes."""
     winner, curve = _parse_sweep("[max-throughput] buffer-count=3 fps=115.55.\n")
+    assert winner is None
     assert curve == {3: 115.55}
+
+
+def test_parse_fps_ignores_sweep_peak_line():
+    """Max FPS (the sweep peak) must be ignored; only the result block counts."""
+    assert _parse_fps_from_log(SWEEP_LOG) == 141.21
+
+
+def test_parse_fps_reads_verbose_padded_form():
+    """The space-padded form emitted by -v must parse too."""
+    log = "  - NPU Processing Time  : 3.576 ms\n  - FPS                  : 98.40\n"
+    assert _parse_fps_from_log(log) == 98.40
+
+
+def test_parse_fps_averages_multiple_result_blocks():
+    """Several result blocks average together (unchanged behaviour)."""
+    log = "  - FPS : 100.00\n  - FPS : 120.00\n"
+    assert _parse_fps_from_log(log) == 110.00
+
+
+def test_parse_fps_returns_none_without_result_block():
+    assert _parse_fps_from_log("no fps here") is None
