@@ -28,22 +28,35 @@ from .runner_pipeline import collect_timeout_incident as _collect_timeout_incide
 from .runner_pipeline import maybe_collect_dxrt_incident as _maybe_collect_dxrt_incident
 
 
-# dxrun --max-throughput 출력 파서.
-#   라운드:  [max-throughput] buffer-count=4 fps=115.55 loops=236 improvement=...
-#   최종:    => Recommended buffer-count : 6
-_SWEEP_ROUND_RE = re.compile(r"\[max-throughput\] buffer-count=(\d+) fps=([\d.]+)")
+# Parser for `dxrun --max-throughput` output.
+#   round line:  [max-throughput] buffer-count=4 fps=115.55 loops=236 improvement=...
+#   winner line: => Recommended buffer-count : 6
+_SWEEP_ROUND_RE = re.compile(r"\[max-throughput\] buffer-count=(\d+) fps=(\d+(?:\.\d+)?)")
 _SWEEP_WINNER_RE = re.compile(r"=>\s*Recommended buffer-count\s*:\s*(\d+)")
 
 
 def _parse_sweep(log: str) -> tuple[Optional[int], dict[int, float]]:
-    """dxrun --max-throughput 출력에서 (winner, curve) 를 뽑는다.
+    """Extract (winner, curve) from `dxrun --max-throughput` output.
 
-    winner 는 추천 buffer count. 추천 라인이 없으면 None — sweep 이 실패했다는 뜻이며
-    호출부는 이를 device unresponsive 로 취급한다.
-    curve 는 {buffer_count: fps} 로, 라운드가 하나도 없으면 빈 dict.
+    ``winner`` is the recommended buffer count, or None when dxrun printed no
+    recommendation. That happens for several distinct reasons, and the caller
+    must tell them apart instead of treating them all as a dead device:
+
+    - ``curve`` empty          -> no round ever completed (engine/model load
+      failed, the process was killed, or this is not sweep output at all)
+    - ``curve`` all zero       -> every round measured 0 fps; device unresponsive
+    - ``curve`` has non-zero values but winner is None -> dxrun output drifted
+
+    ``curve`` maps buffer count to measured fps, and is empty when no round line
+    matched.
     """
     curve = {int(bc): float(fps) for bc, fps in _SWEEP_ROUND_RE.findall(log)}
     m = _SWEEP_WINNER_RE.search(log)
+    if m and not curve:
+        # dxrun only prints a recommendation after at least one successful round,
+        # so this combination means the round-line format changed under us.
+        print("    [WARN] sweep recommendation parsed but no round lines matched "
+              "(dxrun output format changed?)", flush=True)
     return (int(m.group(1)) if m else None), curve
 
 
