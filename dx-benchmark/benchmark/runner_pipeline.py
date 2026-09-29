@@ -816,7 +816,8 @@ def maybe_collect_dxrt_incident(output: str, context: str) -> Optional[Path]:
     """Capture an incident bundle when run output shows a dxrt runtime error.
 
     Args:
-        output: Combined stdout+stderr of the completed (non-timeout) attempt.
+        output: Combined stdout+stderr -- of a completed attempt, or the partial
+                output captured before a timeout kill (the sweep path passes that).
         context: Incident label prefix, e.g. "<model>.<ort>.<family>.run<N>";
                  ".dxrt_error" is appended.
 

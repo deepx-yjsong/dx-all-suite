@@ -9,7 +9,7 @@ import types
 import pytest
 
 from benchmark import runner_model
-from benchmark.config import BenchmarkConfig
+from benchmark.config import BenchmarkConfig, effective_sweep_timeout_sec
 from benchmark.model_catalog import ModelEntry
 from benchmark.runner_pipeline import PipeOutcome
 
@@ -93,7 +93,7 @@ def test_no_success_is_no_fps(monkeypatch):
 
 # ── buffer-count sweep failure branches ───────────────────────────────────
 
-def _run_with_sweep(monkeypatch, *, returncode, sweep_result):
+def _run_with_sweep(monkeypatch, *, returncode, sweep_result, save_dir=None):
     """Drive run_throughput with a scripted sweep outcome."""
     class _Proc:
         stdout = "sweep-stdout"
@@ -104,7 +104,7 @@ def _run_with_sweep(monkeypatch, *, returncode, sweep_result):
     monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
     monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
     monkeypatch.setattr(runner_model, "_parse_sweep", lambda *a, **kw: sweep_result)
-    return runner_model.run_throughput(_model(), use_ort=False, cfg=_cfg(0), save_dir=None)
+    return runner_model.run_throughput(_model(), use_ort=False, cfg=_cfg(0), save_dir=save_dir)
 
 
 def test_sweep_no_round_reports_load_failure(monkeypatch):
@@ -299,3 +299,62 @@ def test_e2e_backfill_exhausted_is_partial(monkeypatch):
     r = runner_pipeline.run_single_stream(_model(), use_ort=False, cfg=_cfg_pipeline(0), save_dir=None)
     assert r.status == "partial"
     assert r.runs == 2
+
+
+# ── sweep timeout wiring + raw-log persistence ────────────────────────────
+
+def test_sweep_is_given_the_effective_timeout_not_the_floor(monkeypatch):
+    """The runner must enforce the EFFECTIVE sweep timeout, not the raw floor.
+
+    ``bc_sweep_timeout_sec`` is only a floor; ``effective_sweep_timeout_sec``
+    widens it so the whole candidate range fits at the configured probe time.
+    Asserting on the ``timeout=`` kwarg actually handed to subprocess.run tests
+    the wiring itself rather than a message string, so it still catches a
+    regression to ``cfg.bc_sweep_timeout_sec`` if the reason text ever changes.
+    The reason is checked too: it is the operator-facing copy of the same value.
+    """
+    cfg = _cfg(0)
+    floor, effective = cfg.bc_sweep_timeout_sec, effective_sweep_timeout_sec(cfg)
+    # Guard the fixture: with equal values this test could not tell them apart.
+    assert (floor, effective) == (300, 340)
+
+    seen = {}
+
+    def _raise(*a, **kw):
+        seen["timeout"] = kw.get("timeout")
+        raise runner_model.subprocess.TimeoutExpired(cmd="run_model", timeout=kw.get("timeout"))
+
+    monkeypatch.setattr(runner_model.subprocess, "run", _raise)
+    monkeypatch.setattr(runner_model, "NpuMonitor", _FakeMonitor)
+    monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
+    r = runner_model.run_throughput(_model(), use_ort=False, cfg=cfg, save_dir=None)
+
+    assert seen["timeout"] == effective
+    assert f"exceeded {effective}s" in r.reason
+
+
+def test_sweep_failure_saves_raw_log(monkeypatch, tmp_path):
+    """A failed sweep keeps its raw output -- the only evidence of format drift."""
+    r = _run_with_sweep(monkeypatch, returncode=255, sweep_result=(None, {}),
+                        save_dir=tmp_path)
+    assert r.status == "no_fps"
+    # Name comes from _save_raw: "<model>.<family>.<ort_tag>.log".
+    saved = tmp_path / "m.dxnn.throughput.bcsweep.ort_off.log"
+    assert [p.name for p in tmp_path.iterdir()] == [saved.name]
+    assert "sweep-stdout" in saved.read_text()
+
+
+def test_sweep_hang_without_output_saves_nothing(monkeypatch, tmp_path):
+    """The other half of the guard: no output means no empty placeholder file."""
+    def _raise(*a, **kw):
+        raise runner_model.subprocess.TimeoutExpired(cmd="run_model", timeout=340)
+
+    monkeypatch.setattr(runner_model.subprocess, "run", _raise)
+    monkeypatch.setattr(runner_model, "NpuMonitor", _FakeMonitor)
+    monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
+    r = runner_model.run_throughput(_model(), use_ort=False, cfg=_cfg(0), save_dir=tmp_path)
+
+    assert r.status == "no_fps"
+    assert list(tmp_path.iterdir()) == []
