@@ -25,7 +25,7 @@ POSTPROCESS_LIB_DIR = Path("/usr/local/share/gstdxstream/lib")
 # Self-describing model manifest (single source of truth for download + catalog).
 MODEL_LIST_JSON = APP_DIR / "model_list.json"
 
-PROTOCOL_VERSION = "v1"  # v1: first public measurement methodology — adaptive buffer-count probe + pre-E2E cooldown
+PROTOCOL_VERSION = "v2"  # v2: buffer-count sweep delegated to `dxrun --max-throughput` (v1: in-house adaptive probe)
 MULTI_STREAM_SEARCH_MODE = "single-stream-estimate-linear-boundary"
 STABLE_CAPACITY_RULE = "status_ok_and_all_runs_success_and_avg_per_channel_fps_ge_threshold"
 
@@ -205,16 +205,13 @@ class BenchmarkConfig:
     model_latency_runs: int = 1     # repeated measurements per latency benchmark
     model_throughput_runs: int = 3  # repeated measurements per throughput benchmark
 
-    # ── buffer-count adaptive probe (protocol v1, throughput only) ────
-    # Throughput vs run_model --buffer-count is a unimodal saturation curve; probe
-    # ascending from the per-chip core-count floor and measure at the knee.
-    buffer_count_probe_start: int = 3      # M1/M1M/H1 = 3 cores per chip
-    buffer_count_probe_floor_max: int = 8  # always probe start..8 (covers default 6 + margin)
-    buffer_count_probe_sec: int = 10       # per-probe duration (-t)
-    buffer_count_probe_retries: int = 1    # retry a probe that returns 0 fps (transient stall)
-    buffer_count_improve_eps: float = 0.01
-    buffer_count_decline_eps: float = 0.02
-    buffer_count_max_probe: int = 16
+    # ── buffer-count sweep (protocol v2, throughput only) ────────────
+    # dxrun --max-throughput performs the search. Its stop rules (step /
+    # threshold / patience / stall) are dxrun constants and are not exposed here.
+    bc_range_lo: int = 3            # --buffer-count low. Cores per chip = physical floor.
+    bc_range_hi: int = 16           # --buffer-count high. Measured optimum exceeded 13 once in 796.
+    bc_probe_sec: int = 10          # --probe-time. Mean loss 1.02% at 5s vs 0.76% at 10s.
+    bc_sweep_timeout_sec: int = 300 # Whole-sweep timeout. Worst case 14 rounds ~140s, doubled.
 
     # ── E2E pipeline params ───────────────────────────────────────────
     e2e_runs: int = 3               # repeated measurements per condition
@@ -281,11 +278,10 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "model_run_retries": cfg.model_run_retries,
         "model_latency_runs": cfg.model_latency_runs,
         "model_throughput_runs": cfg.model_throughput_runs,
-        "buffer_count_probe_start": cfg.buffer_count_probe_start,
-        "buffer_count_probe_floor_max": cfg.buffer_count_probe_floor_max,
-        "buffer_count_probe_sec": cfg.buffer_count_probe_sec,
-        "buffer_count_probe_retries": cfg.buffer_count_probe_retries,
-        "buffer_count_max_probe": cfg.buffer_count_max_probe,
+        "bc_range_lo": cfg.bc_range_lo,
+        "bc_range_hi": cfg.bc_range_hi,
+        "bc_probe_sec": cfg.bc_probe_sec,
+        "bc_sweep_timeout_sec": cfg.bc_sweep_timeout_sec,
         "e2e_runs": cfg.e2e_runs,
         "e2e_stall_timeout": cfg.e2e_stall_timeout,
         "e2e_hard_cap": cfg.e2e_hard_cap,

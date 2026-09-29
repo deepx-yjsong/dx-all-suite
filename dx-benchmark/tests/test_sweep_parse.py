@@ -130,3 +130,13 @@ def test_parse_fps_averages_multiple_result_blocks():
 
 def test_parse_fps_returns_none_without_result_block():
     assert _parse_fps_from_log("no fps here") is None
+
+
+def test_parse_fps_does_not_crash_on_malformed_token():
+    """A trailing dot must degrade, not raise -- same hardening as _parse_sweep."""
+    assert _parse_fps_from_log("  - FPS : 141.21.5\n") == 141.21
+
+
+def test_parse_fps_returns_none_for_sweep_peak_only():
+    """Sweep peak without a result block yields nothing -- proves the exclusion works."""
+    assert _parse_fps_from_log("     Max FPS                  : 141.66  (loops=290)\n") is None

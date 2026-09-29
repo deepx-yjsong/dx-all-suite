@@ -49,9 +49,9 @@ def _install_common_mocks(monkeypatch, fps_sequence):
     monkeypatch.setattr(runner_model, "_parse_npu_memory_bytes", lambda *a, **kw: None)
     monkeypatch.setattr(runner_model, "_parse_input_tensor_shape", lambda *a, **kw: None)
     monkeypatch.setattr(runner_model, "_merge_npu_stats", lambda *a, **kw: _FakeMerged())
-    # Stub the buffer-count probe so these tests exercise ONLY measured-run backfill
-    # (the probe would otherwise consume fps_sequence entries before the measured runs).
-    monkeypatch.setattr(runner_model, "select_buffer_count", lambda *a, **kw: (6, {6: 0.0}, False))
+    # Stub the buffer-count sweep so these tests exercise ONLY measured-run backfill
+    # (the sweep would otherwise consume fps_sequence entries before the measured runs).
+    monkeypatch.setattr(runner_model, "_parse_sweep", lambda *a, **kw: (6, {6: 100.0}))
 
     seq = iter(fps_sequence)
     monkeypatch.setattr(runner_model, "_parse_fps_from_log", lambda *a, **kw: next(seq))
