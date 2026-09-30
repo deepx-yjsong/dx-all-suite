@@ -213,7 +213,12 @@ async function loadDataset() {
 
 /* ===== Environment Info Renderer ===== */
 function _infoRows(r) { return r.map(function(row) { return '<div class="info-row"><span class="info-key">'+escHtml(row[0])+'</span><span class="info-val">'+escHtml(String(row[1]||'-'))+'</span></div>'; }).join(''); }
-function cleanVer(v) { if (typeof v !== 'string') return v; return v.replace(/^DXRT\s+/i,'').replace(/\+.*$/,'').replace(/-dirty$/,'').replace(/-\d+-g[0-9a-f]+$/,'').replace(/^v(?=\d)/i,''); }
+/* Display-side mirror of Python `_normalize_version` (benchmark/env_fingerprint.py):
+   both drop build stamps so two builds of one release read as one version. Keep the
+   two in step -- `test_cleanver_parity_with_python_normalize_version` pins it.
+   The '(build: ...)' strip must stay BEFORE the '+' strip: a stamp body containing
+   '+' would otherwise be cut mid-parenthesis and survive the ')$'-anchored strip. */
+function cleanVer(v) { if (typeof v !== 'string') return v; return v.replace(/^DXRT\s+/i,'').replace(/\s*\([^)]*\)$/,'').replace(/\+.*$/,'').replace(/-dirty$/,'').replace(/-\d+-g[0-9a-f]+$/,'').replace(/^v(?=\d)/i,''); }
 function renderHostInfo(el, env) {
   var rows = [['Hostname',env.hostname],['OS',env.os],['Kernel',env.kernel],['Architecture',env.arch],['CPU',env.cpu],['CPU Cores',env.cpu_count],['RAM',env.ram_gb?env.ram_gb+' GB':'-']];
   el.innerHTML = _infoRows(rows);

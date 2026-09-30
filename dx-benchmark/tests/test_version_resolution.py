@@ -42,7 +42,12 @@ def test_resolve_whitespace_explicit_falls_back(tmp_path):
 
 # --- version normalization (git-describe / dirty build policy) -------------
 
-@pytest.mark.parametrize("raw,expected", [
+# The canonical case table for the version-normalization rule. The dashboard
+# carries a second implementation of the same rule (`cleanVer` in
+# benchmark/dashboard/app.js), and
+# tests/test_dashboard_build.py::test_cleanver_parity_with_python_normalize_version
+# holds it to this very table -- so a case added here exercises both copies.
+NORMALIZE_CASES = [
     ("v3.4.0", "v3.4.0"),                              # clean release unchanged
     ("3.4.0", "3.4.0"),                                # no leading v preserved
     ("v3.4.0+9ef3f4c-dirty", "v3.4.0"),                # semver build metadata dropped
@@ -62,7 +67,10 @@ def test_resolve_whitespace_explicit_falls_back(tmp_path):
     ("v3.5.0-rc.4 (build: 1.d0298f2)", "v3.5.0-rc.4"),  # pre-release kept, paren stamp dropped
     ("unknown", "unknown"),                             # sentinel unchanged
     ("", ""),                                           # empty unchanged
-])
+]
+
+
+@pytest.mark.parametrize("raw,expected", NORMALIZE_CASES)
 def test_normalize_version(raw, expected):
     assert _normalize_version(raw) == expected
 
