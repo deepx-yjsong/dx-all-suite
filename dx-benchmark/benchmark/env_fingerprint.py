@@ -101,6 +101,11 @@ def _tool_version(name: str) -> dict[str, Any]:
     elif name == "run_model":
         # Extract only the first line (version string)
         ver = _run([name, "--help"]).split("\n")[0]
+    elif name == "dxrt-cli":
+        # dxrt-cli reports its version under --version, not --help, and follows
+        # it with a minimum driver/compiler requirements block -- keep line 1
+        # only, the same string `_get_dxrt_version` reads for `npu.rt_version`.
+        ver = _run([name, "--version"]).split("\n")[0]
     return {"path": path, "version": ver, "available": True}
 
 
@@ -111,8 +116,16 @@ REQUIRED_TOOLS = ["run_model", "dxrt-cli", "gst-launch-1.0", "gst-inspect-1.0", 
 E2E_REQUIRED_TOOLS = ["ffprobe"]
 OPTIONAL_TOOLS = ["dxtop"]
 
-# Minimum versions. run_model needs --max-throughput / --probe-time (dx_rt v3.5.0).
-MIN_TOOL_VERSIONS = {"run_model": (3, 5, 0)}
+# Minimum versions -- both binaries ship in the same `libdxrt-bin` deb, so on a
+# correctly installed host they move together and the second entry is free.
+#   run_model: needs --max-throughput / --probe-time (dx_rt v3.5.0).
+#   dxrt-cli : its `--version` IS the recorded `npu.rt_version` (see
+#              `_get_dxrt_version`) -- the value stamped on every row and
+#              plotted by the version trend. Gating run_model alone checked a
+#              version nothing records: a skewed install (new run_model ahead of
+#              an old dxrt-cli on PATH) passed preflight and then labelled the
+#              whole campaign with the older runtime.
+MIN_TOOL_VERSIONS = {"run_model": (3, 5, 0), "dxrt-cli": (3, 5, 0)}
 
 
 def _parse_dxrt_version(ver: str | None) -> tuple[int, int, int] | None:
@@ -137,7 +150,7 @@ def _fmt_ver(v: tuple[int, int, int]) -> str:
 # Actionable install hints surfaced next to a missing tool in preflight output.
 _REMEDIATION = {
     "run_model": "DEEPX runtime v3.5.0+ — dx-runtime/install.sh --all, or: sudo dpkg -i libdxrt-bin_3.5.0_amd64.deb",
-    "dxrt-cli": "DEEPX runtime — run: dx-runtime/install.sh --all",
+    "dxrt-cli": "DEEPX runtime v3.5.0+ — dx-runtime/install.sh --all, or: sudo dpkg -i libdxrt-bin_3.5.0_amd64.deb",
     "gst-launch-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
     "gst-inspect-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
     "time": "GNU time — sudo apt-get install -y time",
