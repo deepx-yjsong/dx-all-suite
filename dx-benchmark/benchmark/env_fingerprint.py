@@ -29,15 +29,24 @@ def _normalize_version(raw: str) -> str:
     instead of a clean ``v3.4.0``. Per semver, everything after ``+`` is build
     metadata and is irrelevant to precedence, so it is dropped; git-describe
     commit suffixes (``-<n>-g<hash>``) and the ``-dirty`` marker are stripped
-    too. Genuine pre-release tags (``-rc.4``) are preserved. The full,
-    unmodified ``dxrt-cli`` output is still kept in the fingerprint's ``raw``
-    field, so a dirty build remains auditable. Empty / ``unknown`` unchanged.
+    too. dx_rt v3.5.0 added a fourth shape -- a trailing parenthesised build
+    stamp, ``v3.5.0 (build: 1.d0298f2)`` (measured: ``dxrt-cli --version`` ->
+    ``DXRT v3.5.0 (build: 1.d0298f2)``, where v3.4.0 printed
+    ``DXRT v3.4.0+fad14d6``) -- which is dropped as well, so two builds of one
+    release stay a single point on the version trend. Genuine pre-release tags
+    (``-rc.4``) are preserved. The full, unmodified ``dxrt-cli`` output is
+    still kept in the fingerprint's ``raw`` field, and the un-normalized
+    version string in ``npu.rt_version_raw``, so a stamped build remains
+    auditable. Empty / ``unknown`` unchanged.
     """
     if not raw:
         return raw
     v = raw.strip()
     if v.lower() == "unknown":
         return v
+    # Before the '+' split: a stamp whose body contains '+' would otherwise be
+    # cut mid-parenthesis and survive the anchored strip below.
+    v = re.sub(r"\s*\([^)]*\)$", "", v)          # drop trailing '(build: ...)' stamp
     v = v.split("+", 1)[0]                       # drop semver build metadata
     v = re.sub(r"-dirty$", "", v)                # drop dirty marker
     v = re.sub(r"-\d+-g[0-9a-f]+$", "", v)       # drop git-describe '-<n>-g<hash>'
