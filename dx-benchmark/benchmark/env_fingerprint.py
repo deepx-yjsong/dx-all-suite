@@ -532,10 +532,16 @@ def _get_npu_info() -> dict[str, Any]:
 
 
 def check_preflight(fingerprint: dict) -> tuple[bool, list[str]]:
-    """Validate that all always-required tools are present.
+    """Validate that all always-required tools are present and new enough.
 
-    Presence only -- minimum versions are per-family, see
-    ``check_model_family_readiness``.
+    The minimum version is deliberately NOT scoped to a family. dx-benchmark
+    exists to produce comparable numbers, and every family is measured against
+    the same libdxrt.so -- the dxstream plugin the E2E / multi-stream pipelines
+    load links the very library that ships in the same `libdxrt-bin` deb as
+    `run_model`. A campaign that ran E2E on v3.4.0 while the model family
+    required v3.5.0 would record one `rt_version` that does not describe all of
+    its own rows, silently corrupting the version trend. This is a
+    protocol-consistency constraint, not a feature-availability one.
 
     Returns (ok, list_of_error_messages). Each message carries an install hint.
     """
@@ -543,18 +549,6 @@ def check_preflight(fingerprint: dict) -> tuple[bool, list[str]]:
     for tool in fingerprint.get("missing_required", []):
         hint = _remediation(tool)
         errors.append(f"Required tool not found: {tool}" + (f"  → {hint}" if hint else ""))
-    return len(errors) == 0, errors
-
-
-def check_model_family_readiness(fingerprint: dict) -> tuple[bool, list[str]]:
-    """Validate tool versions needed by the model family only.
-
-    The buffer-count sweep delegates to `run_model --max-throughput`, which
-    exists from dx_rt v3.5.0. The E2E / multi-stream families never invoke it,
-    so an older runtime still runs those perfectly well -- gating them would be
-    a false block with no workaround. Mirrors ``check_e2e_readiness``.
-    """
-    errors = []
     for tool, found, need in fingerprint.get("outdated_required", []):
         hint = _remediation(tool)
         errors.append(

@@ -1,14 +1,17 @@
 """The run_model minimum-version gate: parsing, the threshold, and its scope.
 
-Scope matters as much as the threshold -- the gate belongs to the model
-family alone (D7), so preflight must report it without blocking E2E / multi.
+Scope matters as much as the threshold -- and the scope is *everything*. The
+gate is not about `--max-throughput` being callable; it is about every row of a
+campaign describing the same runtime. The E2E / multi-stream families drive
+GStreamer pipelines whose dxstream plugin links the same libdxrt.so that ships
+with `run_model`, so the runtime version moves their numbers too. Preflight
+therefore blocks a too-old runtime for every family, not just the model one.
 """
 
 import pytest
 
 from benchmark import env_fingerprint as ef
-from benchmark.env_fingerprint import (_parse_dxrt_version, check_model_family_readiness,
-                                       check_preflight)
+from benchmark.env_fingerprint import _parse_dxrt_version, check_preflight
 
 
 def test_parse_dxrt_version_from_help_first_line():
@@ -40,60 +43,33 @@ def test_parse_dxrt_version_returns_none_on_garbage():
     assert _parse_dxrt_version("") is None
 
 
-def test_model_family_readiness_rejects_outdated_run_model():
+def test_preflight_rejects_outdated_run_model():
     fp = {"missing_required": [],
           "outdated_required": [("run_model", "DXRT v3.4.0 run_model", "v3.5.0")]}
-    ok, errors = check_model_family_readiness(fp)
+    ok, errors = check_preflight(fp)
     assert ok is False
     assert any("run_model" in e and "3.4.0" in e and "3.5.0" in e for e in errors)
 
 
-def test_model_family_readiness_rejects_unparseable_version():
+def test_preflight_rejects_unparseable_version():
     # D5: fail closed. A present-but-broken run_model must not start a campaign.
     fp = {"missing_required": [], "outdated_required": [("run_model", "unknown", "v3.5.0")]}
-    ok, errors = check_model_family_readiness(fp)
+    ok, errors = check_preflight(fp)
     assert ok is False
     assert any("unknown" in e for e in errors)
 
 
-def test_model_family_readiness_passes_when_version_ok():
-    ok, errors = check_model_family_readiness({"outdated_required": []})
-    assert ok is True
-    assert errors == []
-
-
-def test_preflight_ignores_an_outdated_run_model():
-    # D7: the version gate belongs to the model family alone. `--max-throughput`
-    # is only ever invoked by runner_model, so a v3.4.0 host must still clear
-    # preflight and run the E2E / multi families.
-    fp = {"missing_required": [],
-          "outdated_required": [("run_model", "DXRT v3.4.0 run_model", "v3.5.0")]}
-    ok, errors = check_preflight(fp)
-    assert ok is True
-    assert errors == []
-
-
 def test_preflight_still_rejects_a_missing_tool():
-    # D7 narrows the gate to versions only -- absence still blocks everything.
+    # Absence and obsolescence are both preflight failures, with distinct messages.
     ok, errors = check_preflight({"missing_required": ["run_model"], "outdated_required": []})
     assert ok is False
-    assert any("run_model" in e for e in errors)
+    assert any("run_model" in e and "not found" in e for e in errors)
 
 
 def test_preflight_passes_when_nothing_is_wrong():
     ok, errors = check_preflight({"missing_required": [], "outdated_required": []})
     assert ok is True
     assert errors == []
-
-
-def test_cmd_run_consults_the_model_family_gate():
-    """Pins the wiring: the gate must be looked up inside ``cmd_run`` itself.
-
-    It does not pin the ``families`` condition around it -- that is covered by
-    the live model/e2e x installed/shim check recorded in the task notes.
-    """
-    from benchmark.__main__ import cmd_run
-    assert "check_model_family_readiness" in cmd_run.__code__.co_names
 
 
 def test_fingerprint_flags_this_hosts_run_model():
@@ -149,18 +125,36 @@ def test_minimum_version_is_pinned():
     assert ef.MIN_TOOL_VERSIONS["run_model"] == (3, 5, 0)
 
 
-def test_model_family_gate_applies_to_the_right_families():
-    """Pins D7: the version gate must fire for model/all and NOT for e2e/multi.
+@pytest.mark.parametrize("family", ["model", "e2e", "multi", "all"])
+def test_version_gate_blocks_every_family(monkeypatch, capsys, family):
+    """Pins the scope: a too-old runtime stops `run` whatever --family asks for.
 
-    Without this, inverting the condition to ``"e2e" in families`` passes the
-    whole suite -- the same untested-property failure this gate exists to stop.
-    ``test_cmd_run_consults_the_model_family_gate`` above only pins that the
-    gate is looked up; this one pins when it fires.
+    This is the property that family scoping would break, so it is asserted the
+    only way that actually bites -- by driving ``cmd_run`` itself with a v3.4.0
+    fingerprint and requiring rc=1 plus the "too old" message. Re-introducing a
+    ``if "model" in families`` guard lets the pipeline families walk past the
+    gate, and the ``_resolve_output_dir`` tripwire below turns that into a
+    failure instead of a silently degraded campaign. An assertion on the
+    ``families`` expression alone could not do that: the expression would no
+    longer exist.
     """
-    from benchmark.__main__ import needs_model_family_tools
-    assert needs_model_family_tools(["model"]) is True
-    assert needs_model_family_tools(["all"]) is True
-    assert needs_model_family_tools(["e2e"]) is False
-    assert needs_model_family_tools(["multi"]) is False
-    assert needs_model_family_tools(["e2e", "model"]) is True   # mixed -> gate on
-    assert needs_model_family_tools([]) is False
+    from benchmark import __main__ as m
+
+    fp = {"missing_required": [], "missing_e2e": [],
+          "outdated_required": [("run_model", "DXRT v3.4.0 run_model", "v3.5.0")]}
+    monkeypatch.setattr(m, "collect_fingerprint", lambda: fp)
+    monkeypatch.setattr(m, "check_cpu_governor", lambda _fp: None)
+
+    def _tripwire(*_a, **_k):
+        raise AssertionError(
+            f"--family {family} walked past the version gate on a v3.4.0 runtime"
+        )
+
+    monkeypatch.setattr(m, "_resolve_output_dir", _tripwire)
+
+    args = m._build_parser().parse_args(["run", "--family", family])
+    rc = m.cmd_run(args)
+    out = capsys.readouterr().out
+
+    assert rc == 1, f"--family {family}: expected the version gate to block, got rc={rc}"
+    assert "too old" in out, f"--family {family}: blocked, but not by the version gate:\n{out}"

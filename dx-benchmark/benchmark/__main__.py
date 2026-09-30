@@ -28,7 +28,7 @@ from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
 from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
 from .dashboard_builder import build_static_dashboard
-from .env_fingerprint import collect_fingerprint, check_preflight, check_model_family_readiness, check_e2e_readiness, check_cpu_governor, collect_host_health, save_fingerprint, get_video_info, resolve_dx_all_suite_version
+from .env_fingerprint import collect_fingerprint, check_preflight, check_e2e_readiness, check_cpu_governor, collect_host_health, save_fingerprint, get_video_info, resolve_dx_all_suite_version
 from .model_catalog import discover_models, filter_models
 from .npu_monitor import parse_npu_log_temp_clock
 from .reporter import (
@@ -144,14 +144,6 @@ def cmd_preflight(args: argparse.Namespace) -> int:
         for e in errors:
             print(f"  - {e}")
 
-    m_ok, m_err = check_model_family_readiness(fp)
-    if m_ok:
-        print("[OK] Model-family tool versions are sufficient.")
-    else:
-        print("[WARN] Model family unavailable (E2E/multi still runnable):")
-        for e in m_err:
-            print(f"  - {e}")
-
     e2e_ok, e2e_warn = check_e2e_readiness(fp)
     if e2e_ok:
         print("[OK] E2E/multi-stream prerequisites are available.")
@@ -246,15 +238,6 @@ def cmd_run(args: argparse.Namespace) -> int:
     _gov_note = check_cpu_governor(fp)
     if _gov_note:
         print(f"[INFO] {_gov_note}", flush=True)
-
-    if needs_model_family_tools(families):
-        m_ok, m_err = check_model_family_readiness(fp)
-        if not m_ok:
-            print("[FAIL] Model-family prerequisites not met:")
-            for e in m_err:
-                print(f"  - {e}")
-            print("  (use --family e2e or --family multi to run the pipeline families only)")
-            return 1
 
     if "e2e" in families or "multi" in families or "all" in families:
         e2e_ok, e2e_warn = check_e2e_readiness(fp)
@@ -1220,17 +1203,6 @@ def _get_families(args: argparse.Namespace) -> list[str]:
     if family == "all":
         return ["all"]
     return [family]
-
-
-def needs_model_family_tools(families: list[str]) -> bool:
-    """Whether the selected families include one that invokes run_model directly.
-
-    Only the model family runs ``run_model --max-throughput``; the E2E and
-    multi-stream families drive GStreamer pipelines instead, so an older dx_rt
-    still serves them (see D7). Kept separate from ``cmd_run`` so the decision
-    is testable without starting a benchmark.
-    """
-    return "model" in families or "all" in families
 
 
 def _count_runs(cfg: BenchmarkConfig, models: list, families: list[str]) -> int:
