@@ -156,20 +156,60 @@ def _fmt_ver(v: tuple[int, int, int]) -> str:
     return "v{}.{}.{}".format(*v)
 
 
-# Actionable install hints surfaced next to a missing tool in preflight output.
-_REMEDIATION = {
-    "run_model": "DEEPX runtime v3.5.0+ — dx-runtime/install.sh --all, or: sudo dpkg -i libdxrt-bin_3.5.0_amd64.deb",
-    "dxrt-cli": "DEEPX runtime v3.5.0+ — dx-runtime/install.sh --all, or: sudo dpkg -i libdxrt-bin_3.5.0_amd64.deb",
-    "gst-launch-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
-    "gst-inspect-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
-    "time": "GNU time — sudo apt-get install -y time",
-    "ffprobe": "ffmpeg — sudo apt-get install -y ffmpeg",
-}
+# `uname -m` names an architecture differently from dpkg, and the deb filename
+# uses dpkg's spelling. Only machines actually present in the fleet are mapped;
+# see `_deb_arch` for why an unknown one is not guessed at.
+_DEB_ARCH = {"x86_64": "amd64", "aarch64": "arm64"}
+
+
+def _deb_arch() -> str:
+    """Debian package architecture for the running host.
+
+    An unrecognised machine yields ``$(dpkg --print-architecture)`` rather than
+    a guess. A wrong-but-concrete filename reads as authoritative and installs
+    nothing, whereas the subshell is both honest about what we do not know and
+    still copy-pasteable -- any host that can run ``dpkg -i`` can resolve it.
+    """
+    return _DEB_ARCH.get(platform.machine(), "$(dpkg --print-architecture)")
+
+
+def _dxrt_install_hint() -> str:
+    """Install hint for the dx_rt binaries, derived rather than written out.
+
+    Both halves used to be literals and both were wrong in their own way. The
+    version drifts the moment ``MIN_TOOL_VERSIONS`` is raised, so it is read
+    from the gate it is advising about. The architecture was pinned to
+    ``amd64`` while 4 of the 6 benchmark hosts are aarch64 boards (RPi5B,
+    RPi5B_M1M, ROCK5B+, OrangePi5+ -- only BIOSTAR and DX-AIPlayer-N97 are
+    x86_64), so the hint handed the majority of the fleet a package that cannot
+    install; it now follows the running host.
+    """
+    ver = _fmt_ver(MIN_TOOL_VERSIONS["run_model"]).lstrip("v")
+    return (f"DEEPX runtime v{ver}+ — dx-runtime/install.sh --all, "
+            f"or: sudo dpkg -i libdxrt-bin_{ver}_{_deb_arch()}.deb")
+
+
+def _remediation_hints() -> dict[str, str]:
+    """Actionable install hints surfaced next to a missing tool in preflight output.
+
+    Built per call, not frozen at import: the dx_rt hint resolves its version
+    from ``MIN_TOOL_VERSIONS`` and its package architecture from the host, and
+    a cached copy of either is exactly the drift this is meant to prevent.
+    """
+    dxrt = _dxrt_install_hint()
+    return {
+        "run_model": dxrt,
+        "dxrt-cli": dxrt,
+        "gst-launch-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
+        "gst-inspect-1.0": "GStreamer tools — sudo apt-get install -y gstreamer1.0-tools",
+        "time": "GNU time — sudo apt-get install -y time",
+        "ffprobe": "ffmpeg — sudo apt-get install -y ffmpeg",
+    }
 
 
 def _remediation(tool: str) -> str:
     """Return an install hint for a tool name, or '' when none is known."""
-    for key, hint in _REMEDIATION.items():
+    for key, hint in _remediation_hints().items():
         if key in tool:
             return hint
     return ""

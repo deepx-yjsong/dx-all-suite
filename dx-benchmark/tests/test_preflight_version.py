@@ -15,6 +15,9 @@ records, so `dxrt-cli` is gated at the same threshold; see
 test_mixed_install_is_refused_because_dxrt_cli_sets_the_recorded_rt_version.
 """
 
+import shutil
+import subprocess
+
 import pytest
 
 from benchmark import env_fingerprint as ef
@@ -319,3 +322,69 @@ def test_dxrt_cli_remediation_names_the_required_version():
     """
     hint = ef._remediation("dxrt-cli")
     assert "3.5.0" in hint
+
+
+# -- the hint is derived, not transcribed ------------------------------------
+# Both halves of the dx_rt install hint used to be literals: "3.5.0" and
+# "amd64". A literal cannot be caught by an equality check against its own
+# source, so each test below forces the source to a value the old literal never
+# had -- bump the gate, move the host -- and requires the hint to follow.
+
+
+def test_dxrt_hint_version_follows_the_gate_when_it_is_raised(monkeypatch):
+    """Bumping MIN_TOOL_VERSIONS must not leave the hint advising the old deb.
+
+    Asserting "3.5.0 appears in both" would pass against a hardcoded string, so
+    the gate is moved somewhere no literal could already be: a v9.9.9 minimum
+    must produce a v9.9.9 hint, and 3.5.0 must be gone from it entirely.
+    """
+    monkeypatch.setitem(ef.MIN_TOOL_VERSIONS, "run_model", (9, 9, 9))
+    hint = ef._remediation("run_model")
+    assert "v9.9.9+" in hint
+    assert "libdxrt-bin_9.9.9_" in hint
+    assert "3.5.0" not in hint
+
+
+@pytest.mark.parametrize("machine, deb", [("x86_64", "amd64"), ("aarch64", "arm64")])
+def test_dxrt_hint_names_the_running_hosts_deb_arch(monkeypatch, machine, deb):
+    """dpkg names architectures differently from uname; the deb uses dpkg's.
+
+    The aarch64 case is the one that bites: 4 of the 6 benchmark hosts are ARM
+    boards, and the old literal sent every one of them to an amd64 package.
+    Each case also asserts the *other* arch is absent, so a hint that names both
+    (or ignores the host) fails rather than passing on a substring.
+    """
+    monkeypatch.setattr(ef.platform, "machine", lambda: machine)
+    hint = ef._remediation("run_model")
+    other = "arm64" if deb == "amd64" else "amd64"
+    assert f"_{deb}.deb" in hint
+    assert f"_{other}.deb" not in hint
+
+
+def test_dxrt_hint_refuses_to_invent_an_arch_it_does_not_know(monkeypatch):
+    """An unmapped machine gets a resolvable placeholder, never a guess.
+
+    A concrete-but-wrong filename reads as authoritative and installs nothing.
+    The subshell says what we do not know while staying copy-pasteable.
+    """
+    monkeypatch.setattr(ef.platform, "machine", lambda: "riscv64")
+    hint = ef._remediation("run_model")
+    assert "$(dpkg --print-architecture)" in hint
+    assert "_amd64.deb" not in hint
+    assert "_arm64.deb" not in hint
+
+
+def test_dxrt_hint_arch_agrees_with_dpkg_on_this_host():
+    """Independent oracle: dpkg itself, not our own mapping table.
+
+    The parametrized test above proves the mapping is applied; this proves the
+    mapping is *right*, by asking the tool that will consume the filename. On an
+    aarch64 runner this fails outright against a hardcoded amd64.
+    """
+    dpkg = shutil.which("dpkg")
+    if dpkg is None:
+        pytest.skip("dpkg not installed -- no independent architecture oracle")
+    arch = subprocess.run([dpkg, "--print-architecture"],
+                          capture_output=True, text=True).stdout.strip()
+    assert arch, "dpkg --print-architecture produced no output"
+    assert f"_{arch}.deb" in ef._remediation("run_model")

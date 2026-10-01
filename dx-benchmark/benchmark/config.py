@@ -272,6 +272,13 @@ def effective_sweep_timeout_sec(cfg: "BenchmarkConfig") -> int:
     ``bc_sweep_timeout_sec`` is a floor: the sweep still needs room for every
     candidate in the range at the configured probe time, so raising
     ``bc_probe_sec`` cannot silently starve it.
+
+    The ``* 2`` is deliberate slack for a degraded host -- a slow model load, a
+    retry, a sluggish NPU -- and is NOT a measured per-round cost. dxrun's own
+    overhead around each probe is small: measured against v3.5.0 on DX-M1,
+    ``yolo26-l_640x640 --buffer-count 3-16 --probe-time 10`` took 71.4 s of wall
+    for 70 s of probe (7 rounds, 0.19 s/round, 1.02x). Doubling therefore buys
+    roughly a whole extra sweep of headroom before a slow host is killed.
     """
     return max(
         cfg.bc_sweep_timeout_sec,
