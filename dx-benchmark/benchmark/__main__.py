@@ -351,6 +351,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         entry.update(meta)
         benchmarked_models.append(entry)
     fp["benchmarked_models"] = benchmarked_models
+    from .env_fingerprint import read_model_source
+    model_source = read_model_source(Path(models[0].path).parent) if models else None
+    if model_source:
+        fp["model_source"] = model_source
 
     # On resume, union the cumulative scope fields with the prior fingerprint so a
     # partial/family-scoped re-run never shrinks benchmarked_models / families /

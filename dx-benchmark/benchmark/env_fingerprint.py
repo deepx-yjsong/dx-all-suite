@@ -7,6 +7,7 @@ so results from different machines are traceable and comparable.
 from __future__ import annotations
 
 import glob
+import hashlib
 import json
 import os
 import platform
@@ -60,6 +61,38 @@ def _run(cmd: list[str], default: str = "unknown") -> str:
         return r.stdout.strip() or default
     except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
         return default
+
+
+def file_sha256(path: str | Path) -> str:
+    """Streaming SHA-256 of a (possibly large) model file."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def read_model_source(model_dir: str | Path) -> str | None:
+    """Model download source stamped by setup_data.sh (``<base-url>/<version>``)."""
+    try:
+        text = (Path(model_dir) / ".model_source").read_text().strip()
+    except OSError:
+        return None
+    return text or None
+
+
+def get_tool_commit(repo_dir: str | Path | None = None) -> str | None:
+    """Git short SHA of the benchmark tool checkout; ``-dirty`` when tracked files
+    under it changed (untracked files and ``results/`` are ignored). None outside git."""
+    if repo_dir is None:
+        from .config import APP_DIR
+        repo_dir = APP_DIR.parent
+    sha = _run(["git", "-C", str(repo_dir), "rev-parse", "--short", "HEAD"], default="")
+    if not sha:
+        return None
+    changed = _run(["git", "-C", str(repo_dir), "status", "--porcelain", "--untracked-files=no",
+                    "--", ".", ":(exclude)results"], default="")
+    return f"{sha}-dirty" if changed else sha
 
 
 def _read_release_ver(start: Path) -> str | None:
@@ -269,6 +302,7 @@ def collect_fingerprint() -> dict[str, Any]:
         "software": {
             "dx_stream": _get_dx_stream_version(),
         },
+        "tool_commit": get_tool_commit(),
         "tools": {},
     }
 
@@ -691,17 +725,22 @@ def collect_model_metadata(model_path: str | Path) -> dict[str, Any]:
     """Run ``parse_model -m <model_path>`` and extract key metadata.
 
     Returns a dict with ``format_version``, ``dxcom_version``, and
-    ``total_memory_mb`` (or empty dict on failure).
+    ``total_memory_mb`` plus the file ``sha256`` (parse_model fields are
+    omitted when it fails).
     """
+    result: dict[str, Any] = {}
+    try:
+        result["sha256"] = file_sha256(model_path)
+    except OSError:
+        pass
+
     raw = _run(["parse_model", "-m", str(model_path)], default="")
     if not raw:
-        return {}
+        return result
 
     # parse_model always emits ANSI colour codes regardless of TTY; strip them
     # before applying regex patterns so captured values are clean strings.
     raw = _strip_ansi(raw)
-
-    result: dict[str, Any] = {}
 
     # .dxnn Format Version
     m = re.search(r"\.dxnn Format Version\s*:\s*(\S+)", raw)
