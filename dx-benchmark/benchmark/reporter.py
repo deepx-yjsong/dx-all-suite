@@ -501,6 +501,14 @@ def _add_protocol_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| FPS Threshold | {protocol.get('fps_threshold', 'N/A')} |")
     lines.append(f"| Multi-Stream Search | {protocol.get('multi_stream_search', 'N/A')} |")
     lines.append(f"| Stable Capacity Rule | {protocol.get('stable_capacity_rule', 'N/A')} |")
+    # Buffer-count sweep (protocol v2): how the throughput buffer count was chosen.
+    if 'bc_sweep_mode' in protocol:
+        lines.append(f"| Buffer-count Sweep | {protocol.get('bc_sweep_mode')} |")
+        lines.append(f"| Sweep Probe | {protocol.get('bc_probe_sec', 'N/A')} s x "
+                     f"{protocol.get('bc_sweep_repeats', 'N/A')} repeats |")
+        lines.append(f"| Sweep Tolerance | {protocol.get('bc_sweep_tolerance_pct', 'N/A')} % |")
+        lines.append(f"| Sweep Timeout | "
+                     f"{protocol.get('bc_sweep_timeout_effective_sec', protocol.get('bc_sweep_timeout_sec', 'N/A'))} s |")
     # v2 thermal params (conditionally)
     if protocol.get('thermal_mode') == 'steady':
         lines.append(f"| Cooldown Target ΔT | {protocol.get('thermal_cooldown_target_delta_c', 'N/A')} °C |")
@@ -800,7 +808,7 @@ def _add_bc_sweep_subtable(lines: list[str], results: list[dict]) -> None:
     if not sweeps:
         return
     lines.append("")
-    lines.append("_Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = winner):")
+    lines.append("_Buffer-count sweep_ — throughput fps per `--buffer-count` (★ = recommended):")
     lines.append("")
     lines.append("| Model | BC ★ | Sweep ([bc]:fps) |")
     lines.append("|-------|------|----------------|")
@@ -825,11 +833,12 @@ def _add_model_throughput_section(lines: list[str], throughput: list[dict]) -> N
         # Legend once per report; the per-table sweep captions below just mark ★.
         lines.append(
             "> **Buffer-count sweep (★)** — the _Buffer-count sweep_ tables below list "
-            "throughput fps per `--buffer-count`; ★ marks the winner (highest measured "
-            "throughput, at full probe precision; fps rounded to 1 decimal). A smaller "
-            "buffer-count wins only on an exact tie. The sweep's goal is the throughput "
-            "ceiling — the winning buffer-count value itself is secondary, since tied "
-            "buffer-counts deliver effectively equal throughput."
+            "throughput fps per `--buffer-count`, averaged over repeated probes (fps rounded "
+            "to 1 decimal). ★ marks dxrun's recommendation: the smallest buffer-count whose "
+            "throughput is within the sweep tolerance of the sweep's peak. The sweep stops "
+            "by itself once the curve flattens, so only the counts up to that point appear. "
+            "The goal is the throughput ceiling — the recommended value itself is secondary, "
+            "since buffer-counts inside the tolerance deliver effectively equal throughput."
         )
         lines.append("")
 

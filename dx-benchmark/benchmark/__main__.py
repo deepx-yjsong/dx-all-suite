@@ -28,6 +28,7 @@ from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
 from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
 from .dashboard_builder import build_static_dashboard
+from .completeness import audit_results
 from .env_fingerprint import collect_fingerprint, check_preflight, check_e2e_readiness, check_cpu_governor, collect_host_health, save_fingerprint, get_video_info, resolve_dx_all_suite_version
 from .model_catalog import discover_models, filter_models
 from .npu_monitor import parse_npu_log_temp_clock
@@ -754,10 +755,21 @@ def cmd_run(args: argparse.Namespace) -> int:
     with open(env_path, "w") as _f:
         json.dump(fp, _f, indent=2)
 
+    # ── Backfill raw-log-derived fields, exactly as `report` would ───
+    counts = _apply_raw_backfills(model_results, pipeline_results, multi_results,
+                                  out_dir / "raw")
+    if any(counts.values()):
+        _save_result_set(model_results, out_dir / "model_results.csv", out_dir / "model_results.json")
+        _save_result_set(pipeline_results, out_dir / "pipeline_results.csv", out_dir / "pipeline_results.json")
+        _save_result_set(multi_results, out_dir / "multi_stream_results.csv", out_dir / "multi_stream_results.json")
+        print(f"[INFO] Backfilled from raw logs: {counts}", flush=True)
+
     # ── Generate report ───────────────────────────────────────────
     report_path = out_dir / "REPORT.md"
     generate_markdown_report(fp, model_results, pipeline_results, multi_results, report_path,
                              video_infos=video_infos)
+    for w in audit_results(model_results, pipeline_results, multi_results):
+        print(f"[WARN] {w}", flush=True)
     if failure_context:
         print(f"\n[FAIL] Partial report: {report_path}")
         return 1
@@ -1073,6 +1085,38 @@ def _backfill_sc1_from_single_stream(
     return patched
 
 
+def _apply_raw_backfills(model_results: list[dict], pipeline_results: list[dict],
+                         multi_results: list[dict], raw_dir: Path) -> dict:
+    """Fill fields that are derived from the raw per-run logs, in place.
+
+    Shared by ``cmd_run`` (end of a normal run) and ``cmd_report`` so that a run
+    needs no manual ``report`` pass to come out complete: NPU temp/clock min/max
+    from the raw ``.npu.log`` files, ``fps_std`` from the raw run logs, and the
+    multi-stream sc=1 rows from the single-stream results (which must come last,
+    after the raw-log backfills have populated pipeline_results).
+
+    Returns ``{"npu": n, "fps_std": n, "sc1": n}`` -- records patched per step.
+    """
+    counts = {"npu": 0, "fps_std": 0, "sc1": 0}
+    if raw_dir.is_dir():
+        for results, categories in [
+            (model_results, ["throughput", "latency"]),
+            (pipeline_results, ["e2e.single"]),
+            (multi_results, ["e2e.multi"]),
+        ]:
+            for cat in categories:
+                counts["npu"] += _backfill_from_raw_logs(results, raw_dir, cat)
+        for results, categories in [
+            (model_results, ["throughput"]),
+            (pipeline_results, ["e2e.single"]),
+            (multi_results, ["e2e.multi"]),
+        ]:
+            for cat in categories:
+                counts["fps_std"] += _backfill_fps_std(results, raw_dir, cat)
+    counts["sc1"] = _backfill_sc1_from_single_stream(multi_results, pipeline_results)
+    return counts
+
+
 def cmd_report(args: argparse.Namespace) -> int:
     """Regenerate report from existing result files."""
     result_dir = Path(args.result_dir)
@@ -1087,38 +1131,14 @@ def cmd_report(args: argparse.Namespace) -> int:
     pipeline_results = _load_json(result_dir / "pipeline_results.json")
     multi_results = _load_json(result_dir / "multi_stream_results.json")
 
-    # Backfill npu_temp/clock min/max from raw .npu.log when fields are missing
-    raw_dir = result_dir / "raw"
-    total_patched = 0
-    fps_patched = 0
-    if raw_dir.is_dir():
-        for results, categories in [
-            (model_results, ["throughput", "latency"]),
-            (pipeline_results, ["e2e.single"]),
-            (multi_results, ["e2e.multi"]),
-        ]:
-            for cat in categories:
-                n = _backfill_from_raw_logs(results, raw_dir, cat)
-                total_patched += n
-        if total_patched:
-            print(f"[INFO] Backfilled NPU temp/clock min/max for {total_patched} result(s) from raw logs")
-
-        # Backfill fps_std from raw run logs when missing
-        for results, categories in [
-            (model_results, ["throughput"]),
-            (pipeline_results, ["e2e.single"]),
-            (multi_results, ["e2e.multi"]),
-        ]:
-            for cat in categories:
-                n = _backfill_fps_std(results, raw_dir, cat)
-                fps_patched += n
-        if fps_patched:
-            print(f"[INFO] Backfilled fps_std (σ) for {fps_patched} result(s) from raw logs")
-
-    # Backfill multi-stream sc=1 entries from single-stream results.
-    # Must run AFTER raw-log backfills so pipeline_results already has
-    # npu_temp/clock and fps_std populated.
-    sc1_patched = _backfill_sc1_from_single_stream(multi_results, pipeline_results)
+    # Backfill fields derived from the raw logs (shared with the end of `run`).
+    counts = _apply_raw_backfills(model_results, pipeline_results, multi_results,
+                                  result_dir / "raw")
+    total_patched, fps_patched, sc1_patched = counts["npu"], counts["fps_std"], counts["sc1"]
+    if total_patched:
+        print(f"[INFO] Backfilled NPU temp/clock min/max for {total_patched} result(s) from raw logs")
+    if fps_patched:
+        print(f"[INFO] Backfilled fps_std (σ) for {fps_patched} result(s) from raw logs")
     if sc1_patched:
         print(f"[INFO] Backfilled {sc1_patched} multi-stream sc=1 entry(ies) from single-stream results")
 
@@ -1138,6 +1158,8 @@ def cmd_report(args: argparse.Namespace) -> int:
     report_path = result_dir / "REPORT.md"
     generate_markdown_report(fp, model_results, pipeline_results, multi_results, report_path,
                              video_infos=fp.get("video_infos"))
+    for w in audit_results(model_results, pipeline_results, multi_results):
+        print(f"[WARN] {w}", flush=True)
     print(f"[DONE] Report: {report_path}")
     return 0
 

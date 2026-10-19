@@ -26,6 +26,17 @@ POSTPROCESS_LIB_DIR = Path("/usr/local/share/gstdxstream/lib")
 MODEL_LIST_JSON = APP_DIR / "model_list.json"
 
 PROTOCOL_VERSION = "v2"  # v2: buffer-count sweep delegated to `dxrun --max-throughput` (v1: in-house adaptive probe)
+
+# dxrun --max-throughput (dx_rt v3.5.0 final) measures every candidate buffer count
+# BC_SWEEP_REPEATS times and averages. The repeat count is a dxrun constant, not a
+# CLI option, so it is mirrored here only to size the timeout and to record it.
+BC_SWEEP_REPEATS = 3
+# Rounds the timeout must accommodate. With no --buffer-count range dxrun stops by
+# itself (3 rounds without a >tolerance gain), typically after 5-12 rounds; this is
+# the allowance for a slow host or a creeping curve, not the expected count.
+BC_SWEEP_ROUND_BUDGET = 25
+# Per-round overhead beyond the probe time (engine create/destroy x repeats), seconds.
+BC_SWEEP_ROUND_OVERHEAD_SEC = 3
 MULTI_STREAM_SEARCH_MODE = "single-stream-estimate-linear-boundary"
 STABLE_CAPACITY_RULE = "status_ok_and_all_runs_success_and_avg_per_channel_fps_ge_threshold"
 
@@ -206,12 +217,12 @@ class BenchmarkConfig:
     model_throughput_runs: int = 3  # repeated measurements per throughput benchmark
 
     # ── buffer-count sweep (protocol v2, throughput only) ────────────
-    # dxrun --max-throughput performs the search. Its stop rules (step /
-    # threshold / patience / stall) are dxrun constants and are not exposed here.
-    bc_range_lo: int = 3            # --buffer-count low. Cores per chip = physical floor.
-    bc_range_hi: int = 16           # --buffer-count high. Measured optimum exceeded 13 once in 796.
-    bc_probe_sec: int = 10          # --probe-time. Mean loss 1.02% at 5s vs 0.76% at 10s.
-    bc_sweep_timeout_sec: int = 300 # Whole-sweep timeout FLOOR; see effective_sweep_timeout_sec().
+    # dxrun --max-throughput performs the search and decides when to stop. No
+    # --buffer-count range is passed on purpose: since dx_rt v3.5.0 final an explicit
+    # range disables the early stop and measures every count up to the cap.
+    bc_probe_sec: int = 10          # --probe-time per repeat. Mean loss 1.02% at 5s vs 0.76% at 10s.
+    bc_sweep_tolerance_pct: float = 1.0  # --sweep-tolerance: FPS within this % of the peak is a tie; the smallest such count wins.
+    bc_sweep_timeout_sec: int = 900 # Whole-sweep timeout FLOOR; see effective_sweep_timeout_sec().
 
     # ── E2E pipeline params ───────────────────────────────────────────
     e2e_runs: int = 3               # repeated measurements per condition
@@ -269,25 +280,18 @@ class BenchmarkConfig:
 def effective_sweep_timeout_sec(cfg: "BenchmarkConfig") -> int:
     """Whole-sweep timeout actually enforced.
 
-    ``bc_sweep_timeout_sec`` is a floor: the sweep still needs room for every
-    candidate in the range at the configured probe time, so raising
+    ``bc_sweep_timeout_sec`` is a floor: the sweep still needs room for
+    ``BC_SWEEP_ROUND_BUDGET`` rounds at the configured probe time, so raising
     ``bc_probe_sec`` cannot silently starve it.
 
-    The ``* 2`` is deliberate slack for a degraded host -- a slow model load, a
-    retry, a sluggish NPU -- and is NOT a measured per-round cost. dxrun's own
-    overhead around each probe is small: measured against v3.5.0 on DX-M1,
-    ``yolo26-l_640x640 --buffer-count 3-16 --probe-time 10`` cost 0.19-0.21 s
-    per round, about 1.02x the probe time. Only the per-round figure is quoted:
-    the round count is not reproducible -- the stop rule lands wherever noise
-    puts the peak on a flat curve (7 and 10 rounds on two attempts of the very
-    same command) -- so a total-seconds figure would not re-measure. Doubling
-    therefore buys roughly a whole extra sweep of headroom before a slow host
-    is killed.
+    Every round costs ``probe x BC_SWEEP_REPEATS`` plus a little engine setup
+    (measured on DX-H1 Quattro, v3.5.0 final: ~31 s per round at ``--probe-time
+    10``). The previous budget ignored the 3x repeat and killed every sweep
+    mid-way. The round count itself is not fixed -- dxrun stops where the curve
+    flattens -- so the budget is a generous ceiling, not a prediction.
     """
-    return max(
-        cfg.bc_sweep_timeout_sec,
-        (cfg.bc_range_hi - cfg.bc_range_lo + 1) * cfg.bc_probe_sec * 2 + 60,
-    )
+    per_round = cfg.bc_probe_sec * BC_SWEEP_REPEATS + BC_SWEEP_ROUND_OVERHEAD_SEC
+    return max(cfg.bc_sweep_timeout_sec, BC_SWEEP_ROUND_BUDGET * per_round)
 
 
 def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
@@ -302,8 +306,9 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "model_run_retries": cfg.model_run_retries,
         "model_latency_runs": cfg.model_latency_runs,
         "model_throughput_runs": cfg.model_throughput_runs,
-        "bc_range_lo": cfg.bc_range_lo,
-        "bc_range_hi": cfg.bc_range_hi,
+        "bc_sweep_mode": "auto-stop",
+        "bc_sweep_repeats": BC_SWEEP_REPEATS,
+        "bc_sweep_tolerance_pct": cfg.bc_sweep_tolerance_pct,
         "bc_probe_sec": cfg.bc_probe_sec,
         "bc_sweep_timeout_sec": cfg.bc_sweep_timeout_sec,
         "bc_sweep_timeout_effective_sec": effective_sweep_timeout_sec(cfg),

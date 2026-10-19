@@ -314,10 +314,11 @@ def test_sweep_is_given_the_effective_timeout_not_the_floor(monkeypatch):
     regression to ``cfg.bc_sweep_timeout_sec`` if the reason text ever changes.
     The reason is checked too: it is the operator-facing copy of the same value.
     """
-    cfg = _cfg(0)
+    cfg = BenchmarkConfig(model_throughput_runs=3, model_warmup=1, model_warmup_retries=1,
+                          model_run_retries=0, bc_probe_sec=30)
     floor, effective = cfg.bc_sweep_timeout_sec, effective_sweep_timeout_sec(cfg)
     # Guard the fixture: with equal values this test could not tell them apart.
-    assert (floor, effective) == (300, 340)
+    assert (floor, effective) == (900, 2325)
 
     seen = {}
 
@@ -403,3 +404,26 @@ def test_successful_sweep_log_is_persisted(monkeypatch, tmp_path):
     text = saved.read_text()
     for signal in ("improvement=", "peak-drop=", "stall=", "loops=", "Max FPS"):
         assert signal in text, f"{signal!r} missing from the saved sweep log"
+
+
+def test_sweep_command_lets_dxrun_stop_early_and_pins_the_tolerance(monkeypatch):
+    """An explicit --buffer-count range turns dxrun's early stop OFF (final v3.5.0),
+    so the sweep command must carry no range, and must pin --sweep-tolerance."""
+    seen = {}
+
+    def _capture(cmd, *a, **kw):
+        seen.setdefault("cmd", cmd)
+        raise runner_model.subprocess.TimeoutExpired(cmd="run_model", timeout=kw.get("timeout"))
+
+    monkeypatch.setattr(runner_model.subprocess, "run", _capture)
+    monkeypatch.setattr(runner_model, "NpuMonitor", _FakeMonitor)
+    monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
+    runner_model.run_throughput(_model(), use_ort=True, cfg=_cfg(0), save_dir=None)
+
+    cmd = seen["cmd"]
+    assert "--max-throughput" in cmd
+    assert "--buffer-count" not in cmd
+    assert cmd[cmd.index("--probe-time") + 1] == "10"
+    assert cmd[cmd.index("--sweep-tolerance") + 1] == "1.0"
+    assert "--use-ort" in cmd

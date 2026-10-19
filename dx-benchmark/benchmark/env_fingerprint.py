@@ -170,6 +170,24 @@ OPTIONAL_TOOLS = ["dxtop"]
 MIN_TOOL_VERSIONS = {"run_model": (3, 5, 0), "dxrt-cli": (3, 5, 0)}
 
 
+# Options the sweep protocol drives. A v3.5.0 *rc* build reports the same version
+# string as the final one but lacks --sweep-tolerance (and prints a different
+# round line), so the version gate alone cannot tell them apart.
+RUN_MODEL_REQUIRED_OPTIONS = ("--max-throughput", "--probe-time", "--sweep-tolerance")
+
+
+def _run_model_missing_options() -> list[str]:
+    """Sweep options absent from ``run_model --help`` (all of them if unreadable)."""
+    help_text = _run(["run_model", "--help"])
+    return [o for o in RUN_MODEL_REQUIRED_OPTIONS if o not in help_text]
+
+
+def _probe_npu_monitor() -> dict:
+    """Indirection so test suites can stub the (2 s, host-dependent) real probe."""
+    from .npu_monitor import probe_npu_monitor
+    return probe_npu_monitor()
+
+
 def _parse_dxrt_version(ver: str | None) -> tuple[int, int, int] | None:
     """Pull (3, 5, 0) out of a banner like 'DXRT v3.5.0 run_model'.
 
@@ -322,6 +340,14 @@ def collect_fingerprint() -> dict[str, Any]:
             # not be allowed to start a campaign (see D5).
             if found is None or found < need:
                 outdated.append((tool, info.get("version") or "unknown", _fmt_ver(need)))
+            elif tool == "run_model":
+                absent = _run_model_missing_options()
+                if absent:
+                    outdated.append((
+                        tool,
+                        f"{info.get('version')} (lacks {', '.join(absent)}: pre-final build)",
+                        f"{_fmt_ver(need)} final build",
+                    ))
 
     # E2E-tier tools (record availability; gate only the E2E/multi families)
     for tool in E2E_REQUIRED_TOOLS:
@@ -333,6 +359,10 @@ def collect_fingerprint() -> dict[str, Any]:
 
     fp["missing_required"] = missing
     fp["outdated_required"] = outdated
+    # Prove the NPU monitor works now: when it cannot start, every clock/utilization
+    # column of a whole campaign silently comes out empty.
+    if shutil.which("dxtop"):
+        fp["npu_monitor"] = _probe_npu_monitor()
     fp["missing_e2e"] = collect_e2e_missing()
     return fp
 
@@ -650,6 +680,13 @@ def check_preflight(fingerprint: dict) -> tuple[bool, list[str]]:
         errors.append(
             f"Required tool too old: {tool} (found {found}, need >= {need})"
             + (f"  → {hint}" if hint else "")
+        )
+    mon = fingerprint.get("npu_monitor")
+    if mon and not mon.get("ok", True):
+        errors.append(
+            f"NPU monitor (dxtop) is not working: {mon.get('reason', 'no data')}"
+            "  → run from a terminal or export TERM=xterm; without it every NPU clock/"
+            "utilization column is empty and throttling goes unnoticed"
         )
     return len(errors) == 0, errors
 
