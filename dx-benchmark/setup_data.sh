@@ -14,7 +14,7 @@ VIDEO_DIR="$SCRIPT_DIR/benchmark/assets/videos"
 phase_models() {
     mkdir -p "$MODEL_DIR"
     # Download benchmark models listed in model_list.json to $MODEL_DIR.
-    local BASE_URL="https://sdk.deepx.ai/modelzoo/dxnn"
+    local BASE_URL="https://sdk.deepx.ai/modelzoo/q-lite-dxnn"
     local MODEL_LIST_JSON="$SCRIPT_DIR/benchmark/model_list.json"
     local OUTPUT_DIR="$MODEL_DIR"
 

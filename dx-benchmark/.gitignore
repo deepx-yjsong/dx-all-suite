@@ -24,6 +24,7 @@ results_backup/
 docs/QUALITY_REVIEW_*
 docs/BUFFER_COUNT_SWEEP_ANALYSIS_*
 docs/YOLO26_BENCHMARK_ANALYSIS_*
+docs/DXRUN_MAXTHROUGHPUT_REVIEW_*
 
 # python bytecode / pytest cache
 __pycache__/
