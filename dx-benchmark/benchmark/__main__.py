@@ -959,6 +959,10 @@ def _backfill_fps_std(results: list[dict], raw_dir: Path, category: str) -> int:
     for rec in results:
         if rec.get("fps_std") is not None:
             continue
+        # model_results mixes latency and throughput rows that share (model, ORT).
+        # The throughput runs' sigma says nothing about a single latency measurement.
+        if category == "throughput" and rec.get("family") == "latency":
+            continue
 
         model = rec.get("model", "")
         ort_tag = "ort_on" if rec.get("use_ort") else "ort_off"

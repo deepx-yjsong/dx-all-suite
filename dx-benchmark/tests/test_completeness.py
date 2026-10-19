@@ -118,3 +118,35 @@ def test_cmd_run_backfills_before_it_writes_its_own_report():
     src = inspect.getsource(m.cmd_run)
     assert "_apply_raw_backfills(" in src
     assert src.index("_apply_raw_backfills(") < src.index("generate_markdown_report(")
+
+
+# ── latency rows must not inherit the throughput sigma ────────────────────
+
+def _throughput_logs(raw):
+    raw.mkdir()
+    (raw / "m.dxnn.throughput.run1.ort_on.log").write_text("  - FPS : 1000.00\n")
+    (raw / "m.dxnn.throughput.run2.ort_on.log").write_text("  - FPS : 1010.00\n")
+
+
+def test_backfill_gives_the_throughput_sigma_to_throughput_rows_only(tmp_path):
+    """Latency and throughput rows share (model, ORT). The throughput backfill used to
+    copy the throughput sigma onto the latency row too: ~0.5 % of 1000 FPS stamped on
+    a ~95 FPS latency figure, and latency_ms_std was derived from it. Latency is a
+    single measurement here, so it has no sigma."""
+    from benchmark import __main__ as m
+    raw = tmp_path / "raw"
+    _throughput_logs(raw)
+    thr = {"model": "m.dxnn", "use_ort": True, "family": "throughput", "fps": 1005.0, "fps_std": None}
+    lat = {"model": "m.dxnn", "use_ort": True, "family": "latency", "fps": 95.0, "fps_std": None}
+    assert m._backfill_fps_std([lat, thr], raw, "throughput") == 1
+    assert thr["fps_std"] is not None
+    assert lat["fps_std"] is None
+
+
+def test_backfill_still_fills_rows_that_carry_no_family(tmp_path):
+    """E2E / multi-stream rows have no `family` and must keep being filled."""
+    from benchmark import __main__ as m
+    raw = tmp_path / "raw"
+    _throughput_logs(raw)
+    row = {"model": "m.dxnn", "use_ort": True, "fps_std": None}
+    assert m._backfill_fps_std([row], raw, "throughput") == 1
