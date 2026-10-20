@@ -321,6 +321,13 @@ def run_throughput(
             why = f"sweep produced no round (rc={sweep_rc}); model load or launch failed"
         elif max(measured) <= 0.0:
             why = "every sweep round measured 0 fps (device unresponsive)"
+        elif "CRITICAL runtime event" in sweep_log:
+            # dxrun discards the whole sweep on a CRITICAL event; the usual one
+            # on a hot board is THROTTLING_EMERGENCY (NPU overheated, blocked).
+            code = ("THROTTLING_EMERGENCY" if "THROTTLING_EMERGENCY" in sweep_log
+                    else "see raw sweep log")
+            why = (f"dxrun invalidated the sweep after a CRITICAL runtime event "
+                   f"({code}); no buffer count recommended (rc={sweep_rc})")
         else:
             why = (f"sweep ran but gave no recommendation (rc={sweep_rc}); "
                    "dxrun output format may have changed")

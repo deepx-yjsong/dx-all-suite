@@ -427,3 +427,23 @@ def test_sweep_command_lets_dxrun_stop_early_and_pins_the_tolerance(monkeypatch)
     assert cmd[cmd.index("--probe-time") + 1] == "10"
     assert cmd[cmd.index("--sweep-tolerance") + 1] == "1.0"
     assert "--use-ort" in cmd
+
+
+CRITICAL_SWEEP_LOG = """\
+[max-throughput] buffer-count=5 avg-fps=67.26 total-loops=2033 improvement=3.88% peak-drop=0.00% stall=0
+[RuntimeEventDispatcher] level=CRITICAL type=DEVICE_STATUS code=THROTTLING_EMERGENCY message="Throttling emergency occurred: Device-ID=0 NPU-ID=2. EMERGENCY_BLOCK"
+[ERR] Max-throughput sweep invalidated: a CRITICAL runtime event fired during buffer-count 7 repeat 2. No buffer count is recommended from this sweep.
+"""
+
+
+def test_sweep_invalidated_by_a_critical_event_is_not_blamed_on_format_drift(monkeypatch):
+    """dxrun deliberately discards a sweep that saw a CRITICAL runtime event (an
+    overheating NPU's THROTTLING_EMERGENCY, for one). Reporting that as "output
+    format may have changed" sends the reader after the wrong problem -- in a
+    published report it would read as a tool bug instead of a hot board."""
+    r = _run_with_sweep(monkeypatch, returncode=255, sweep_result=(None, {3: 53.6, 4: 64.7}),
+                        stdout=CRITICAL_SWEEP_LOG)
+    assert r.status == "no_fps"
+    assert "CRITICAL runtime event" in r.reason
+    assert "THROTTLING_EMERGENCY" in r.reason
+    assert "output format may have changed" not in r.reason
