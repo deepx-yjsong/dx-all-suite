@@ -27,15 +27,12 @@ MODEL_LIST_JSON = APP_DIR / "model_list.json"
 
 PROTOCOL_VERSION = "v2"  # v2: buffer-count sweep delegated to `dxrun --max-throughput` (v1: in-house adaptive probe)
 
-# dxrun --max-throughput (dx_rt v3.5.0 final) measures every candidate buffer count
-# BC_SWEEP_REPEATS times and averages. The repeat count is a dxrun constant, not a
-# CLI option, so it is mirrored here only to size the timeout and to record it.
+# dxrun measures each candidate buffer count this many times and averages
+# (a dxrun constant, mirrored here to size the timeout).
 BC_SWEEP_REPEATS = 3
-# Rounds the timeout must accommodate. With no --buffer-count range dxrun stops by
-# itself (3 rounds without a >tolerance gain), typically after 5-12 rounds; this is
-# the allowance for a slow host or a creeping curve, not the expected count.
+# Rounds the sweep timeout allows; dxrun normally stops after 5-12.
 BC_SWEEP_ROUND_BUDGET = 25
-# Per-round overhead beyond the probe time (engine create/destroy x repeats), seconds.
+# Per-round engine setup beyond the probe time, in seconds.
 BC_SWEEP_ROUND_OVERHEAD_SEC = 3
 MULTI_STREAM_SEARCH_MODE = "single-stream-estimate-linear-boundary"
 STABLE_CAPACITY_RULE = "status_ok_and_all_runs_success_and_avg_per_channel_fps_ge_threshold"
@@ -93,31 +90,31 @@ TASK_MODEL_META = {
         "input_size": (640, 640),
         "preprocess": "Letterbox resize + pad (pad=114), keep-ratio=true",
         "output": "Bounding boxes + class scores",
-        "ort_offload": "Yes (box decode + TopK on CPU)",
+        "ort_offload": "Yes",
     },
     "pose_estimation": {
         "input_size": (640, 640),
         "preprocess": "Letterbox resize + pad (pad=114), keep-ratio=true",
         "output": "Bounding boxes + 17 keypoints",
-        "ort_offload": "Yes (box/keypoint decode + TopK on CPU)",
+        "ort_offload": "Yes",
     },
     "segmentation": {
         "input_size": (640, 640),
         "preprocess": "Letterbox resize + pad (pad=114), keep-ratio=true",
         "output": "Bounding boxes + instance masks",
-        "ort_offload": "Yes (box/mask decode + TopK on CPU)",
+        "ort_offload": "Yes",
     },
     "oriented_bbox": {
         "input_size": (1024, 1024),
         "preprocess": "Letterbox resize + pad (pad=114), keep-ratio=true",
         "output": "Rotated bounding boxes (OBB)",
-        "ort_offload": "Yes (box decode + TopK on CPU)",
+        "ort_offload": "Yes",
     },
     "classification": {
         "input_size": (224, 224),
         "preprocess": "Direct resize, keep-ratio=false",
         "output": "Class index + confidence (ImageNet-1k)",
-        "ort_offload": "No (pure NPU inference)",
+        "ort_offload": "No",
     },
 }
 
@@ -217,11 +214,10 @@ class BenchmarkConfig:
     model_throughput_runs: int = 3  # repeated measurements per throughput benchmark
 
     # ── buffer-count sweep (protocol v2, throughput only) ────────────
-    # dxrun --max-throughput performs the search and decides when to stop. No
-    # --buffer-count range is passed on purpose: since dx_rt v3.5.0 final an explicit
-    # range disables the early stop and measures every count up to the cap.
+    # dxrun --max-throughput runs the search. No --buffer-count range is passed:
+    # an explicit range disables its early stop.
     bc_probe_sec: int = 10          # --probe-time per repeat. Mean loss 1.02% at 5s vs 0.76% at 10s.
-    bc_sweep_tolerance_pct: float = 1.0  # --sweep-tolerance: FPS within this % of the peak is a tie; the smallest such count wins.
+    bc_sweep_tolerance_pct: float = 1.0  # --sweep-tolerance: FPS within this % of the peak is a tie; the smallest buffer count wins.
     bc_sweep_timeout_sec: int = 900 # Whole-sweep timeout FLOOR; see effective_sweep_timeout_sec().
 
     # ── E2E pipeline params ───────────────────────────────────────────
@@ -280,15 +276,10 @@ class BenchmarkConfig:
 def effective_sweep_timeout_sec(cfg: "BenchmarkConfig") -> int:
     """Whole-sweep timeout actually enforced.
 
-    ``bc_sweep_timeout_sec`` is a floor: the sweep still needs room for
-    ``BC_SWEEP_ROUND_BUDGET`` rounds at the configured probe time, so raising
-    ``bc_probe_sec`` cannot silently starve it.
-
-    Every round costs ``probe x BC_SWEEP_REPEATS`` plus a little engine setup
-    (measured on DX-H1 Quattro, v3.5.0 final: ~31 s per round at ``--probe-time
-    10``). The previous budget ignored the 3x repeat and killed every sweep
-    mid-way. The round count itself is not fixed -- dxrun stops where the curve
-    flattens -- so the budget is a generous ceiling, not a prediction.
+    ``bc_sweep_timeout_sec`` is a floor: the sweep must also fit
+    ``BC_SWEEP_ROUND_BUDGET`` rounds of ``probe x BC_SWEEP_REPEATS`` plus setup, so a
+    longer ``bc_probe_sec`` cannot starve it. dxrun stops when the curve flattens, so
+    this is a ceiling, not a prediction.
     """
     per_round = cfg.bc_probe_sec * BC_SWEEP_REPEATS + BC_SWEEP_ROUND_OVERHEAD_SEC
     return max(cfg.bc_sweep_timeout_sec, BC_SWEEP_ROUND_BUDGET * per_round)

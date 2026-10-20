@@ -35,8 +35,8 @@ phase_models() {
 
     mkdir -p "$OUTPUT_DIR"
 
-    # Model file names repeat across releases: never reuse files whose source/version
-    # is not the one stamped here (that would benchmark stale models under a new label).
+    # Model file names repeat across releases; reuse models only if they came from
+    # the stamped source/version, otherwise move them to .stale/.
     local SOURCE="$BASE_URL/$MODEL_VERSION" STAMP="$OUTPUT_DIR/.model_source" stamped="" moved=0 model
     [ -f "$STAMP" ] && stamped=$(<"$STAMP")
     if [ "$stamped" != "$SOURCE" ]; then

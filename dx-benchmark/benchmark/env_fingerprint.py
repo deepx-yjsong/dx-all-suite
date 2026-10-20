@@ -170,9 +170,8 @@ OPTIONAL_TOOLS = ["dxtop"]
 MIN_TOOL_VERSIONS = {"run_model": (3, 5, 0), "dxrt-cli": (3, 5, 0)}
 
 
-# Options the sweep protocol drives. A v3.5.0 *rc* build reports the same version
-# string as the final one but lacks --sweep-tolerance (and prints a different
-# round line), so the version gate alone cannot tell them apart.
+# run_model options the sweep needs. A v3.5.0 rc build reports the same version as
+# the final one but lacks --sweep-tolerance.
 RUN_MODEL_REQUIRED_OPTIONS = ("--max-throughput", "--probe-time", "--sweep-tolerance")
 
 
@@ -359,8 +358,7 @@ def collect_fingerprint() -> dict[str, Any]:
 
     fp["missing_required"] = missing
     fp["outdated_required"] = outdated
-    # Prove the NPU monitor works now: when it cannot start, every clock/utilization
-    # column of a whole campaign silently comes out empty.
+    # Verify dxtop starts; otherwise every NPU clock/utilization column is empty.
     if shutil.which("dxtop"):
         fp["npu_monitor"] = _probe_npu_monitor()
     fp["missing_e2e"] = collect_e2e_missing()

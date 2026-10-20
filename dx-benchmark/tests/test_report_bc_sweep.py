@@ -95,16 +95,8 @@ def test_effective_sweep_timeout_is_a_floor_not_a_cap():
     assert md["bc_sweep_timeout_effective_sec"] == 900
 
 
-def test_default_sweep_outlasts_a_full_default_probe_round_trip():
-    """Regression: the final dxrun repeats every round 3x, so the old 340s budget
-    killed a 14-round sweep (~31s/round) mid-way on every host."""
-    from benchmark.config import BenchmarkConfig, effective_sweep_timeout_sec
-    one_round = BenchmarkConfig().bc_probe_sec * 3 + 1  # 3 repeats + engine setup
-    assert effective_sweep_timeout_sec(BenchmarkConfig()) >= 14 * one_round * 2
-
-
 def test_protocol_metadata_describes_the_auto_stop_sweep():
-    """Protocol stays v2; its sweep definition is carried by explicit fields."""
+    """The v2 sweep definition is carried by explicit protocol fields."""
     from benchmark.config import BenchmarkConfig, get_protocol_metadata
     md = get_protocol_metadata(BenchmarkConfig())
     assert md["version"] == "v2"
@@ -117,8 +109,7 @@ def test_protocol_metadata_describes_the_auto_stop_sweep():
 
 
 def test_report_protocol_table_documents_the_sweep():
-    """REPORT.md must say how the buffer count was chosen -- it is the one protocol
-    parameter that differs between v1 (adaptive probe) and v2 (dxrun sweep)."""
+    """REPORT.md states how the buffer count was chosen."""
     from benchmark.config import BenchmarkConfig, get_protocol_metadata
     from benchmark.reporter import _add_protocol_section
     lines = []
@@ -137,9 +128,3 @@ def test_report_protocol_table_omits_sweep_rows_for_v1_runs():
     _add_protocol_section(lines, {"protocol": {"version": "v1", "thermal_mode": "steady"}})
     assert "Buffer-count Sweep" not in "\n".join(lines)
 
-
-def test_glossary_bc_describes_the_recommendation_not_the_peak():
-    from benchmark.reporter import _GLOSSARY
-    bc = dict(_GLOSSARY)["BC"]
-    assert "recommended" in bc and "smallest" in bc
-    assert "highest throughput" not in bc

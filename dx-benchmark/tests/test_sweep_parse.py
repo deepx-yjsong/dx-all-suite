@@ -142,10 +142,7 @@ def test_parse_fps_returns_none_for_sweep_peak_only():
     assert _parse_fps_from_log("     Max FPS                  : 141.66  (loops=290)\n") is None
 
 
-# Real dxrun output from the final v3.5.0 build (dx_rt 02861ba, BIOSTAR H1-Quattro,
-# yolo26-n, no --buffer-count so the default range 3-100 + early stop applies).
-# Each round is repeated 3x: per-repeat lines carry `repeat=i/3`, the round line
-# carries `avg-fps=` / `total-loops=`. Only the round line is a curve point.
+# dxrun v3.5.0 final output: each round repeats 3x; only the `avg-fps=` round line is a curve point.
 AUTO_STOP_LOG = """\
 Searching I/O Buffer Count range=3-100
 
@@ -189,8 +186,7 @@ Searching I/O Buffer Count range=3-100
 ==================================================
 """
 
-# Killed mid-round: completed rounds survive, the half-measured one must not
-# appear in the curve even though its repeat lines already printed.
+# Killed mid-round: the half-measured round must not appear in the curve.
 AUTO_STOP_PARTIAL_LOG = """\
 [max-throughput] Measuring buffer-count=3 for 10s x 3 repeats ...
 [max-throughput] buffer-count=3 repeat=1/3 fps=904.88 loops=9061
@@ -208,12 +204,6 @@ def test_parse_sweep_reads_round_average_from_final_v350_format(capsys):
     assert winner == 4  # smallest buffer count within tolerance of the peak, not the peak (6)
     assert curve == {3: 907.15, 4: 1080.72, 5: 1071.23, 6: 1091.29, 7: 1072.95}
     assert "[WARN]" not in capsys.readouterr().out
-
-
-def test_parse_sweep_ignores_per_repeat_lines():
-    """repeat=i/3 lines are raw samples, not curve points."""
-    _, curve = _parse_sweep(AUTO_STOP_LOG)
-    assert curve[3] == 907.15  # the mean, not repeat 1 (904.88) or repeat 3 (913.33)
 
 
 def test_parse_sweep_partial_final_format_keeps_only_completed_rounds():

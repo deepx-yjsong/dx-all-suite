@@ -189,9 +189,7 @@ class NpuMonitor:
         # Force a large PTY size so dxtop renders all rows (Core info, etc.).
         # Without this, the PTY may default to very few rows and dxtop
         # truncates output, losing utilization data.
-        # dxtop is an ncurses app: with no (or a "dumb") TERM it exits at once with
-        # "Error opening terminal: unknown". A detached run (setsid/nohup/cron/CI)
-        # has no TERM, which silently drops every clock/utilization/memory column.
+        # dxtop (ncurses) exits when TERM is unset or "dumb", as in detached runs (nohup/cron/CI).
         env = dict(os.environ)
         if env.get("TERM", "dumb") in ("", "dumb", "unknown"):
             env["TERM"] = "xterm"
@@ -350,11 +348,7 @@ class NpuMonitor:
 
 
 def probe_npu_monitor(core_ids: tuple = (0, 1, 2), seconds: float = 2.0) -> dict:
-    """Start the real NPU monitor briefly and report whether it yields clock samples.
-
-    A monitor that cannot start does not fail the benchmark -- it just leaves every
-    clock/utilization column empty -- so preflight must prove it works up front.
-    """
+    """Briefly start the real NPU monitor and report whether it yields clock samples."""
     mon = NpuMonitor(list(core_ids), warmup_sec=0.3, drain_sec=0.2)
     if not mon.available:
         return {"ok": True, "reason": "dxtop/script not installed; NPU monitor skipped"}

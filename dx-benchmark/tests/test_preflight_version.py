@@ -193,8 +193,7 @@ _REAL_DXRT_CLI_V340 = (
 _V350_RUN_MODEL = "DXRT v3.5.0 run_model"
 
 
-# The stubbed help carries the sweep options of a final build so these tests keep
-# exercising the version gate in isolation (the capability gate has its own tests).
+# Stubbed help lists the sweep options so these tests exercise only the version gate.
 _STUB_HELP_OPTIONS = "\n  --max-throughput\n  --probe-time\n  --sweep-tolerance\n"
 
 
@@ -396,7 +395,7 @@ def test_dxrt_hint_arch_agrees_with_dpkg_on_this_host():
     assert f"_{arch}.deb" in ef._remediation("run_model")
 
 
-# ── capability gate: v3.5.0 rc and final report the same version ──────────
+# ── capability gate (v3.5.0 rc and final report the same version) ─────────
 
 _HELP_FINAL = """DXRT v3.5.0 run_model
       --max-throughput       Search buffer counts for peak throughput
@@ -409,13 +408,10 @@ _HELP_RC = """DXRT v3.5.0 run_model
 """
 
 
-def test_missing_options_empty_for_the_final_build(monkeypatch):
+def test_missing_options_tells_final_from_pre_final_rc(monkeypatch):
+    """The rc banner is indistinguishable from the final one by version alone."""
     monkeypatch.setattr(ef, "_run", lambda cmd, default="unknown": _HELP_FINAL)
     assert ef._run_model_missing_options() == []
-
-
-def test_missing_options_flags_a_pre_final_v350_rc(monkeypatch):
-    """The rc banner is indistinguishable from the final one by version alone."""
     monkeypatch.setattr(ef, "_run", lambda cmd, default="unknown": _HELP_RC)
     assert ef._run_model_missing_options() == ["--sweep-tolerance"]
 

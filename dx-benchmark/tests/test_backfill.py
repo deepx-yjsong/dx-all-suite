@@ -407,8 +407,7 @@ def test_successful_sweep_log_is_persisted(monkeypatch, tmp_path):
 
 
 def test_sweep_command_lets_dxrun_stop_early_and_pins_the_tolerance(monkeypatch):
-    """An explicit --buffer-count range turns dxrun's early stop OFF (final v3.5.0),
-    so the sweep command must carry no range, and must pin --sweep-tolerance."""
+    """The sweep command carries no --buffer-count range (it disables early stop) and pins --sweep-tolerance."""
     seen = {}
 
     def _capture(cmd, *a, **kw):
@@ -437,10 +436,7 @@ CRITICAL_SWEEP_LOG = """\
 
 
 def test_sweep_invalidated_by_a_critical_event_is_not_blamed_on_format_drift(monkeypatch):
-    """dxrun deliberately discards a sweep that saw a CRITICAL runtime event (an
-    overheating NPU's THROTTLING_EMERGENCY, for one). Reporting that as "output
-    format may have changed" sends the reader after the wrong problem -- in a
-    published report it would read as a tool bug instead of a hot board."""
+    """A sweep discarded by dxrun after a CRITICAL event must not be reported as an output-format change."""
     r = _run_with_sweep(monkeypatch, returncode=255, sweep_result=(None, {3: 53.6, 4: 64.7}),
                         stdout=CRITICAL_SWEEP_LOG)
     assert r.status == "no_fps"

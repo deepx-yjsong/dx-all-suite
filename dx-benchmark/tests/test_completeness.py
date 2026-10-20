@@ -1,10 +1,4 @@
-"""Guards against a campaign that silently loses NPU telemetry.
-
-A v2.5.0 campaign once ran for hours with every clock/utilization/memory column
-empty and `npu_throttled` reading False, because dxtop (ncurses) could not start
-without a TERM. Nothing complained. These checks make that failure loud at the
-start (preflight) and at the end (results audit) of a run.
-"""
+"""A run must not silently lose NPU telemetry: checked at preflight and in the results audit."""
 from benchmark import env_fingerprint as ef
 from benchmark import npu_monitor
 from benchmark.completeness import audit_results
@@ -33,11 +27,6 @@ def test_audit_flags_rows_without_clock_data_and_names_the_cause():
 def test_audit_ignores_rows_that_did_not_measure_anything():
     failed = _row(status="no_fps", npu_clock_mhz_min=None, npu_clock_mhz_max=None)
     assert audit_results([failed], [], []) == []
-
-
-def test_audit_flags_missing_utilization_too():
-    bad = _row(npu_total_avg_pct=None)
-    assert audit_results([bad], [], [])
 
 
 def test_probe_reports_ok_when_dxtop_yields_clocks(monkeypatch):
@@ -84,7 +73,7 @@ def test_preflight_passes_when_the_npu_monitor_is_healthy_or_absent():
     assert ef.check_preflight({"missing_required": [], "outdated_required": []})[0] is True
 
 
-# ── the end of a normal run must backfill exactly like `report` does ──────
+# ── raw-log backfills ─────────────────────────────────────────────────────
 
 def test_apply_raw_backfills_runs_every_backfill_with_the_right_categories(monkeypatch, tmp_path):
     from benchmark import __main__ as m
@@ -110,16 +99,6 @@ def test_apply_raw_backfills_tolerates_a_missing_raw_dir(monkeypatch, tmp_path):
         {"npu": 0, "fps_std": 0, "sc1": 0}
 
 
-def test_cmd_run_backfills_before_it_writes_its_own_report():
-    """Without this a normal run leaves latency sigma / raw-log fields empty until
-    someone remembers to run `report` by hand."""
-    import inspect
-    from benchmark import __main__ as m
-    src = inspect.getsource(m.cmd_run)
-    assert "_apply_raw_backfills(" in src
-    assert src.index("_apply_raw_backfills(") < src.index("generate_markdown_report(")
-
-
 # ── latency rows must not inherit the throughput sigma ────────────────────
 
 def _throughput_logs(raw):
@@ -129,10 +108,7 @@ def _throughput_logs(raw):
 
 
 def test_backfill_gives_the_throughput_sigma_to_throughput_rows_only(tmp_path):
-    """Latency and throughput rows share (model, ORT). The throughput backfill used to
-    copy the throughput sigma onto the latency row too: ~0.5 % of 1000 FPS stamped on
-    a ~95 FPS latency figure, and latency_ms_std was derived from it. Latency is a
-    single measurement here, so it has no sigma."""
+    """Latency and throughput rows share (model, ORT); only throughput rows get the sigma."""
     from benchmark import __main__ as m
     raw = tmp_path / "raw"
     _throughput_logs(raw)

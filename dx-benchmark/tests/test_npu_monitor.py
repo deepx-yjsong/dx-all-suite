@@ -77,9 +77,7 @@ def _capture_popen_env(monkeypatch, term):
 
 
 def test_dxtop_gets_a_terminal_type_when_launched_without_one(monkeypatch):
-    """A detached run (setsid/nohup/cron) has no TERM, and dxtop (ncurses) then dies
-    with "Error opening terminal: unknown". That silently dropped every NPU clock,
-    utilization and memory column from a whole campaign, so the monitor must supply one."""
+    """dxtop (ncurses) dies without a TERM, as in detached runs, so the monitor supplies one."""
     env = _capture_popen_env(monkeypatch, term=None)
     assert env is not None and env["TERM"] == "xterm"
 

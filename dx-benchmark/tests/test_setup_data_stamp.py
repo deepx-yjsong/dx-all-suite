@@ -1,9 +1,4 @@
-"""setup_data.sh must not silently reuse models from a different source/version.
-
-Real failure mode: model file names are unchanged between releases, so a host that
-already holds the previous release's models would skip the download and benchmark
-stale models under the new version label.
-"""
+"""setup_data.sh must not reuse models from a different source/version (file names repeat across releases)."""
 import os
 import re
 import shutil

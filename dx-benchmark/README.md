@@ -15,8 +15,6 @@ then render an interactive dashboard for cross-environment and cross-version com
 
 ## Results
 
-Measured results are kept out of this README, so it does not change with each SDK release:
-
 - [`docs/ANALYSIS_EN.md`](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md) — findings, method and data tables.
 - The interactive dashboard below — generated from `results/`.
 - `results/<hw_id>/<run_id>/REPORT.md` — the full report of each run.

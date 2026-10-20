@@ -1,10 +1,8 @@
 """Post-run audit: did every measured row keep its NPU telemetry?
 
-The NPU monitor (dxtop) is the only source of per-cell clock, utilization and
-memory. When it cannot start (no TERM in a detached run, missing PTY, ...) the
-benchmark itself still succeeds, so the loss is silent -- and `npu_throttled`
-then reads False, which is indistinguishable from "not throttled". This audit
-turns that silence into a warning the operator sees at the end of the run.
+dxtop is the only source of per-cell NPU clock, utilization and memory. If it
+cannot start the run still succeeds and `npu_throttled` reads False, which looks
+like "not throttled". This audit turns that into a warning at the end of the run.
 """
 from __future__ import annotations
 

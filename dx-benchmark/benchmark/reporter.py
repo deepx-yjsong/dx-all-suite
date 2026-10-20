@@ -523,9 +523,8 @@ def _add_protocol_section(lines: list[str], fingerprint: dict) -> None:
 # ── Glossary section ─────────────────────────────────────────────────────
 
 _GLOSSARY = [
-    ("ORT ON / OFF", "ONNX Runtime runs the model's CPU part (YOLO26: box decode + TopK, plus keypoint/mask "
-                     "decode) on the host CPU. ON = NPU + CPU part; OFF = NPU part only, raw output tensors "
-                     "that the application must post-process itself. Classification has no CPU part."),
+    ("ORT ON / OFF", "ONNX Runtime executes the model's CPU part on the host CPU. ON = NPU + CPU part; "
+                     "OFF = NPU part only, returning raw NPU output tensors. Classification has no CPU part."),
     ("BC", "I/O buffer count (`--buffer-count`) recommended by the sweep (★): the smallest count whose "
            "throughput is within the sweep tolerance of the sweep's peak."),
     ("Throughput", "Multi-core async `run_model` over the throughput duration, at the recommended BC."),

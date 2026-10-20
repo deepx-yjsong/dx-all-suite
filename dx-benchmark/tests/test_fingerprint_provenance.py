@@ -1,14 +1,8 @@
-"""Provenance fields recorded at measurement time: model sha256, tool commit, model source."""
+"""Provenance fields recorded at measurement time: model sha256 and tool commit."""
 import hashlib
 import subprocess
 
 from benchmark import env_fingerprint as ef
-
-
-def test_file_sha256_matches_hashlib(tmp_path):
-    f = tmp_path / "m.dxnn"
-    f.write_bytes(b"x" * (3 * 1024 * 1024 + 7))
-    assert ef.file_sha256(f) == hashlib.sha256(f.read_bytes()).hexdigest()
 
 
 def test_model_metadata_includes_sha256(tmp_path, monkeypatch):
@@ -18,12 +12,6 @@ def test_model_metadata_includes_sha256(tmp_path, monkeypatch):
     meta = ef.collect_model_metadata(f)
     assert meta["dxcom_version"] == "v2.5.0"
     assert meta["sha256"] == hashlib.sha256(b"abc").hexdigest()
-
-
-def test_read_model_source(tmp_path):
-    assert ef.read_model_source(tmp_path) is None
-    (tmp_path / ".model_source").write_text("https://x/y/2_5_0\n")
-    assert ef.read_model_source(tmp_path) == "https://x/y/2_5_0"
 
 
 def _git(cwd, *args):

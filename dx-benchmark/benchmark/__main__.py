@@ -755,7 +755,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     with open(env_path, "w") as _f:
         json.dump(fp, _f, indent=2)
 
-    # ── Backfill raw-log-derived fields, exactly as `report` would ───
+    # Backfill fields derived from the raw logs.
     counts = _apply_raw_backfills(model_results, pipeline_results, multi_results,
                                   out_dir / "raw")
     if any(counts.values()):
@@ -959,8 +959,7 @@ def _backfill_fps_std(results: list[dict], raw_dir: Path, category: str) -> int:
     for rec in results:
         if rec.get("fps_std") is not None:
             continue
-        # model_results mixes latency and throughput rows that share (model, ORT).
-        # The throughput runs' sigma says nothing about a single latency measurement.
+        # Latency rows share (model, ORT) with throughput rows but have no sigma of their own.
         if category == "throughput" and rec.get("family") == "latency":
             continue
 
@@ -1091,15 +1090,11 @@ def _backfill_sc1_from_single_stream(
 
 def _apply_raw_backfills(model_results: list[dict], pipeline_results: list[dict],
                          multi_results: list[dict], raw_dir: Path) -> dict:
-    """Fill fields that are derived from the raw per-run logs, in place.
+    """Fill fields derived from the raw per-run logs, in place (used by `run` and `report`).
 
-    Shared by ``cmd_run`` (end of a normal run) and ``cmd_report`` so that a run
-    needs no manual ``report`` pass to come out complete: NPU temp/clock min/max
-    from the raw ``.npu.log`` files, ``fps_std`` from the raw run logs, and the
-    multi-stream sc=1 rows from the single-stream results (which must come last,
-    after the raw-log backfills have populated pipeline_results).
-
-    Returns ``{"npu": n, "fps_std": n, "sc1": n}`` -- records patched per step.
+    NPU temp/clock come from ``.npu.log``, ``fps_std`` from the run logs, and the
+    multi-stream sc=1 rows from single-stream results (this step must run last).
+    Returns the number of records patched per step: ``{"npu", "fps_std", "sc1"}``.
     """
     counts = {"npu": 0, "fps_std": 0, "sc1": 0}
     if raw_dir.is_dir():
@@ -1135,7 +1130,7 @@ def cmd_report(args: argparse.Namespace) -> int:
     pipeline_results = _load_json(result_dir / "pipeline_results.json")
     multi_results = _load_json(result_dir / "multi_stream_results.json")
 
-    # Backfill fields derived from the raw logs (shared with the end of `run`).
+    # Backfill fields derived from the raw logs.
     counts = _apply_raw_backfills(model_results, pipeline_results, multi_results,
                                   result_dir / "raw")
     total_patched, fps_patched, sc1_patched = counts["npu"], counts["fps_std"], counts["sc1"]

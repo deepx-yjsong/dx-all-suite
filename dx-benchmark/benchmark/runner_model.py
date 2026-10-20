@@ -162,7 +162,7 @@ def _parse_input_tensor_shape(log: str) -> Optional[dict]:
 
 # Parser for `dxrun --max-throughput` output.
 #   round line:  [max-throughput] buffer-count=4 avg-fps=115.55 total-loops=236 improvement=...
-#                (v3.5.0 final: mean of 3 repeats; the pre-final rc printed `fps=` here)
+#                (avg-fps is the mean of the repeats; rc builds print `fps=`)
 #   repeat line: [max-throughput] buffer-count=4 repeat=1/3 fps=...   (raw sample, NOT matched)
 #   winner line: => Recommended buffer-count : 6
 _SWEEP_ROUND_RE = re.compile(r"\[max-throughput\] buffer-count=(\d+) (?:avg-)?fps=(\d+(?:\.\d+)?)")
@@ -279,7 +279,7 @@ def run_throughput(
     ort_tag = "ort_on" if use_ort else "ort_off"
 
     # -- buffer-count sweep: dxrun searches, we only read the result --
-    # No --buffer-count: an explicit range disables dxrun's early stop (v3.5.0 final).
+    # No --buffer-count: an explicit range disables dxrun's early stop.
     scmd = ["run_model", "-m", str(model.path), "--max-throughput",
             "--probe-time", str(cfg.bc_probe_sec),
             "--sweep-tolerance", str(cfg.bc_sweep_tolerance_pct)]
@@ -322,8 +322,7 @@ def run_throughput(
         elif max(measured) <= 0.0:
             why = "every sweep round measured 0 fps (device unresponsive)"
         elif "CRITICAL runtime event" in sweep_log:
-            # dxrun discards the whole sweep on a CRITICAL event; the usual one
-            # on a hot board is THROTTLING_EMERGENCY (NPU overheated, blocked).
+            # dxrun discards the sweep on a CRITICAL event, typically THROTTLING_EMERGENCY.
             code = ("THROTTLING_EMERGENCY" if "THROTTLING_EMERGENCY" in sweep_log
                     else "see raw sweep log")
             why = (f"dxrun invalidated the sweep after a CRITICAL runtime event "
