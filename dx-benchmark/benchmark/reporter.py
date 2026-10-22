@@ -696,6 +696,10 @@ def _add_environment_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| RAM | {host.get('ram_gb', 'N/A')} GiB |")
     n_dev = npu.get("device_count") or 0
     lines.append(f"| NPU SKU | {npu.get('sku', 'N/A')} |")
+    chip_board = sorted({f"{d.get('chip') or '?'} · {d.get('board') or '?'}"
+                         for d in (npu.get("devices") or [])})
+    if chip_board:
+        lines.append(f"| NPU Chip / Board | {' + '.join(chip_board)} |")
     if n_dev:
         lines.append(f"| NPU Devices | {n_dev} ({npu.get('sku', 'N/A')}) |")
     lines.append(f"| DX-AllSuite | {fingerprint.get('dx_all_suite_version') or 'N/A'} |")
