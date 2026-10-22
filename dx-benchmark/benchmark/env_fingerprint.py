@@ -292,7 +292,7 @@ def _get_dx_stream_version() -> str:
     return m.group(1) if m else "unknown"
 
 
-def _stamp_npu_products(info: dict, device_signals: list[tuple[str | None, str | None]]) -> None:
+def _stamp_npu_products(info: dict, device_signals: list[tuple]) -> None:
     """Classify per-device (board, memory) signals and stamp product fields."""
     modules = classify_devices(device_signals)
     info["modules"] = modules
@@ -598,16 +598,19 @@ def _get_npu_info() -> dict[str, Any]:
 
     # Parse structured fields from dxrt-cli -s output
     device_count = 0
-    device_signals: list[tuple[str | None, str | None]] = []
+    device_signals: list[tuple] = []
     current_board: str | None = None
     current_memory: str | None = None
+    current_chip: str | None = None
     for line in raw.split("\n"):
         line = line.strip()
         if line.startswith("* Device"):
             if device_count > 0:
-                device_signals.append((current_board, current_memory))
+                device_signals.append((current_board, current_memory, current_chip))
             current_board = None
             current_memory = None
+            cm_chip = re.match(r"\*\s*Device\s+\d+\s*:\s*([^,\s]+)", line)
+            current_chip = cm_chip.group(1) if cm_chip else None
             device_count += 1
         elif "Board" in line and ":" in line and "Chip" not in line:
             m = re.search(r":\s*(.+)", line)
@@ -639,7 +642,7 @@ def _get_npu_info() -> dict[str, Any]:
         elif line.startswith("NPU"):
             info["cores"].append(line)
     if device_count > 0:
-        device_signals.append((current_board, current_memory))
+        device_signals.append((current_board, current_memory, current_chip))
 
     info["device_count"] = device_count
     _stamp_npu_products(info, device_signals)
