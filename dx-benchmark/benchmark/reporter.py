@@ -501,12 +501,23 @@ def _add_protocol_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| FPS Threshold | {protocol.get('fps_threshold', 'N/A')} |")
     lines.append(f"| Multi-Stream Search | {protocol.get('multi_stream_search', 'N/A')} |")
     lines.append(f"| Stable Capacity Rule | {protocol.get('stable_capacity_rule', 'N/A')} |")
+    # Thermal baseline recorded at the start of the campaign (settled idle -> target).
+    thermal = fingerprint.get("thermal") or {}
+    if thermal.get("idle_temp_c") is not None:
+        lines.append(f"| NPU Idle Temp (settled) | {thermal['idle_temp_c']:.1f} °C |")
+        lines.append(f"| Cool-down Target | ≤ {thermal.get('cooldown_target_c', 0):.1f} °C |")
+        if thermal.get("hot_start_override"):
+            lines.append("| Hot Start | allowed (idle at or above the cap; target raised) |")
     # Buffer-count sweep (protocol v2): how the throughput buffer count was chosen.
     if 'bc_sweep_mode' in protocol:
         lines.append(f"| Buffer-count Sweep | {protocol.get('bc_sweep_mode')} |")
         lines.append(f"| Sweep Probe | {protocol.get('bc_probe_sec', 'N/A')} s x "
                      f"{protocol.get('bc_sweep_repeats', 'N/A')} repeats |")
         lines.append(f"| Sweep Tolerance | {protocol.get('bc_sweep_tolerance_pct', 'N/A')} % |")
+        if protocol.get('bc_sweep_cooldown'):
+            lines.append(f"| Sweep Cool-down | {protocol['bc_sweep_cooldown']} |")
+        if protocol.get('cooldown_after_sweep'):
+            lines.append("| Cool-down After Sweep | yes |")
         lines.append(f"| Sweep Timeout | "
                      f"{protocol.get('bc_sweep_timeout_effective_sec', protocol.get('bc_sweep_timeout_sec', 'N/A'))} s |")
     # v2 thermal params (conditionally)

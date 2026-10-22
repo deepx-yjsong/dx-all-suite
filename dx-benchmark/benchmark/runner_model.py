@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Optional
 
 from .config import BC_SWEEP_REPEATS, BenchmarkConfig, effective_sweep_timeout_sec
+from .thermal import dxrun_cool_down_arg, target_for, FALLBACK_IDLE_C
 from .model_catalog import ModelEntry
 from .npu_monitor import NpuMonitor, NpuStats
 from .npu_stats_util import merge_npu_stats as _merge_npu_stats
@@ -116,6 +117,12 @@ class ModelResult:
     input_tensor: Optional[dict] = None
     status: str = "ok"
     reason: str = ""
+    # Thermal conditions of the sweep and of the measured runs (throughput only).
+    sweep_cooldown_target_c: Optional[float] = None   # dxrun waited until temp <= this
+    sweep_cooldown_raised: Optional[bool] = None      # target was raised after an unreachable first try
+    post_sweep_cooldown_sec: Optional[float] = None   # wait before the measured runs
+    post_sweep_start_temp_c: Optional[float] = None   # NPU temperature when they started
+    post_sweep_cooled: Optional[bool] = None          # False: target not reached, measured anyway
 
     def as_dict(self) -> dict:
         d = {
@@ -135,6 +142,14 @@ class ModelResult:
             "status": self.status,
             "reason": self.reason,
         }
+        if self.family == "throughput":
+            d.update({
+                "sweep_cooldown_target_c": self.sweep_cooldown_target_c,
+                "sweep_cooldown_raised": self.sweep_cooldown_raised,
+                "post_sweep_cooldown_sec": self.post_sweep_cooldown_sec,
+                "post_sweep_start_temp_c": self.post_sweep_start_temp_c,
+                "post_sweep_cooled": self.post_sweep_cooled,
+            })
         if self.npu_stats:
             d.update(self.npu_stats)
         if self.input_tensor:
@@ -255,16 +270,34 @@ def _parse_profiler_metric(profiler_path: Path, metric_name: str) -> Optional[fl
     return None
 
 
+def _cooldown_failed(log: str) -> bool:
+    """dxrun gave up waiting for --cool-down-temp (it then invalidates the sweep)."""
+    return "NPU did not cool below" in log
+
+
+def _last_npu_temp(log: str) -> Optional[int]:
+    """Last NPU temperature dxrun printed while waiting to cool down, in C."""
+    found = re.findall(r"NPU temperature (\d+)'C", log)
+    return int(found[-1]) if found else None
+
+
 def run_throughput(
     model: ModelEntry,
     use_ort: bool,
     cfg: BenchmarkConfig,
     save_dir: Optional[Path] = None,
+    cooldown: Optional[Callable[[], tuple]] = None,
 ) -> ModelResult:
     """Run async (multi-core) throughput benchmark for one model.
 
     Performs one warmup run followed by *cfg.model_runs* measured runs and
     reports the average FPS, matching the E2E pipeline measurement approach.
+
+    ``cooldown`` is called once after the buffer-count sweep and before the measured
+    runs, so they start at the same temperature as every other window instead of at
+    whatever the sweep's last repeat left behind. It returns ``(temp_c, waited_sec)``
+    and raises ``RuntimeError`` when the target is not reached; that is recorded
+    (``post_sweep_cooled=False``) and the cell is measured anyway.
     """
     cmd = [
         "/usr/bin/time", "-f", "__CPU_PERCENT__=%P",
@@ -279,25 +312,50 @@ def run_throughput(
     ort_tag = "ort_on" if use_ort else "ort_off"
 
     # -- buffer-count sweep: dxrun searches, we only read the result --
-    # No --buffer-count: an explicit range disables dxrun's early stop.
-    scmd = ["run_model", "-m", str(model.path), "--max-throughput",
-            "--probe-time", str(cfg.bc_probe_sec),
-            "--sweep-tolerance", str(cfg.bc_sweep_tolerance_pct)]
-    if use_ort:
-        scmd.append("--use-ort")
+    # No --buffer-count: an explicit range disables dxrun's early stop. dxrun waits
+    # until the NPU is below --cool-down-temp before every repeat; the value is this
+    # campaign's own cool-down target so both sides cool to the same temperature.
+    target_c = target_for(cfg)
+    sweep_arg = dxrun_cool_down_arg(target_c)
     sweep_timeout = effective_sweep_timeout_sec(cfg)
-    sweep_timed_out = False
-    try:
-        sp = subprocess.run(scmd, capture_output=True, text=True, timeout=sweep_timeout)
-        sweep_log = sp.stdout + "\n" + sp.stderr
-        sweep_rc = sp.returncode
-    except subprocess.TimeoutExpired as e:
-        _cleanup_run_model(f"{model.name}.{ort_tag}.bcsweep")
-        # Keep whatever the sweep printed before the kill: it names the buffer
-        # count that hung, which is the whole diagnostic value of a timeout.
-        # _as_text because this output arrives undecoded on a real timeout.
-        sweep_log = _as_text(e.stdout) + "\n" + _as_text(e.stderr)
-        sweep_rc, sweep_timed_out = -1, True
+    sweep_raised = False
+
+    def _sweep(arg: int):
+        scmd = ["run_model", "-m", str(model.path), "--max-throughput",
+                "--probe-time", str(cfg.bc_probe_sec),
+                "--sweep-tolerance", str(cfg.bc_sweep_tolerance_pct),
+                "--cool-down-temp", str(arg)]
+        if use_ort:
+            scmd.append("--use-ort")
+        try:
+            sp = subprocess.run(scmd, capture_output=True, text=True, timeout=sweep_timeout)
+            return sp.stdout + "\n" + sp.stderr, sp.returncode, False
+        except subprocess.TimeoutExpired as e:
+            _cleanup_run_model(f"{model.name}.{ort_tag}.bcsweep")
+            # Keep whatever the sweep printed before the kill: it names the buffer
+            # count that hung, which is the whole diagnostic value of a timeout.
+            # _as_text because this output arrives undecoded on a real timeout.
+            return _as_text(e.stdout) + "\n" + _as_text(e.stderr), -1, True
+
+    sweep_log, sweep_rc, sweep_timed_out = _sweep(sweep_arg)
+
+    # dxrun fails the whole sweep when it cannot reach --cool-down-temp (a board whose
+    # idle floor drifted above the target). Losing the cell for that is worse than
+    # cooling to just above the floor it reported, so retry once -- but never into a
+    # temperature where the measurement would start in the throttle zone.
+    if not sweep_timed_out and sweep_rc != 0 and _cooldown_failed(sweep_log):
+        stuck = _last_npu_temp(sweep_log)
+        retry_arg = stuck + 2 if stuck is not None else None
+        if retry_arg is not None and retry_arg - 1 <= cfg.thermal_hot_start_block_c:
+            print(f"    [cool-down] NPU stuck at {stuck}°C (target ≤{sweep_arg - 1}°C); "
+                  f"retrying the sweep with target ≤{retry_arg - 1}°C", flush=True)
+            if save_dir and sweep_log.strip():
+                _save_raw(save_dir, model.name, "throughput.bcsweep.cooldown_failed",
+                          use_ort, sweep_log, "")
+            sweep_arg, sweep_raised = retry_arg, True
+            sweep_log, sweep_rc, sweep_timed_out = _sweep(sweep_arg)
+
+    thermal = dict(sweep_cooldown_target_c=float(sweep_arg - 1), sweep_cooldown_raised=sweep_raised)
 
     buffer_count, bc_curve = _parse_sweep(sweep_log)
     bc_curve_str = " ".join(f"{k}:{v:.1f}" for k, v in sorted(bc_curve.items()))
@@ -321,6 +379,13 @@ def run_throughput(
             why = f"sweep produced no round (rc={sweep_rc}); model load or launch failed"
         elif max(measured) <= 0.0:
             why = "every sweep round measured 0 fps (device unresponsive)"
+        elif _cooldown_failed(sweep_log):
+            stuck = _last_npu_temp(sweep_log)
+            why = (f"dxrun could not cool the NPU to {sweep_arg - 1}°C"
+                   + (f" (stuck at {stuck}°C)" if stuck is not None else "")
+                   + " within its 300 s wait, so it invalidated the sweep"
+                   + (" (also after raising the target once)" if sweep_raised else "")
+                   + f"; the device's idle floor is above the cool-down target (rc={sweep_rc})")
         elif "CRITICAL runtime event" in sweep_log:
             # dxrun discards the sweep on a CRITICAL event, typically THROTTLING_EMERGENCY.
             code = ("THROTTLING_EMERGENCY" if "THROTTLING_EMERGENCY" in sweep_log
@@ -342,7 +407,7 @@ def run_throughput(
             model=model.name, task=model.task, size=model.size,
             use_ort=use_ort, family="throughput",
             status="no_fps", buffer_count=None, buffer_count_curve=bc_curve_str,
-            reason=why,
+            reason=why, **thermal,
         )
     print(f"    [buffer-count] winner={buffer_count} "
           f"(auto-stop sweep @ {cfg.bc_probe_sec}s x {BC_SWEEP_REPEATS}: "
@@ -358,6 +423,17 @@ def run_throughput(
         _save_raw(save_dir, model.name, "throughput.bcsweep", use_ort, sweep_log, "")
     cmd += ["--buffer-count", str(buffer_count)]
 
+    # The sweep's last repeat left the NPU hot; start the measured runs from the
+    # same temperature as every other window.
+    if cooldown is not None:
+        try:
+            post_temp, post_wait = cooldown()
+            thermal.update(post_sweep_cooled=True, post_sweep_cooldown_sec=round(post_wait, 1),
+                           post_sweep_start_temp_c=post_temp if post_temp and post_temp > 0 else None)
+        except RuntimeError as err:
+            print(f"    [cooldown] after sweep: {err} -- measuring anyway", flush=True)
+            thermal.update(post_sweep_cooled=False)
+
     # Warmup run (discard result); retry on transient timeout before giving up the cell
     print(f"    [throughput warmup] (-t {cfg.model_time_sec}s)", flush=True)
     if not _warmup_with_retries(cmd, cfg, f"{model.name}.{ort_tag}.throughput.warmup"):
@@ -366,6 +442,7 @@ def run_throughput(
             use_ort=use_ort, family="throughput",
             status="timeout", buffer_count=buffer_count, buffer_count_curve=bc_curve_str,
             reason=f"warmup exceeded 600s on all {1 + max(0, cfg.model_warmup_retries)} attempt(s)",
+            **thermal,
         )
 
     # Measured runs
@@ -467,6 +544,7 @@ def run_throughput(
         input_tensor=input_tensor,
         status=status,
         reason=reason,
+        **thermal,
     )
 
     return result

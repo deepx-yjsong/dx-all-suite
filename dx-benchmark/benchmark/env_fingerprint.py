@@ -171,8 +171,10 @@ MIN_TOOL_VERSIONS = {"run_model": (3, 5, 0), "dxrt-cli": (3, 5, 0)}
 
 
 # run_model options the sweep needs. A v3.5.0 rc build reports the same version as
-# the final one but lacks --sweep-tolerance.
-RUN_MODEL_REQUIRED_OPTIONS = ("--max-throughput", "--probe-time", "--sweep-tolerance")
+# the final one but lacks --sweep-tolerance; --cool-down-temp is what lets the sweep start
+# every repeat at the campaign's cool-down target.
+RUN_MODEL_REQUIRED_OPTIONS = ("--max-throughput", "--probe-time", "--sweep-tolerance",
+                              "--cool-down-temp")
 
 
 def _run_model_missing_options() -> list[str]:
