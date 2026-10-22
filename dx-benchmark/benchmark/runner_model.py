@@ -291,15 +291,19 @@ def run_throughput(
     """Run async (multi-core) throughput benchmark for one model.
 
     Runs the buffer-count sweep, then *cfg.model_throughput_runs* measured runs and
-    reports the average FPS. There is no separate warmup: the sweep has just run the
-    model, and every run_model call warms up internally (``--warmup-runs``), so an
-    extra process would only heat the NPU.
+    reports the average FPS.
 
     ``cooldown`` is called before every measured run (including backfill retries), so
     each starts at the same temperature instead of at whatever the sweep or the
     previous run left behind. It returns ``(temp_c, waited_sec)`` and raises
     ``RuntimeError`` when the target is not reached; that is recorded
     (``pre_run_cooled=False``) and the run is measured anyway.
+
+    After the cool-down the NPU sat idle for minutes, and the first run_model process
+    after that is ~2.4 % slower (BIOSTAR172: 499 vs 511 FPS) however many
+    ``--warmup-runs`` it does itself; the next process is not. A ``cfg.model_wakeup_sec``
+    throw-away run right before each measured run removes that without re-heating the
+    NPU (2 s). The sweep is not affected: dxrun keeps its engine alive while cooling.
     """
     cmd = [
         "/usr/bin/time", "-f", "__CPU_PERCENT__=%P",
@@ -424,6 +428,8 @@ def run_throughput(
     if save_dir and sweep_log.strip():
         _save_raw(save_dir, model.name, "throughput.bcsweep", use_ort, sweep_log, "")
     cmd += ["--buffer-count", str(buffer_count)]
+    wake_cmd = list(cmd)
+    wake_cmd[wake_cmd.index("-t") + 1] = str(cfg.model_wakeup_sec)
 
     # Measured runs
     fps_values = []
@@ -458,6 +464,8 @@ def run_throughput(
                 pre_run_cooled = False
             thermal.update(pre_run_cooled=pre_run_cooled, pre_run_cooldown_sec=round(pre_run_wait, 1),
                            pre_run_start_temp_max_c=max(pre_run_temps) if pre_run_temps else None)
+        if cfg.model_wakeup_sec > 0:
+            _warmup_with_retries(wake_cmd, cfg, f"{model.name}.{ort_tag}.throughput.{label}.wakeup")
         print(f"    [throughput {label} ({len(fps_values)}/{target} ok, attempt {attempt}/{max_attempts})]", end=" ", flush=True)
         t0_run = time.monotonic()
         npu = NpuMonitor(cfg.npu_core_ids, cfg.npu_warmup_sec, cfg.npu_drain_sec)

@@ -165,7 +165,7 @@ class _Monitor:
 RUN_OK = "  - FPS : 80.0\n"
 
 
-def _drive(monkeypatch, procs, cooldown=None, save_dir=None, runs=1, run_retries=0):
+def _drive(monkeypatch, procs, cooldown=None, save_dir=None, runs=1, run_retries=0, wakes=None):
     calls = []
     events = []
     seq = iter(procs)
@@ -183,7 +183,8 @@ def _drive(monkeypatch, procs, cooldown=None, save_dir=None, runs=1, run_retries
     monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
     monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
     monkeypatch.setattr(runner_model, "_warmup_with_retries",
-                        lambda *a, **kw: events.append("warmup") or True)
+                        lambda cmd, *a, **kw: events.append("warmup") or
+                        (wakes.append(list(cmd)) if wakes is not None else None) or True)
 
     def hook():
         events.append("cooldown")
@@ -204,19 +205,31 @@ def test_sweep_receives_the_shared_target_as_cool_down_temp(monkeypatch):
     assert "--max-throughput" in cmd
 
 
-def test_every_measured_run_starts_from_a_cool_npu_and_there_is_no_extra_warmup(monkeypatch):
-    # The sweep already ran the model, and each run_model warms up internally, so a
-    # separate warmup process only heats the NPU before run 1.
+def test_every_measured_run_is_cooled_then_woken_up_right_before_it_starts(monkeypatch):
+    # After minutes idle the first run_model process is ~2.4 % slower (BIOSTAR172:
+    # 499 vs 511 FPS, whatever --warmup-runs says); a short throw-away process right
+    # before the run removes it, and 2 s is too short to undo the cool-down.
     _, _, events = _drive(monkeypatch, [_Proc(OK_SWEEP)] + [_Proc(RUN_OK)] * 3,
                           cooldown=True, runs=3)
-    assert events == ["sweep", "cooldown", "run", "cooldown", "run", "cooldown", "run"]
+    assert events == ["sweep", "cooldown", "warmup", "run", "cooldown", "warmup", "run",
+                      "cooldown", "warmup", "run"]
+
+
+def test_the_wake_up_is_a_short_run_of_the_same_command(monkeypatch):
+    wake = []
+    _, calls, _ = _drive(monkeypatch, [_Proc(OK_SWEEP), _Proc(RUN_OK)], cooldown=True, wakes=wake)
+    run_cmd = calls[1]
+    assert wake and wake[0][wake[0].index("-t") + 1] == "2"
+    assert run_cmd[run_cmd.index("-t") + 1] == "30"
+    strip = lambda c: [a for i, a in enumerate(c) if c[i - 1] != "-t" and a != "-t"]
+    assert strip(wake[0]) == strip(run_cmd)            # same model, buffer count, --use-ort
 
 
 def test_a_retried_run_is_cooled_down_too(monkeypatch):
     # first attempt yields no FPS, the backfill attempt must not start hot either
     r, _, events = _drive(monkeypatch, [_Proc(OK_SWEEP), _Proc(""), _Proc(RUN_OK)],
                           cooldown=True, run_retries=1)
-    assert events == ["sweep", "cooldown", "run", "cooldown", "run"]
+    assert events == ["sweep", "cooldown", "warmup", "run", "cooldown", "warmup", "run"]
     assert r.status == "ok"
 
 

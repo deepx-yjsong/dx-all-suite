@@ -209,6 +209,7 @@ class BenchmarkConfig:
     model_latency_loops: int = 300  # inference loops per latency measurement (-l; run_model -s ignores -t)
     model_warmup: int = 1           # warmup runs before measurement
     model_warmup_retries: int = 1   # extra warmup attempts on timeout before giving up the cell
+    model_wakeup_sec: int = 2       # throw-away run_model before each throughput run (after the cool-down)
     model_run_retries: int = 2      # extra measured-run attempts to backfill failed runs up to the target count
     model_latency_runs: int = 1     # repeated measurements per latency benchmark
     model_throughput_runs: int = 3  # repeated measurements per throughput benchmark
@@ -297,6 +298,7 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "model_latency_loops": cfg.model_latency_loops,
         "model_warmup_runs": cfg.model_warmup,
         "model_warmup_retries": cfg.model_warmup_retries,
+        "model_wakeup_sec": cfg.model_wakeup_sec,
         "model_run_retries": cfg.model_run_retries,
         "model_latency_runs": cfg.model_latency_runs,
         "model_throughput_runs": cfg.model_throughput_runs,

@@ -491,6 +491,8 @@ def _add_protocol_section(lines: list[str], fingerprint: dict) -> None:
     lines.append(f"| Throughput Time | {protocol.get('model_time_sec', 'N/A')} s |")
     lines.append(f"| Latency Loops | {protocol.get('model_latency_loops', protocol.get('model_time_sec', 'N/A'))} |")
     lines.append(f"| Model Warmup | {protocol.get('model_warmup_runs', 'N/A')} |")
+    if protocol.get('model_wakeup_sec'):
+        lines.append(f"| Throughput Wake-up | {protocol['model_wakeup_sec']} s before each run |")
     # v2: split latency/throughput runs
     if 'model_latency_runs' in protocol:
         lines.append(f"| Model Latency Runs | {protocol.get('model_latency_runs', 'N/A')} |")
