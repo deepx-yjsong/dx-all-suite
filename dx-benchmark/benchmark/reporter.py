@@ -516,8 +516,8 @@ def _add_protocol_section(lines: list[str], fingerprint: dict) -> None:
         lines.append(f"| Sweep Tolerance | {protocol.get('bc_sweep_tolerance_pct', 'N/A')} % |")
         if protocol.get('bc_sweep_cooldown'):
             lines.append(f"| Sweep Cool-down | {protocol['bc_sweep_cooldown']} |")
-        if protocol.get('cooldown_after_sweep'):
-            lines.append("| Cool-down After Sweep | yes |")
+        if protocol.get('cooldown_before_each_run'):
+            lines.append("| Cool-down Before Each Throughput Run | yes |")
         lines.append(f"| Sweep Timeout | "
                      f"{protocol.get('bc_sweep_timeout_effective_sec', protocol.get('bc_sweep_timeout_sec', 'N/A'))} s |")
     # v2 thermal params (conditionally)

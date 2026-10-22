@@ -303,7 +303,7 @@ def get_protocol_metadata(cfg: BenchmarkConfig) -> dict:
         "bc_sweep_mode": "auto-stop",
         "bc_sweep_repeats": BC_SWEEP_REPEATS,
         "bc_sweep_cooldown": "dxrun --cool-down-temp, before every repeat",
-        "cooldown_after_sweep": True,
+        "cooldown_before_each_run": True,
         "bc_cooldown_allowance_sec": cfg.bc_cooldown_allowance_sec,
         "bc_sweep_tolerance_pct": cfg.bc_sweep_tolerance_pct,
         "bc_probe_sec": cfg.bc_probe_sec,

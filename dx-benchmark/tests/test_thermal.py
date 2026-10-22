@@ -7,6 +7,7 @@ both sides mean the same temperature, that the idle baseline is a settled value,
 an unreachable target costs a retry instead of the cell.
 """
 import math
+import types
 
 import pytest
 
@@ -117,7 +118,7 @@ def test_sweep_timeout_budgets_the_cool_down_between_repeats():
 def test_protocol_metadata_records_the_cool_down_scheme():
     md = get_protocol_metadata(BenchmarkConfig())
     assert md["bc_sweep_cooldown"] == "dxrun --cool-down-temp, before every repeat"
-    assert md["cooldown_after_sweep"] is True
+    assert md["cooldown_before_each_run"] is True
     assert md["bc_cooldown_allowance_sec"] == 90
 
 
@@ -143,27 +144,46 @@ def _model():
                       task_suffix="", size="m")
 
 
-def _cfg(**kw):
-    cfg = BenchmarkConfig(model_throughput_runs=1, model_warmup=1, model_warmup_retries=0,
-                          model_run_retries=0, **kw)
+def _cfg(runs=1, run_retries=0, **kw):
+    cfg = BenchmarkConfig(model_throughput_runs=runs, model_warmup=1, model_warmup_retries=0,
+                          model_run_retries=run_retries, **kw)
     cfg.thermal_idle_temp_c = 40.0
     return cfg
 
 
-def _drive(monkeypatch, procs, cooldown=None, save_dir=None):
+class _Monitor:
+    def __init__(self, *a, **kw):
+        pass
+
+    def start(self):
+        pass
+
+    def stop(self):
+        return types.SimpleNamespace(raw_log="")
+
+
+RUN_OK = "  - FPS : 80.0\n"
+
+
+def _drive(monkeypatch, procs, cooldown=None, save_dir=None, runs=1, run_retries=0):
     calls = []
+    events = []
     seq = iter(procs)
 
     def fake_run(cmd, *a, **kw):
         calls.append(list(cmd))
-        return next(seq)
+        proc = next(seq)
+        events.append("sweep" if "--max-throughput" in cmd else "run")
+        return proc
 
     monkeypatch.setattr(runner_model.subprocess, "run", fake_run)
-    events = []
-    monkeypatch.setattr(runner_model, "_warmup_with_retries",
-                        lambda *a, **kw: events.append("warmup") or False)
+    monkeypatch.setattr(runner_model, "NpuMonitor", _Monitor)
+    monkeypatch.setattr(runner_model, "_merge_npu_stats",
+                        lambda *a, **kw: types.SimpleNamespace(as_dict=lambda ids: {}))
     monkeypatch.setattr(runner_model, "_cleanup_run_model", lambda *a, **kw: None)
     monkeypatch.setattr(runner_model, "_maybe_collect_dxrt_incident", lambda *a, **kw: None)
+    monkeypatch.setattr(runner_model, "_warmup_with_retries",
+                        lambda *a, **kw: events.append("warmup") or True)
 
     def hook():
         events.append("cooldown")
@@ -171,36 +191,56 @@ def _drive(monkeypatch, procs, cooldown=None, save_dir=None):
             raise cooldown
         return (49.0, 12.0)
 
-    r = runner_model.run_throughput(_model(), use_ort=True, cfg=_cfg(), save_dir=save_dir,
+    r = runner_model.run_throughput(_model(), use_ort=True, cfg=_cfg(runs, run_retries), save_dir=save_dir,
                                     cooldown=hook if cooldown is not None else None)
     return r, calls, events
 
 
 def test_sweep_receives_the_shared_target_as_cool_down_temp(monkeypatch):
-    _, calls, _ = _drive(monkeypatch, [_Proc(OK_SWEEP)], cooldown=True)
+    _, calls, _ = _drive(monkeypatch, [_Proc(OK_SWEEP), _Proc(RUN_OK)], cooldown=True)
     cmd = calls[0]
     # idle 40 + 10 = 50 C target -> dxrun needs "< 51"
     assert cmd[cmd.index("--cool-down-temp") + 1] == "51"
     assert "--max-throughput" in cmd
 
 
-def test_cools_down_again_after_the_sweep_and_before_the_measured_runs(monkeypatch):
-    r, _, events = _drive(monkeypatch, [_Proc(OK_SWEEP)], cooldown=True)
-    assert events == ["cooldown", "warmup"]
+def test_every_measured_run_starts_from_a_cool_npu_and_there_is_no_extra_warmup(monkeypatch):
+    # The sweep already ran the model, and each run_model warms up internally, so a
+    # separate warmup process only heats the NPU before run 1.
+    _, _, events = _drive(monkeypatch, [_Proc(OK_SWEEP)] + [_Proc(RUN_OK)] * 3,
+                          cooldown=True, runs=3)
+    assert events == ["sweep", "cooldown", "run", "cooldown", "run", "cooldown", "run"]
+
+
+def test_a_retried_run_is_cooled_down_too(monkeypatch):
+    # first attempt yields no FPS, the backfill attempt must not start hot either
+    r, _, events = _drive(monkeypatch, [_Proc(OK_SWEEP), _Proc(""), _Proc(RUN_OK)],
+                          cooldown=True, run_retries=1)
+    assert events == ["sweep", "cooldown", "run", "cooldown", "run"]
+    assert r.status == "ok"
+
+
+def test_cool_down_is_recorded_for_the_cell(monkeypatch):
+    r, _, _ = _drive(monkeypatch, [_Proc(OK_SWEEP)] + [_Proc(RUN_OK)] * 2, cooldown=True, runs=2)
     d = r.as_dict()
-    assert d["post_sweep_cooled"] is True and d["post_sweep_cooldown_sec"] == 12.0
-    assert d["post_sweep_start_temp_c"] == 49.0 and d["sweep_cooldown_target_c"] == 50.0
+    assert d["pre_run_cooled"] is True
+    assert d["pre_run_cooldown_sec"] == 24.0             # 2 x 12 s
+    assert d["pre_run_start_temp_max_c"] == 49.0
+    assert d["sweep_cooldown_target_c"] == 50.0
+    assert "post_sweep_cooled" not in d
 
 
-def test_a_post_sweep_cool_down_that_times_out_is_recorded_not_fatal(monkeypatch):
-    r, _, events = _drive(monkeypatch, [_Proc(OK_SWEEP)], cooldown=RuntimeError("stuck"))
-    assert events == ["cooldown", "warmup"]          # the cell still measures
-    assert r.as_dict()["post_sweep_cooled"] is False
+def test_a_cool_down_that_times_out_is_recorded_not_fatal(monkeypatch):
+    r, _, events = _drive(monkeypatch, [_Proc(OK_SWEEP)] + [_Proc(RUN_OK)] * 2,
+                          cooldown=RuntimeError("stuck"), runs=2)
+    assert events.count("run") == 2                       # the cell still measures
+    assert r.status == "ok" and r.as_dict()["pre_run_cooled"] is False
 
 
 def test_unreachable_cool_down_target_is_retried_once_above_the_stuck_temperature(monkeypatch):
-    r, calls, _ = _drive(monkeypatch, [_Proc(COOL_FAIL, rc=255), _Proc(OK_SWEEP)], cooldown=True)
-    assert len(calls) == 2
+    r, calls, _ = _drive(monkeypatch, [_Proc(COOL_FAIL, rc=255), _Proc(OK_SWEEP), _Proc(RUN_OK)],
+                         cooldown=True)
+    assert len(calls) == 3
     # stuck at 48 C -> "< 50" i.e. <= 49 C: reachable, and still close to the target
     assert calls[1][calls[1].index("--cool-down-temp") + 1] == "50"
     d = r.as_dict()
@@ -292,4 +332,4 @@ def test_report_protocol_table_shows_the_thermal_baseline_and_cool_down_scheme()
     assert "| NPU Idle Temp (settled) | 41.0 °C |" in out
     assert "| Cool-down Target | ≤ 51.0 °C |" in out
     assert "| Sweep Cool-down | dxrun --cool-down-temp, before every repeat |" in out
-    assert "| Cool-down After Sweep | yes |" in out
+    assert "| Cool-down Before Each Throughput Run | yes |" in out
