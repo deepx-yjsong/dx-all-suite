@@ -370,3 +370,80 @@ def test_cleanver_parity_in_real_v8(tmp_path):
             "the JS-to-Python translation is unfaithful for %r: engine %r != translated %r"
             % (raw, got, translated(raw))
         )
+
+
+def test_trend_labels_drawn_after_every_dot():
+    """Version Trend value labels are drawn in a pass after all dots, so a later line's
+    dot can never paint over an earlier line's label."""
+    js = APP_JS.read_text(encoding="utf-8")
+    body = js[js.index("function createTrendChart("):js.index("if(this._showLegend===false)return;var lx")]
+    assert body.rfind("ctx.arc(") < body.find("ctx.strokeText("), "labels must be drawn after the last dot"
+    assert "_placeTrendLabels(" in body
+
+
+def _run_place_labels_in_chrome(chrome, tmp_path, columns):
+    page = tmp_path / "labels.html"
+    page.write_text(
+        '<!doctype html><body><pre id="out"></pre>\n'
+        '<script src="file://%s"></script>\n<script>\n'
+        "var M = String.fromCharCode(2);\nvar COLS = %s;\nvar res = [], err = null;\n"
+        "try { for (var i = 0; i < COLS.length; i++) res.push(_placeTrendLabels(COLS[i])); }\n"
+        "catch (e) { err = String(e); }\n"
+        "document.getElementById('out').textContent =\n"
+        "  M + JSON.stringify({fn: typeof _placeTrendLabels, err: err, res: res}) + M;\n"
+        "</script></body>" % (APP_JS, json.dumps(columns)),
+        encoding="utf-8",
+    )
+    try:
+        dom = subprocess.run(
+            [chrome, "--headless", "--disable-gpu", "--no-sandbox",
+             "--allow-file-access-from-files", "--virtual-time-budget=5000",
+             "--user-data-dir=%s" % (tmp_path / "profile"),
+             "--dump-dom", "file://%s" % page],
+            capture_output=True, text=True, timeout=120,
+        ).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    found = re.search("\x02(.*?)\x02", dom, re.S)
+    if not found:
+        return None
+    payload = json.loads(html.unescape(found.group(1)))
+    if payload["fn"] != "function" or payload["err"]:
+        return None
+    return payload["res"]
+
+
+@pytest.mark.skipif(_chrome() is None, reason="no Chrome/Chromium to execute app.js")
+@pytest.mark.skipif(sys.platform == "win32", reason="file:// harness is POSIX-only here")
+def test_trend_labels_clear_every_dot(tmp_path):
+    """No value label overlaps a dot or another label in its column, including the latency
+    case that hid labels: sizes n..l only 15-18 px apart (BIOSTAR v2.5.0, 10.89 / 16.99 ms)."""
+    def col(ys, r, x=400, w=28):
+        return [{"x": x, "y": y, "r": r, "w": w} for y in ys]
+    columns = [
+        col([753, 738, 721, 703, 641], 7),   # selected v2.5.0 latency column
+        col([751, 736, 718, 697, 632], 5),
+        col([100, 300], 5),                  # well separated
+    ]
+    placed = _run_place_labels_in_chrome(_chrome(), tmp_path, columns)
+    if placed is None:
+        pytest.skip("Chrome present but could not execute the harness")
+
+    def overlap(a, b):
+        return min(a[1], b[1]) - max(a[0], b[0]) > 0 and min(a[3], b[3]) - max(a[2], b[2]) > 0
+
+    for dots, labels in zip(columns, placed):
+        assert len(labels) == len(dots)
+        boxes = []
+        for d, p in zip(dots, labels):
+            left = {"center": p["x"] - d["w"] / 2, "left": p["x"], "right": p["x"] - d["w"]}[p["align"]]
+            boxes.append((left, left + d["w"], p["y"] - 9, p["y"] + 2))
+        for bx in boxes:
+            for d in dots:
+                h = d["r"] + 1.5
+                assert not overlap(bx, (d["x"] - h, d["x"] + h, d["y"] - h, d["y"] + h)), (bx, d)
+        for i in range(len(boxes)):
+            for j in range(i + 1, len(boxes)):
+                assert not overlap(boxes[i], boxes[j]), (boxes[i], boxes[j])
+    # well-separated dots keep the default: label centred above its own dot
+    assert all(p["align"] == "center" and p["y"] < d["y"] for d, p in zip(columns[2], placed[2]))

@@ -757,6 +757,26 @@ function _snapshotMetricValue(snap,task,useOrt,metric,sizeKey){
   if(!row)return null;
   return row[metric.valueKey];
 }
+// Value-label positions for one Version Trend column. A label sits above its dot, else below,
+// right or left -- the first spot that touches no dot and no label already placed (sizes with close
+// values, e.g. latency of n and s, leave no room above or below). dots = [{x, y, r, w}] in canvas px
+// (w = label width); returns [{x, y, align}] in input order, y being the text baseline.
+var TREND_LABEL_ASCENT=9,TREND_LABEL_DESCENT=2,TREND_LABEL_PAD=3;
+function _placeTrendLabels(dots){
+  var order=dots.map(function(d,i){return i;}).sort(function(a,b){return dots[a].y-dots[b].y;});
+  var taken=dots.map(function(d){var h=d.r+1.5;return{l:d.x-h,r:d.x+h,t:d.y-h,b:d.y+h};});
+  function area(a,b){return Math.max(0,Math.min(a.r,b.r)-Math.max(a.l,b.l))*Math.max(0,Math.min(a.b,b.b)-Math.max(a.t,b.t));}
+  function box(c,w){var l=c.align==='center'?c.x-w/2:(c.align==='left'?c.x:c.x-w);return{l:l,r:l+w,t:c.y-TREND_LABEL_ASCENT,b:c.y+TREND_LABEL_DESCENT};}
+  var out=new Array(dots.length);
+  order.forEach(function(i){
+    var d=dots[i],h=d.r+1.5,mid=d.y+(TREND_LABEL_ASCENT-TREND_LABEL_DESCENT)/2;
+    var cands=[{x:d.x,y:d.y-h-TREND_LABEL_PAD-TREND_LABEL_DESCENT,align:'center'},{x:d.x,y:d.y+h+TREND_LABEL_PAD+TREND_LABEL_ASCENT,align:'center'},{x:d.x+h+TREND_LABEL_PAD,y:mid,align:'left'},{x:d.x-h-TREND_LABEL_PAD,y:mid,align:'right'}];
+    var best=null,bestCost=Infinity;
+    cands.forEach(function(c){if(bestCost===0)return;var bx=box(c,d.w),cost=0;taken.forEach(function(t){cost+=area(bx,t);});if(cost<bestCost){best=c;bestCost=cost;}});
+    out[i]=best;taken.push(box(best,d.w));
+  });
+  return out;
+}
 function createTrendChart(canvas,onClick){
   var chart={_canvas:canvas,_metric:TREND_METRICS[0],_onClick:onClick,_hoverIdx:-1,_data:[],_selectedIdx:-1,_raf:null,_ro:null};
   chart.setMetric=function(metric){this._metric=metric||TREND_METRICS[0];this._scheduleDraw();};
@@ -779,9 +799,10 @@ function createTrendChart(canvas,onClick){
     ctx.strokeStyle='rgba(0,0,0,0.18)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(P.left,P.top);ctx.lineTo(P.left,P.top+CH);ctx.stroke();ctx.beginPath();ctx.moveTo(P.left,P.top+CH);ctx.lineTo(P.left+CW,P.top+CH);ctx.stroke();
     ctx.textAlign='right';ctx.fillStyle='#444';ctx.font='11px sans-serif';for(var t=0;t<=5;t++){var tv=ceil-(ceil-floor)*t/5;ctx.fillText(Math.round(tv),P.left-6,P.top+CH*t/5+4);}ctx.save();ctx.fillStyle='#333';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.translate(14,P.top+CH/2);ctx.rotate(-Math.PI/2);ctx.fillText(this._metric.axisLabel,0,0);ctx.restore();
     if(hasSelection){var selectedX=xPos(self._selectedIdx);var groupLeft=Math.max(P.left,Math.min(selectedX-groupWidth/2,P.left+CW-groupWidth));ctx.save();ctx.fillStyle='rgba(27,107,88,0.06)';ctx.fillRect(groupLeft,P.top-2,groupWidth,CH+4);ctx.strokeStyle='rgba(27,107,88,0.9)';ctx.lineWidth=3;ctx.setLineDash([6,3]);ctx.strokeRect(groupLeft,P.top-2,groupWidth,CH+4);ctx.setLineDash([]);ctx.restore();}
-    var _labelGap=13;function _spreadLabels(items){items.sort(function(a,b){return a.baseY-b.baseY;});for(var pass=0;pass<4;pass++){for(var j=1;j<items.length;j++){var gap=items[j].y-items[j-1].y;if(gap<_labelGap){var shift=(_labelGap-gap)/2;items[j-1].y-=Math.ceil(shift);items[j].y+=Math.ceil(shift);}}items.sort(function(a,b){return a.y-b.y;});}return items;}
-    var colLabels={};data.forEach(function(line,li){line.points.forEach(function(point,i){if(point.value==null)return;if(!colLabels[i])colLabels[i]=[];colLabels[i].push({lineIdx:li,baseY:yPos(point.value)-10,y:yPos(point.value)-10,value:point.value});});});Object.keys(colLabels).forEach(function(k){_spreadLabels(colLabels[k]);});
-    data.forEach(function(line,li){var sc=SIZE_COLORS[line.size]||SIZE_COLORS.n;ctx.save();ctx.globalAlpha=hasSelection?0.72:1;ctx.strokeStyle=sc.line;ctx.lineWidth=2.5;ctx.beginPath();var started=false;line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);if(!started){ctx.moveTo(x,y);started=true;}else{ctx.lineTo(x,y);}});ctx.stroke();ctx.restore();line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;var r=isSelectedColumn?7:(isHoveredColumn?6:5);ctx.fillStyle=hasSelection?(isSelectedColumn?sc.hi:(isHoveredColumn?sc.fill:sc.dim)):(isHoveredColumn?sc.hi:sc.fill);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=isSelectedColumn?3:1.5;ctx.stroke();var labelY=y-10;var cl=colLabels[i];if(cl){for(var ci=0;ci<cl.length;ci++){if(cl[ci].lineIdx===li){labelY=cl[ci].y;break;}}}var isEmphasized=isSelectedColumn||isHoveredColumn;var labelText=_formatTrendValue(self._metric,point.value);ctx.font=isEmphasized?'bold 11px sans-serif':'10px sans-serif';ctx.textAlign='center';ctx.globalAlpha=hasSelection?(isEmphasized?1:0.7):1;if(isEmphasized){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeText(labelText,x,labelY);ctx.fillStyle='#111';ctx.fillText(labelText,x,labelY);}else{ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeText(labelText,x,labelY);ctx.fillStyle='#111';ctx.fillText(labelText,x,labelY);}ctx.globalAlpha=1;});});
+    data.forEach(function(line){var sc=SIZE_COLORS[line.size]||SIZE_COLORS.n;ctx.save();ctx.globalAlpha=hasSelection?0.72:1;ctx.strokeStyle=sc.line;ctx.lineWidth=2.5;ctx.beginPath();var started=false;line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);if(!started){ctx.moveTo(x,y);started=true;}else{ctx.lineTo(x,y);}});ctx.stroke();ctx.restore();});
+    var colDots={};data.forEach(function(line,li){var sc=SIZE_COLORS[line.size]||SIZE_COLORS.n;line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;var r=isSelectedColumn?7:(isHoveredColumn?6:5);ctx.fillStyle=hasSelection?(isSelectedColumn?sc.hi:(isHoveredColumn?sc.fill:sc.dim)):(isHoveredColumn?sc.hi:sc.fill);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=isSelectedColumn?3:1.5;ctx.stroke();if(!colDots[i])colDots[i]=[];colDots[i].push({x:x,y:y,r:r,value:point.value});});});
+    // Labels go on a second pass, after every dot, so no later line's dot can cover them.
+    Object.keys(colDots).forEach(function(k){var i=Number(k),dots=colDots[k];var isEmphasized=i===self._selectedIdx||i===self._hoverIdx;ctx.save();ctx.font=isEmphasized?'bold 11px sans-serif':'10px sans-serif';dots.forEach(function(d){d.text=_formatTrendValue(self._metric,d.value);d.w=ctx.measureText(d.text).width;});var pos=_placeTrendLabels(dots);ctx.globalAlpha=hasSelection?(isEmphasized?1:0.7):1;ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.lineJoin='round';ctx.fillStyle='#111';dots.forEach(function(d,di){ctx.textAlign=pos[di].align;ctx.strokeText(d.text,pos[di].x,pos[di].y);ctx.fillText(d.text,pos[di].x,pos[di].y);});ctx.restore();});
     if(data[0]&&data[0].points){data[0].points.forEach(function(point,i){var x=xPos(i);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;ctx.fillStyle=hasSelection?(isSelectedColumn?'#333':(isHoveredColumn?'#5d6572':'rgba(93,101,114,0.55)')):'#333';ctx.font=isSelectedColumn?'600 11px sans-serif':'11px sans-serif';ctx.textAlign='center';ctx.fillText(point.dateLabel||'',x,P.top+CH+16);});}
     if(this._showLegend===false)return;var lx=P.left,ly=22;SIZE_KEYS.forEach(function(sz){var sc=SIZE_COLORS[sz];ctx.fillStyle=sc.fill;ctx.beginPath();ctx.arc(lx+6,ly,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=1.5;ctx.stroke();var label=sz.toUpperCase()+' ('+SIZE_LABELS[sz]+')';ctx.fillStyle='#333';ctx.font='12px sans-serif';ctx.textAlign='left';ctx.fillText(label,lx+16,ly+4);lx+=ctx.measureText(label).width+35;});
   };
