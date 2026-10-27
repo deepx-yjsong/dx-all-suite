@@ -28,6 +28,7 @@ from .aggregator import aggregate_result_directories, save_dataset_json
 from .result_layout import make_hw_id
 from .config import APP_DIR, BenchmarkConfig, SIZES, TASK_GROUP_MAP, E2E_SUPPORTED_TASKS, MULTI_STREAM_SUPPORTED_TASKS, TASK_MODEL_META, get_protocol_metadata
 from .dashboard_builder import build_static_dashboard
+from .completeness import audit_results
 from .env_fingerprint import collect_fingerprint, check_preflight, check_e2e_readiness, check_cpu_governor, collect_host_health, save_fingerprint, get_video_info, resolve_dx_all_suite_version
 from .model_catalog import discover_models, filter_models
 from .npu_monitor import parse_npu_log_temp_clock
@@ -140,7 +141,7 @@ def cmd_preflight(args: argparse.Namespace) -> int:
     if ok:
         print("[OK] All required tools are available.")
     else:
-        print("[FAIL] Missing required tools:")
+        print("[FAIL] Preflight check failed:")
         for e in errors:
             print(f"  - {e}")
 
@@ -207,6 +208,61 @@ def cmd_dry_run(args: argparse.Namespace) -> int:
     total = _count_runs(cfg, models, families)
     print(f"Total benchmark invocations: {total}")
     return 0
+
+
+def _establish_thermal_baseline(cfg, fp, existing_fp, resume_dir, allow_hot_start,
+                                read=None, settle=None) -> bool:
+    """Fix the campaign's NPU idle temperature and cool-down target. False blocks the run.
+
+    The idle temperature is a *settled* value (readings flat for a couple of minutes), not
+    the first reading: a device that was just used reads warm and a warm "idle" raised the
+    whole campaign's cool-down target. A resumed run reuses the recorded values so every
+    attempt cools to the same temperature. ``read``/``settle`` are injectable for tests.
+    """
+    from . import thermal as _thermal
+    if read is None:
+        from .npu_monitor import read_npu_temp_c as read
+    recorded = (existing_fp or {}).get("thermal") if resume_dir else None
+    override = None
+    hot_override = False
+    if cfg.thermal_idle_temp_c is None and recorded and recorded.get("idle_temp_c") is not None:
+        cfg.thermal_idle_temp_c = recorded["idle_temp_c"]
+        hot_override = bool(recorded.get("hot_start_override"))
+        if hot_override:
+            override = recorded.get("cooldown_target_c")
+            cfg.thermal_target_override_c = override
+        print(f"[INFO] Resuming with the recorded NPU idle temperature "
+              f"{cfg.thermal_idle_temp_c:.1f}°C (cool-down target ≤{_thermal.target_for(cfg):.1f}°C)")
+    elif cfg.thermal_idle_temp_c is None and read() is not None:
+        print("[INFO] Waiting for the NPU temperature to settle before recording idle ...",
+              flush=True)
+        if settle is None:
+            def settle():
+                return _thermal.settle_idle_temp(read)
+        idle = settle()
+        if idle is None:
+            print("[ERROR] NPU temperature did not settle (or is unreadable). Let the device "
+                  "idle and retry.")
+            return False
+        ok, override, message = _thermal.start_gate(
+            idle, cfg.thermal_cooldown_abs_cap_c, cfg.thermal_hot_start_block_c, allow_hot_start)
+        if message:
+            print(message)
+        if not ok:
+            return False
+        cfg.thermal_idle_temp_c = idle
+        cfg.thermal_target_override_c = override
+        hot_override = override is not None
+        print(f"[INFO] NPU idle temperature (settled): {idle:.1f}°C -> cool-down target "
+              f"≤{_thermal.target_for(cfg):.1f}°C")
+    fp["thermal"] = {
+        "idle_temp_c": cfg.thermal_idle_temp_c,
+        "cooldown_target_c": _thermal.target_for(cfg),
+        "abs_cap_c": cfg.thermal_cooldown_abs_cap_c,
+        "delta_c": cfg.thermal_cooldown_target_delta_c,
+        "hot_start_override": hot_override,
+    }
+    return True
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -283,19 +339,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         existing_fp, cfg, families, resume_dir, retry_failed_flag, session_start_iso)
     fp["timing_history"] = timing_history
 
-    # Auto-detect NPU idle temperature for thermal steady-state
-    if cfg.thermal_idle_temp_c is None:
-        from .npu_monitor import read_npu_temp_c
-        idle_temp = read_npu_temp_c()
-        if idle_temp is not None:
-            if idle_temp > cfg.thermal_hot_start_block_c:
-                print(
-                    f"[ERROR] NPU start temperature {idle_temp:.1f}°C exceeds hot-start limit "
-                    f"{cfg.thermal_hot_start_block_c:.1f}°C. Cool the device before running the benchmark."
-                )
-                return 1
-            cfg.thermal_idle_temp_c = idle_temp
-            print(f"[INFO] NPU idle temperature: {idle_temp:.1f}°C")
+    # Settled NPU idle temperature -> the campaign's cool-down target (also handed to dxrun).
+    if not _establish_thermal_baseline(cfg, fp, existing_fp, resume_dir,
+                                       getattr(args, "allow_hot_start", False)):
+        return 1
 
     save_fingerprint(fp, out_dir)
 
@@ -351,6 +398,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         entry.update(meta)
         benchmarked_models.append(entry)
     fp["benchmarked_models"] = benchmarked_models
+    from .env_fingerprint import read_model_source
+    model_source = read_model_source(Path(models[0].path).parent) if models else None
+    if model_source:
+        fp["model_source"] = model_source
 
     # On resume, union the cumulative scope fields with the prior fingerprint so a
     # partial/family-scoped re-run never shrinks benchmarked_models / families /
@@ -494,7 +545,8 @@ def cmd_run(args: argparse.Namespace) -> int:
                         print(f"    retry [{existing.get('status', 'unknown')}]", flush=True)
                     t0 = time.monotonic()
                     try:
-                        r = run_throughput(m, use_ort, cfg, raw_dir)
+                        r = run_throughput(m, use_ort, cfg, raw_dir,
+                                           cooldown=lambda: wait_until_cool(cfg))
                     except Exception as exc:
                         traceback.print_exc()
                         print(f"  [ERROR] throughput {m.name} ORT={ort_s} raised {exc!r} → skipping cell", flush=True)
@@ -750,10 +802,21 @@ def cmd_run(args: argparse.Namespace) -> int:
     with open(env_path, "w") as _f:
         json.dump(fp, _f, indent=2)
 
+    # Backfill fields derived from the raw logs.
+    counts = _apply_raw_backfills(model_results, pipeline_results, multi_results,
+                                  out_dir / "raw")
+    if any(counts.values()):
+        _save_result_set(model_results, out_dir / "model_results.csv", out_dir / "model_results.json")
+        _save_result_set(pipeline_results, out_dir / "pipeline_results.csv", out_dir / "pipeline_results.json")
+        _save_result_set(multi_results, out_dir / "multi_stream_results.csv", out_dir / "multi_stream_results.json")
+        print(f"[INFO] Backfilled from raw logs: {counts}", flush=True)
+
     # ── Generate report ───────────────────────────────────────────
     report_path = out_dir / "REPORT.md"
     generate_markdown_report(fp, model_results, pipeline_results, multi_results, report_path,
                              video_infos=video_infos)
+    for w in audit_results(model_results, pipeline_results, multi_results):
+        print(f"[WARN] {w}", flush=True)
     if failure_context:
         print(f"\n[FAIL] Partial report: {report_path}")
         return 1
@@ -943,6 +1006,9 @@ def _backfill_fps_std(results: list[dict], raw_dir: Path, category: str) -> int:
     for rec in results:
         if rec.get("fps_std") is not None:
             continue
+        # Latency rows share (model, ORT) with throughput rows but have no sigma of their own.
+        if category == "throughput" and rec.get("family") == "latency":
+            continue
 
         model = rec.get("model", "")
         ort_tag = "ort_on" if rec.get("use_ort") else "ort_off"
@@ -1069,6 +1135,34 @@ def _backfill_sc1_from_single_stream(
     return patched
 
 
+def _apply_raw_backfills(model_results: list[dict], pipeline_results: list[dict],
+                         multi_results: list[dict], raw_dir: Path) -> dict:
+    """Fill fields derived from the raw per-run logs, in place (used by `run` and `report`).
+
+    NPU temp/clock come from ``.npu.log``, ``fps_std`` from the run logs, and the
+    multi-stream sc=1 rows from single-stream results (this step must run last).
+    Returns the number of records patched per step: ``{"npu", "fps_std", "sc1"}``.
+    """
+    counts = {"npu": 0, "fps_std": 0, "sc1": 0}
+    if raw_dir.is_dir():
+        for results, categories in [
+            (model_results, ["throughput", "latency"]),
+            (pipeline_results, ["e2e.single"]),
+            (multi_results, ["e2e.multi"]),
+        ]:
+            for cat in categories:
+                counts["npu"] += _backfill_from_raw_logs(results, raw_dir, cat)
+        for results, categories in [
+            (model_results, ["throughput"]),
+            (pipeline_results, ["e2e.single"]),
+            (multi_results, ["e2e.multi"]),
+        ]:
+            for cat in categories:
+                counts["fps_std"] += _backfill_fps_std(results, raw_dir, cat)
+    counts["sc1"] = _backfill_sc1_from_single_stream(multi_results, pipeline_results)
+    return counts
+
+
 def cmd_report(args: argparse.Namespace) -> int:
     """Regenerate report from existing result files."""
     result_dir = Path(args.result_dir)
@@ -1083,38 +1177,14 @@ def cmd_report(args: argparse.Namespace) -> int:
     pipeline_results = _load_json(result_dir / "pipeline_results.json")
     multi_results = _load_json(result_dir / "multi_stream_results.json")
 
-    # Backfill npu_temp/clock min/max from raw .npu.log when fields are missing
-    raw_dir = result_dir / "raw"
-    total_patched = 0
-    fps_patched = 0
-    if raw_dir.is_dir():
-        for results, categories in [
-            (model_results, ["throughput", "latency"]),
-            (pipeline_results, ["e2e.single"]),
-            (multi_results, ["e2e.multi"]),
-        ]:
-            for cat in categories:
-                n = _backfill_from_raw_logs(results, raw_dir, cat)
-                total_patched += n
-        if total_patched:
-            print(f"[INFO] Backfilled NPU temp/clock min/max for {total_patched} result(s) from raw logs")
-
-        # Backfill fps_std from raw run logs when missing
-        for results, categories in [
-            (model_results, ["throughput"]),
-            (pipeline_results, ["e2e.single"]),
-            (multi_results, ["e2e.multi"]),
-        ]:
-            for cat in categories:
-                n = _backfill_fps_std(results, raw_dir, cat)
-                fps_patched += n
-        if fps_patched:
-            print(f"[INFO] Backfilled fps_std (σ) for {fps_patched} result(s) from raw logs")
-
-    # Backfill multi-stream sc=1 entries from single-stream results.
-    # Must run AFTER raw-log backfills so pipeline_results already has
-    # npu_temp/clock and fps_std populated.
-    sc1_patched = _backfill_sc1_from_single_stream(multi_results, pipeline_results)
+    # Backfill fields derived from the raw logs.
+    counts = _apply_raw_backfills(model_results, pipeline_results, multi_results,
+                                  result_dir / "raw")
+    total_patched, fps_patched, sc1_patched = counts["npu"], counts["fps_std"], counts["sc1"]
+    if total_patched:
+        print(f"[INFO] Backfilled NPU temp/clock min/max for {total_patched} result(s) from raw logs")
+    if fps_patched:
+        print(f"[INFO] Backfilled fps_std (σ) for {fps_patched} result(s) from raw logs")
     if sc1_patched:
         print(f"[INFO] Backfilled {sc1_patched} multi-stream sc=1 entry(ies) from single-stream results")
 
@@ -1134,6 +1204,8 @@ def cmd_report(args: argparse.Namespace) -> int:
     report_path = result_dir / "REPORT.md"
     generate_markdown_report(fp, model_results, pipeline_results, multi_results, report_path,
                              video_infos=fp.get("video_infos"))
+    for w in audit_results(model_results, pipeline_results, multi_results):
+        print(f"[WARN] {w}", flush=True)
     print(f"[DONE] Report: {report_path}")
     return 0
 
@@ -1544,6 +1616,9 @@ def _add_benchmark_args(parser: argparse.ArgumentParser, defaults: BenchmarkConf
                         help=f"Per-channel FPS threshold for multi-stream sweep (default: {defaults.fps_threshold:g})")
     parser.add_argument("--resume", default=None,
                         help="Resume and extend an existing result directory instead of starting a new run")
+    parser.add_argument("--allow-hot-start", action="store_true",
+                        help="Start even when the settled NPU idle temperature is at or above the "
+                             "cool-down cap (the cool-down target is raised and the run is flagged)")
     parser.add_argument("--retry-failed", action="store_true",
                         help="With --resume, rerun only entries whose latest status is not ok/partial")
 
