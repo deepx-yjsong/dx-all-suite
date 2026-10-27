@@ -33,7 +33,7 @@ The results are published in three forms, from conclusions to raw data:
 | | What it gives you |
 |---|---|
 | **Analysis** — [English](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md) | Key findings, which configuration fits a target channel count, and why: the host-side limits (video decoding, CPU, PCIe, thermal) behind each number. |
-| **[Dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/)** | Charts and tables of every measured value, compared across environments and across dx-all-suite releases (see [Dashboard](#dashboard)). |
+| **[Dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/)** | Charts and tables of every measured value, compared across environments and across dx-all-suite releases. |
 | **Per-run reports** — `results/<hw_id>/<run_id>/REPORT.md` | Every measured value of one run, with its environment and test conditions. |
 
 ---
