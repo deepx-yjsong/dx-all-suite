@@ -757,24 +757,27 @@ function _snapshotMetricValue(snap,task,useOrt,metric,sizeKey){
   if(!row)return null;
   return row[metric.valueKey];
 }
-// Value-label positions for one Version Trend column. A label sits above its dot, else below,
-// right or left -- the first spot that touches no dot and no label already placed (sizes with close
-// values, e.g. latency of n and s, leave no room above or below). dots = [{x, y, r, w}] in canvas px
-// (w = label width); returns [{x, y, align}] in input order, y being the text baseline.
-var TREND_LABEL_ASCENT=9,TREND_LABEL_DESCENT=2,TREND_LABEL_PAD=3;
-function _placeTrendLabels(dots){
-  var order=dots.map(function(d,i){return i;}).sort(function(a,b){return dots[a].y-dots[b].y;});
-  var taken=dots.map(function(d){var h=d.r+1.5;return{l:d.x-h,r:d.x+h,t:d.y-h,b:d.y+h};});
-  function area(a,b){return Math.max(0,Math.min(a.r,b.r)-Math.max(a.l,b.l))*Math.max(0,Math.min(a.b,b.b)-Math.max(a.t,b.t));}
-  function box(c,w){var l=c.align==='center'?c.x-w/2:(c.align==='left'?c.x:c.x-w);return{l:l,r:l+w,t:c.y-TREND_LABEL_ASCENT,b:c.y+TREND_LABEL_DESCENT};}
-  var out=new Array(dots.length);
-  order.forEach(function(i){
-    var d=dots[i],h=d.r+1.5,mid=d.y+(TREND_LABEL_ASCENT-TREND_LABEL_DESCENT)/2;
-    var cands=[{x:d.x,y:d.y-h-TREND_LABEL_PAD-TREND_LABEL_DESCENT,align:'center'},{x:d.x,y:d.y+h+TREND_LABEL_PAD+TREND_LABEL_ASCENT,align:'center'},{x:d.x+h+TREND_LABEL_PAD,y:mid,align:'left'},{x:d.x-h-TREND_LABEL_PAD,y:mid,align:'right'}];
-    var best=null,bestCost=Infinity;
-    cands.forEach(function(c){if(bestCost===0)return;var bx=box(c,d.w),cost=0;taken.forEach(function(t){cost+=area(bx,t);});if(cost<bestCost){best=c;bestCost=cost;}});
-    out[i]=best;taken.push(box(best,d.w));
+// Version Trend value labels sit right of their dots, one stack per column, in value order:
+// a higher value is never labelled below a lower one. Labels that would collide are pushed apart
+// only as far as needed (an overlapping run is centred on its dots) and stay inside [lo, hi].
+// ys = label centres wanted (the dots' y, px); returns the placed centres in input order.
+var TREND_LABEL_GAP=12,TREND_LABEL_COLORS={n:'#1d4ed8',s:'#047857',m:'#b45309',l:'#b91c1c',x:'#6d28d9'};
+function _stackTrendLabels(ys,lo,hi,gap){
+  var order=ys.map(function(y,i){return i;}).sort(function(a,b){return (ys[a]-ys[b])||(a-b);});
+  if(order.length>1&&hi-lo<gap*(order.length-1))gap=(hi-lo)/(order.length-1);
+  var groups=[];
+  order.forEach(function(idx){
+    groups.push({idx:[idx],sum:ys[idx],top:Math.min(Math.max(ys[idx],lo),hi)});
+    while(groups.length>1){
+      var g2=groups[groups.length-1],g1=groups[groups.length-2];
+      if(g1.top+g1.idx.length*gap<=g2.top+1e-9)break;
+      var m={idx:g1.idx.concat(g2.idx),sum:g1.sum+g2.sum},n=m.idx.length;
+      m.top=Math.min(Math.max((m.sum-gap*n*(n-1)/2)/n,lo),hi-gap*(n-1));
+      groups.splice(groups.length-2,2,m);
+    }
   });
+  var out=new Array(ys.length);
+  groups.forEach(function(g){g.idx.forEach(function(idx,k){out[idx]=g.top+k*gap;});});
   return out;
 }
 function createTrendChart(canvas,onClick){
@@ -793,16 +796,17 @@ function createTrendChart(canvas,onClick){
     var nPts=data[0].points.length;var maxVal=0,minVal=Infinity;
     data.forEach(function(line){line.points.forEach(function(point){if(point.value!=null){maxVal=Math.max(maxVal,point.value);minVal=Math.min(minVal,point.value);}});});
     if(minVal===Infinity)minVal=0;
-    var range=maxVal-minVal;var pad=Math.max(range*0.2,maxVal*0.02,1);var rawFloor=minVal-pad;var rawCeil=maxVal+pad;var ystep=(rawCeil-rawFloor)/5;var ymag=Math.pow(10,Math.floor(Math.log10(Math.max(ystep,1e-9))));var ynorm=ystep/ymag;var niceStep=(ynorm<=1?1:ynorm<=2?2:ynorm<=5?5:10)*ymag;var floor=Math.max(0,Math.floor(rawFloor/niceStep)*niceStep);var ceil=Math.ceil(rawCeil/niceStep)*niceStep;if(ceil<=floor)ceil=floor+niceStep*5;
+    var range=maxVal-minVal;var pad=Math.max(range*0.2,maxVal*0.02,1);var rawFloor=minVal-pad;var rawCeil=maxVal+pad;var ystep=(rawCeil-rawFloor)/5;var ymag=Math.pow(10,Math.floor(Math.log10(Math.max(ystep,1e-9))));var ynorm=ystep/ymag;var niceStep=(ynorm<=1?1:ynorm<=2?2:ynorm<=5?5:10)*ymag;if(this._metric.precision===0)niceStep=Math.max(1,niceStep);var floor=Math.max(0,Math.floor(rawFloor/niceStep)*niceStep);var ceil=Math.ceil(rawCeil/niceStep)*niceStep;if(ceil<=floor)ceil=floor+niceStep*5;
     var xMargin=nPts<=1?0:Math.max(40,Math.min(CW*0.08,80));var xSpan=CW-2*xMargin;var self=this;var xPos=function(i){return P.left+xMargin+(nPts===1?xSpan/2:i*(xSpan/Math.max(nPts-1,1)));};var yPos=function(v){return P.top+CH-((v-floor)/(ceil-floor||1))*CH;};var hasSelection=self._selectedIdx>=0&&self._selectedIdx<nPts;var groupWidth=nPts===1?Math.min(xSpan*0.6,96):Math.max(36,Math.min(90,(xSpan/Math.max(nPts-1,1))-14));
-    ctx.strokeStyle='rgba(0,0,0,0.065)';ctx.lineWidth=1;for(var g=0;g<=5;g++){var gy=P.top+CH*g/5;ctx.beginPath();ctx.moveTo(P.left,gy);ctx.lineTo(P.left+CW,gy);ctx.stroke();}
+    ctx.strokeStyle='rgba(0,0,0,0.065)';ctx.lineWidth=1;var nTicks=Math.max(1,Math.round((ceil-floor)/niceStep));for(var g=0;g<=nTicks;g++){var gy=P.top+CH*g/nTicks;ctx.beginPath();ctx.moveTo(P.left,gy);ctx.lineTo(P.left+CW,gy);ctx.stroke();}
     ctx.strokeStyle='rgba(0,0,0,0.18)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(P.left,P.top);ctx.lineTo(P.left,P.top+CH);ctx.stroke();ctx.beginPath();ctx.moveTo(P.left,P.top+CH);ctx.lineTo(P.left+CW,P.top+CH);ctx.stroke();
-    ctx.textAlign='right';ctx.fillStyle='#444';ctx.font='11px sans-serif';for(var t=0;t<=5;t++){var tv=ceil-(ceil-floor)*t/5;ctx.fillText(Math.round(tv),P.left-6,P.top+CH*t/5+4);}ctx.save();ctx.fillStyle='#333';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.translate(14,P.top+CH/2);ctx.rotate(-Math.PI/2);ctx.fillText(this._metric.axisLabel,0,0);ctx.restore();
-    if(hasSelection){var selectedX=xPos(self._selectedIdx);var groupLeft=Math.max(P.left,Math.min(selectedX-groupWidth/2,P.left+CW-groupWidth));ctx.save();ctx.fillStyle='rgba(27,107,88,0.06)';ctx.fillRect(groupLeft,P.top-2,groupWidth,CH+4);ctx.strokeStyle='rgba(27,107,88,0.9)';ctx.lineWidth=3;ctx.setLineDash([6,3]);ctx.strokeRect(groupLeft,P.top-2,groupWidth,CH+4);ctx.setLineDash([]);ctx.restore();}
+    ctx.textAlign='right';ctx.fillStyle='#444';ctx.font='11px sans-serif';var tickDp=niceStep<1?Math.min(2,Math.ceil(-Math.log10(niceStep))):0;for(var t=0;t<=nTicks;t++){var tv=ceil-(ceil-floor)*t/nTicks;ctx.fillText(tv.toFixed(tickDp),P.left-6,P.top+CH*t/nTicks+4);}ctx.save();ctx.fillStyle='#333';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.translate(14,P.top+CH/2);ctx.rotate(-Math.PI/2);ctx.fillText(this._metric.axisLabel,0,0);ctx.restore();
+    if(hasSelection){var selectedX=xPos(self._selectedIdx);ctx.save();ctx.font='bold 11px sans-serif';var labelW=0;data.forEach(function(line){var pt=line.points[self._selectedIdx];if(pt&&pt.value!=null)labelW=Math.max(labelW,ctx.measureText(_formatTrendValue(self._metric,pt.value)).width);});ctx.restore();var groupLeft=Math.max(P.left,selectedX-groupWidth/2);var groupRight=Math.min(W-2,Math.max(selectedX+groupWidth/2,selectedX+7+7+labelW+5));var boxW=groupRight-groupLeft;ctx.save();ctx.fillStyle='rgba(27,107,88,0.06)';ctx.fillRect(groupLeft,P.top-2,boxW,CH+4);ctx.strokeStyle='rgba(27,107,88,0.9)';ctx.lineWidth=3;ctx.setLineDash([6,3]);ctx.strokeRect(groupLeft,P.top-2,boxW,CH+4);ctx.setLineDash([]);ctx.restore();}
     data.forEach(function(line){var sc=SIZE_COLORS[line.size]||SIZE_COLORS.n;ctx.save();ctx.globalAlpha=hasSelection?0.72:1;ctx.strokeStyle=sc.line;ctx.lineWidth=2.5;ctx.beginPath();var started=false;line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);if(!started){ctx.moveTo(x,y);started=true;}else{ctx.lineTo(x,y);}});ctx.stroke();ctx.restore();});
-    var colDots={};data.forEach(function(line,li){var sc=SIZE_COLORS[line.size]||SIZE_COLORS.n;line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;var r=isSelectedColumn?7:(isHoveredColumn?6:5);ctx.fillStyle=hasSelection?(isSelectedColumn?sc.hi:(isHoveredColumn?sc.fill:sc.dim)):(isHoveredColumn?sc.hi:sc.fill);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=isSelectedColumn?3:1.5;ctx.stroke();if(!colDots[i])colDots[i]=[];colDots[i].push({x:x,y:y,r:r,value:point.value});});});
-    // Labels go on a second pass, after every dot, so no later line's dot can cover them.
-    Object.keys(colDots).forEach(function(k){var i=Number(k),dots=colDots[k];var isEmphasized=i===self._selectedIdx||i===self._hoverIdx;ctx.save();ctx.font=isEmphasized?'bold 11px sans-serif':'10px sans-serif';dots.forEach(function(d){d.text=_formatTrendValue(self._metric,d.value);d.w=ctx.measureText(d.text).width;});var pos=_placeTrendLabels(dots);ctx.globalAlpha=hasSelection?(isEmphasized?1:0.7):1;ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.lineJoin='round';ctx.fillStyle='#111';dots.forEach(function(d,di){ctx.textAlign=pos[di].align;ctx.strokeText(d.text,pos[di].x,pos[di].y);ctx.fillText(d.text,pos[di].x,pos[di].y);});ctx.restore();});
+    var colDots={};data.forEach(function(line,li){var sc=SIZE_COLORS[line.size]||SIZE_COLORS.n;line.points.forEach(function(point,i){if(point.value==null)return;var x=xPos(i),y=yPos(point.value);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;var r=isSelectedColumn?7:(isHoveredColumn?6:5);ctx.fillStyle=hasSelection?(isSelectedColumn?sc.hi:(isHoveredColumn?sc.fill:sc.dim)):(isHoveredColumn?sc.hi:sc.fill);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=isSelectedColumn?3:1.5;ctx.stroke();if(!colDots[i])colDots[i]=[];colDots[i].push({x:x,y:y,r:r,value:point.value,size:line.size});});});
+    // Labels go on a second pass, after every dot, so no dot covers them; each takes its line's
+    // colour, and a short leader ties it to its dot when the stack had to move it.
+    Object.keys(colDots).forEach(function(k){var i=Number(k),dots=colDots[k];var isEmphasized=i===self._selectedIdx||i===self._hoverIdx;var ys=_stackTrendLabels(dots.map(function(d){return d.y;}),P.top+TREND_LABEL_GAP/2,P.top+CH-TREND_LABEL_GAP/2,TREND_LABEL_GAP);ctx.save();ctx.font=isEmphasized?'bold 11px sans-serif':'10px sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.globalAlpha=hasSelection?(isEmphasized?1:0.7):1;dots.forEach(function(d,di){var sc=SIZE_COLORS[d.size]||SIZE_COLORS.n;var text=_formatTrendValue(self._metric,d.value);var lx=d.x+d.r+7,ly=ys[di];if(Math.abs(ly-d.y)>1.5){ctx.strokeStyle=sc.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(d.x+d.r,d.y);ctx.lineTo(lx-2,ly);ctx.stroke();}ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeText(text,lx,ly);ctx.fillStyle=TREND_LABEL_COLORS[d.size]||'#111';ctx.fillText(text,lx,ly);});ctx.restore();});
     if(data[0]&&data[0].points){data[0].points.forEach(function(point,i){var x=xPos(i);var isSelectedColumn=i===self._selectedIdx;var isHoveredColumn=i===self._hoverIdx;ctx.fillStyle=hasSelection?(isSelectedColumn?'#333':(isHoveredColumn?'#5d6572':'rgba(93,101,114,0.55)')):'#333';ctx.font=isSelectedColumn?'600 11px sans-serif':'11px sans-serif';ctx.textAlign='center';ctx.fillText(point.dateLabel||'',x,P.top+CH+16);});}
     if(this._showLegend===false)return;var lx=P.left,ly=22;SIZE_KEYS.forEach(function(sz){var sc=SIZE_COLORS[sz];ctx.fillStyle=sc.fill;ctx.beginPath();ctx.arc(lx+6,ly,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=sc.line;ctx.lineWidth=1.5;ctx.stroke();var label=sz.toUpperCase()+' ('+SIZE_LABELS[sz]+')';ctx.fillStyle='#333';ctx.font='12px sans-serif';ctx.textAlign='left';ctx.fillText(label,lx+16,ly+4);lx+=ctx.measureText(label).width+35;});
   };

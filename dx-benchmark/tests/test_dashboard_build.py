@@ -378,20 +378,21 @@ def test_trend_labels_drawn_after_every_dot():
     js = APP_JS.read_text(encoding="utf-8")
     body = js[js.index("function createTrendChart("):js.index("if(this._showLegend===false)return;var lx")]
     assert body.rfind("ctx.arc(") < body.find("ctx.strokeText("), "labels must be drawn after the last dot"
-    assert "_placeTrendLabels(" in body
+    assert "_stackTrendLabels(" in body
 
 
-def _run_place_labels_in_chrome(chrome, tmp_path, columns):
+def _run_stack_labels_in_chrome(chrome, tmp_path, cases):
     page = tmp_path / "labels.html"
     page.write_text(
         '<!doctype html><body><pre id="out"></pre>\n'
         '<script src="file://%s"></script>\n<script>\n'
-        "var M = String.fromCharCode(2);\nvar COLS = %s;\nvar res = [], err = null;\n"
-        "try { for (var i = 0; i < COLS.length; i++) res.push(_placeTrendLabels(COLS[i])); }\n"
+        "var M = String.fromCharCode(2);\nvar CASES = %s;\nvar res = [], err = null;\n"
+        "try { for (var i = 0; i < CASES.length; i++) { var c = CASES[i];"
+        " res.push(_stackTrendLabels(c.ys, c.lo, c.hi, c.gap)); } }\n"
         "catch (e) { err = String(e); }\n"
         "document.getElementById('out').textContent =\n"
-        "  M + JSON.stringify({fn: typeof _placeTrendLabels, err: err, res: res}) + M;\n"
-        "</script></body>" % (APP_JS, json.dumps(columns)),
+        "  M + JSON.stringify({fn: typeof _stackTrendLabels, err: err, res: res}) + M;\n"
+        "</script></body>" % (APP_JS, json.dumps(cases)),
         encoding="utf-8",
     )
     try:
@@ -415,35 +416,33 @@ def _run_place_labels_in_chrome(chrome, tmp_path, columns):
 
 @pytest.mark.skipif(_chrome() is None, reason="no Chrome/Chromium to execute app.js")
 @pytest.mark.skipif(sys.platform == "win32", reason="file:// harness is POSIX-only here")
-def test_trend_labels_clear_every_dot(tmp_path):
-    """No value label overlaps a dot or another label in its column, including the latency
-    case that hid labels: sizes n..l only 15-18 px apart (BIOSTAR v2.5.0, 10.89 / 16.99 ms)."""
-    def col(ys, r, x=400, w=28):
-        return [{"x": x, "y": y, "r": r, "w": w} for y in ys]
-    columns = [
-        col([753, 738, 721, 703, 641], 7),   # selected v2.5.0 latency column
-        col([751, 736, 718, 697, 632], 5),
-        col([100, 300], 5),                  # well separated
+def test_trend_labels_keep_value_order_and_stay_in_plot(tmp_path):
+    """Each column's labels keep value order (a higher value is never labelled below a lower
+    one), never overlap, stay inside the plot (a 0 never reaches the version labels under the
+    x axis), and only move when they must."""
+    gap, lo, hi = 12, 61, 369
+    cases = [
+        {"ys": [753 - 400, 738 - 400, 721 - 400, 703 - 400, 641 - 400], "lo": lo, "hi": hi, "gap": gap},  # latency n..x
+        {"ys": [650 - 400, 650 - 400, 662 - 400, 695 - 400, 745 - 400], "lo": lo, "hi": hi, "gap": gap},  # max channel 17,17,16,12,6
+        {"ys": [375, 375, 300], "lo": lo, "hi": hi, "gap": gap},  # two zeros on the x axis
+        {"ys": [100, 300], "lo": lo, "hi": hi, "gap": gap},       # far apart: untouched
     ]
-    placed = _run_place_labels_in_chrome(_chrome(), tmp_path, columns)
+    placed = _run_stack_labels_in_chrome(_chrome(), tmp_path, cases)
     if placed is None:
         pytest.skip("Chrome present but could not execute the harness")
+    for case, out in zip(cases, placed):
+        ys = case["ys"]
+        order = sorted(range(len(ys)), key=lambda i: (ys[i], i))
+        got = [out[i] for i in order]
+        assert all(b - a >= gap - 1e-6 for a, b in zip(got, got[1:])), (ys, out)
+        assert all(lo - 1e-6 <= y <= hi + 1e-6 for y in out), (ys, out)
+    assert placed[3] == [100, 300]
 
-    def overlap(a, b):
-        return min(a[1], b[1]) - max(a[0], b[0]) > 0 and min(a[3], b[3]) - max(a[2], b[2]) > 0
 
-    for dots, labels in zip(columns, placed):
-        assert len(labels) == len(dots)
-        boxes = []
-        for d, p in zip(dots, labels):
-            left = {"center": p["x"] - d["w"] / 2, "left": p["x"], "right": p["x"] - d["w"]}[p["align"]]
-            boxes.append((left, left + d["w"], p["y"] - 9, p["y"] + 2))
-        for bx in boxes:
-            for d in dots:
-                h = d["r"] + 1.5
-                assert not overlap(bx, (d["x"] - h, d["x"] + h, d["y"] - h, d["y"] + h)), (bx, d)
-        for i in range(len(boxes)):
-            for j in range(i + 1, len(boxes)):
-                assert not overlap(boxes[i], boxes[j]), (boxes[i], boxes[j])
-    # well-separated dots keep the default: label centred above its own dot
-    assert all(p["align"] == "center" and p["y"] < d["y"] for d, p in zip(columns[2], placed[2]))
+def test_trend_integer_metric_has_integer_ticks():
+    """Max Channel is an integer metric: its y-axis step is at least 1 and ticks follow the step,
+    so small ranges (0-2 channels) never show repeated tick labels like 2, 2, 1, 1."""
+    js = APP_JS.read_text(encoding="utf-8")
+    body = js[js.index("function createTrendChart("):js.index("chart._hitTest=")]
+    assert "precision===0)niceStep=Math.max(1,niceStep)" in body
+    assert "nTicks" in body and "t<=5" not in body
