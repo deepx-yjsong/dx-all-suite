@@ -7,7 +7,7 @@ procedure across any Host PC + NPU combination. It measures two tiers:
 - **E2E Pipeline** (DX-Stream) — **Single-Stream** FPS and **Multi-Stream** channel capacity
 
 Both tiers run automatic ONNX-Runtime ON/OFF comparison with thermal-throttle detection,
-then render an interactive dashboard for cross-environment and cross-version comparison.
+then render a dashboard for cross-environment and cross-version comparison.
 
 > **Status:** Beta. The CLI and output schema may still evolve. Tool version: `./run.sh --version`.
 
@@ -15,28 +15,33 @@ then render an interactive dashboard for cross-environment and cross-version com
 
 ## Results
 
-- [`docs/ANALYSIS_EN.md`](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md) — findings, method and data tables.
-- **[Live dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/)** — every run in `results/`, published on each release.
-- `results/<hw_id>/<run_id>/REPORT.md` — the full report of each run.
+YOLO26 (sizes n–x, five tasks) is measured on **six hardware environments** — each a Host PC +
+DEEPX NPU combination. Every environment runs the same procedure, so the results compare directly
+across environments and across dx-all-suite releases.
+
+| Environment | Host PC | DEEPX NPU | PCIe link |
+|-------------|---------|-----------|:---------:|
+| BIOSTAR_H1-Quattro | AMD Ryzen 5 9600X (x86_64) | H1-Quattro card (4 chips) | Gen3 ×4 |
+| DX-AIPlayer-N97_M1 | Intel N97 (x86_64) | M1 module | Gen3 ×2 |
+| OrangePi5+_M1 | Rockchip RK3588 (aarch64) | M1 module | Gen3 ×4 |
+| ROCK5B+_M1 | Rockchip RK3588 (aarch64) | M1 module | Gen3 ×2 |
+| RPi5B_M1 | Broadcom BCM2712, Raspberry Pi 5 (aarch64) | M1 module | Gen3 ×1 |
+| RPi5B_M1M | Broadcom BCM2712, Raspberry Pi 5 (aarch64) | M1M module | Gen3 ×1 |
+
+The results are published in three forms, from conclusions to raw data:
+
+| | What it gives you |
+|---|---|
+| **Analysis** — [English](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md) | Key findings, which configuration fits a target channel count, and why: the host-side limits (video decoding, CPU, PCIe, thermal) behind each number. |
+| **[Dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/)** | Charts and tables of every measured value, compared across environments and across dx-all-suite releases (see [Dashboard](#dashboard)). |
+| **Per-run reports** — `results/<hw_id>/<run_id>/REPORT.md` | Every measured value of one run, with its environment and test conditions. |
 
 ---
 
-## Interactive Dashboard
+## Dashboard
 
-**▶ [Open the live dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/)** —
-the committed `results/dashboard/`, published to GitHub Pages on every dx-all-suite release.
-
-The same dashboard renders locally as self-contained HTML (no CDN, works offline).
-Four tabs cover the full picture — from a one-glance comparison to raw per-model tables
-and release-over-release trends.
-
-Launch it locally:
-
-```bash
-./run.sh dashboard results          # build results/dashboard/ from all runs
-cd results/dashboard && python3 -m http.server 8899
-# open http://localhost:8899/
-```
+The [dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/) is published from `results/dashboard/` to GitHub Pages
+on each dx-all-suite release. It is self-contained HTML (no CDN), so it also works offline.
 
 | Tab | What it shows |
 |-----|---------------|
@@ -44,6 +49,14 @@ cd results/dashboard && python3 -m http.server 8899
 | **Full Metrics** | Cross-environment NPU latency, throughput, and E2E FPS per Task/Size/ORT (latency as a dashed line on the secondary axis). |
 | **Detailed Data** | Full numeric tables with Environment/Task/ORT filters and a Run-ID selector. |
 | **Version Trend** | Per-metric line charts across dx-all-suite releases for the same HW_ID (Latency / Throughput / E2E FPS / Max Channel). |
+
+Build and view it locally:
+
+```bash
+./run.sh dashboard results          # build results/dashboard/ from all runs
+cd results/dashboard && python3 -m http.server 8899
+# open http://localhost:8899/
+```
 
 ---
 
@@ -101,7 +114,7 @@ flagged, never hidden. Full detail in
 - **Automatic ORT ON/OFF comparison** — both modes measured in every run.
 - **Environment fingerprinting** — full measurement context captured for reproducibility
   (host, NPU stack, tool version, protocol).
-- **Reports & dashboard** — Markdown `REPORT.md` per run + a static interactive HTML dashboard.
+- **Reports & dashboard** — Markdown `REPORT.md` per run + a static HTML dashboard.
 - **Version trend tracking** — performance across dx-all-suite releases for the same HW_ID.
 - **Resume / retry-failed** — continue interrupted runs or rerun only failed conditions.
 

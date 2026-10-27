@@ -7,8 +7,8 @@
 >
 > **데이터.** dx-all-suite **v2.5.0**, host + NPU 환경 6개, YOLO26 task 5개 × model size 5개.
 > 모든 cell은 ONNX Runtime ON과 OFF로 각각 측정했다. 모든 수치는 [`results/`](../results/) 아래
-> run별 결과 파일에서 다시 계산할 수 있고, interactive dashboard
-> ([`results/dashboard/index.html`](../results/dashboard/index.html))에서도 볼 수 있다.
+> run별 결과 파일에서 다시 계산할 수 있고, [dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/)에서도
+> 볼 수 있다.
 
 ---
 

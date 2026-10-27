@@ -9,7 +9,7 @@
 > **Data.** dx-all-suite **v2.5.0**, six host + NPU environments, five YOLO26 tasks × five
 > model sizes, every cell measured with ONNX Runtime ON and OFF. Every figure can be
 > re-derived from the per-run result files under [`results/`](../results/) or explored in
-> the interactive dashboard ([`results/dashboard/index.html`](../results/dashboard/index.html)).
+> the [dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/).
 >
 
 ---
