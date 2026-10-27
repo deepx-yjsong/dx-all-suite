@@ -16,41 +16,19 @@ then render an interactive dashboard for cross-environment and cross-version com
 ## Results
 
 - [`docs/ANALYSIS_EN.md`](docs/ANALYSIS_EN.md) · [한국어](docs/ANALYSIS_KOR.md) — findings, method and data tables.
-- The interactive dashboard below — generated from `results/`.
+- **[Live dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/)** — every run in `results/`, published on each release.
 - `results/<hw_id>/<run_id>/REPORT.md` — the full report of each run.
 
 ---
 
 ## Interactive Dashboard
 
-Every result set renders to a self-contained HTML dashboard (no CDN, works offline).
+**▶ [Open the live dashboard](https://deepx-ai.github.io/dx-all-suite/dx-benchmark/)** —
+the committed `results/dashboard/`, published to GitHub Pages on every dx-all-suite release.
+
+The same dashboard renders locally as self-contained HTML (no CDN, works offline).
 Four tabs cover the full picture — from a one-glance comparison to raw per-model tables
-and release-over-release trends:
-
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <a href="docs/images/dashboard-01-fps-overview.png"><img src="docs/images/dashboard-01-fps-overview.png" width="100%"></a>
-      <br><b>E2E FPS Overview</b> — grouped E2E FPS by model size × environment, with max-channel badges.
-    </td>
-    <td width="50%" valign="top">
-      <a href="docs/images/dashboard-02-full-metrics.png"><img src="docs/images/dashboard-02-full-metrics.png" width="100%"></a>
-      <br><b>Full Metrics</b> — latency (line) + throughput + E2E FPS + max channels in one combo chart.
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <a href="docs/images/dashboard-03-detailed-data.png"><img src="docs/images/dashboard-03-detailed-data.png" width="100%"></a>
-      <br><b>Detailed Data</b> — full numeric tables (latency/throughput/E2E/capacity) with filters.
-    </td>
-    <td width="50%" valign="top">
-      <a href="docs/images/dashboard-04-version-trend.png"><img src="docs/images/dashboard-04-version-trend.png" width="100%"></a>
-      <br><b>Version Trend</b> — per-metric trend across dx-all-suite releases for the same hardware.
-    </td>
-  </tr>
-</table>
-
-> Click any thumbnail for the full-resolution view.
+and release-over-release trends.
 
 Launch it locally:
 
@@ -307,7 +285,7 @@ dx-benchmark/
 ├── run.sh          # launcher
 ├── setup_data.sh   # data setup: download models + videos (no sudo)
 ├── setup_host.sh   # one-time host provisioning (sudo): system deps + dxrt sudoers + journal
-├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md, images/ (dashboard screenshots)
+├── docs/           # ANALYSIS_EN.md, ANALYSIS_KOR.md
 ├── benchmark/      # python package (python3 -m benchmark)
 └── results/
     ├── <hw_id>/<run_id>/   # tracked: *_results.json + environment.json + REPORT.md
