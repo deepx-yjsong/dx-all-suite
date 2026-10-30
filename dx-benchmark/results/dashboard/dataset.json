@@ -1,7 +1,7 @@
 {
   "meta": {
     "dataset_version": "v2",
-    "generated_at": "2026-10-27T08:59:43.501005+00:00",
+    "generated_at": "2026-10-30T06:58:10.475490+00:00",
     "run_count": 18,
     "environment_count": 6,
     "warnings": [
@@ -1126,7 +1126,14 @@
           "sha256": "44d906adc564284b98e83a00ddc823eb3ee28cf67c8dc01bcfd7388e201f7dc5",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 117.81
+          "total_memory_mb": 117.81,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-s_640x640.dxnn",
@@ -1139,7 +1146,14 @@
           "sha256": "9100636f0633886bbe91dc2e5e045a5be09d779185b55073c052df914b3fccc4",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 151.94
+          "total_memory_mb": 151.94,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-m_640x640.dxnn",
@@ -1152,7 +1166,14 @@
           "sha256": "2cb24bd29a2b5b6b27659e3251b07919f49b6974a62ea36462ba7eac1af67152",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 244.61
+          "total_memory_mb": 244.61,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-l_640x640.dxnn",
@@ -1165,7 +1186,14 @@
           "sha256": "9ca9edb6efecf81dfd98368355c72efa7898dfb0412d3eb6009cc4c0407345b6",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 297.55
+          "total_memory_mb": 297.55,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-x_640x640.dxnn",
@@ -1178,7 +1206,14 @@
           "sha256": "4ffd65d004c9ef7c2afde06d5a109ab2cbe167cbc9fa723f212c6f54c6c2d086",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 528.69
+          "total_memory_mb": 528.69,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-n-pose_640x640.dxnn",
@@ -1191,7 +1226,14 @@
           "sha256": "6bea052f3a839eae25dc5b2b238578d0a18bfbf2b29b84ccf496415306482397",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 119.81
+          "total_memory_mb": 119.81,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-s-pose_640x640.dxnn",
@@ -1204,7 +1246,14 @@
           "sha256": "d44de43bfa333c377a9c553218473f598ee56c60f4bc14895c40223b25809215",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 157.87
+          "total_memory_mb": 157.87,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-m-pose_640x640.dxnn",
@@ -1217,7 +1266,14 @@
           "sha256": "ce69468c956d795f93a4979d810b28f12c85a81304d72d566090292f2a27ea14",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 256.65
+          "total_memory_mb": 256.65,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-l-pose_640x640.dxnn",
@@ -1230,7 +1286,14 @@
           "sha256": "23074e93c4be7b180bd0330ca31adfe3573ab3dc79c93b0cfaeb0e64797c3087",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 309.61
+          "total_memory_mb": 309.61,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-x-pose_640x640.dxnn",
@@ -1243,7 +1306,14 @@
           "sha256": "c22452d917421fc74a0b383417b8cd414a022fc860301d6f950d30e1d92cf7fe",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 522.54
+          "total_memory_mb": 522.54,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-n-seg_640x640.dxnn",
@@ -1256,7 +1326,14 @@
           "sha256": "98c1553f14cd09f858c8e8647b76b871264dfbde3f62baebe17860fba5be92ca",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 140.16
+          "total_memory_mb": 140.16,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-s-seg_640x640.dxnn",
@@ -1269,7 +1346,14 @@
           "sha256": "3c9847f6fa8dd06c79846771c6d049ca3797b9bb2dfe0f7e43175bdfbc7815fe",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 177.89
+          "total_memory_mb": 177.89,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-m-seg_640x640.dxnn",
@@ -1282,7 +1366,14 @@
           "sha256": "eac19b9f258a6ab91706ae680a2949f8989a2620704d69312672fbfeff8b6766",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 272.83
+          "total_memory_mb": 272.83,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-l-seg_640x640.dxnn",
@@ -1295,7 +1386,14 @@
           "sha256": "88b5df7a83363d4b08294bf20f04c397ccc8196266935e0299da989fd654127a",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 325.78
+          "total_memory_mb": 325.78,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-x-seg_640x640.dxnn",
@@ -1308,7 +1406,14 @@
           "sha256": "2a3f3e11e61f67ba0fea0763c620c0e4e9d045d87977975294d2d6139976bd03",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 560.99
+          "total_memory_mb": 560.99,
+          "input_tensor_shape": [
+            1,
+            640,
+            640,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-n-obb_1024x1024.dxnn",
@@ -1321,7 +1426,14 @@
           "sha256": "85aaaa0d354bdf6257cd57a9b04e00cac3492f9df90564afd1886459131549c6",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 243.49
+          "total_memory_mb": 243.49,
+          "input_tensor_shape": [
+            1,
+            1024,
+            1024,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-s-obb_1024x1024.dxnn",
@@ -1334,7 +1446,14 @@
           "sha256": "c5558f063e2a0ce43c19f719e7fe84d2d3f2c2f0ff83a885448afad38053f13d",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 383.29
+          "total_memory_mb": 383.29,
+          "input_tensor_shape": [
+            1,
+            1024,
+            1024,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-m-obb_1024x1024.dxnn",
@@ -1347,7 +1466,14 @@
           "sha256": "cb788b7a0538cc99865106cf1e96623c524b5b7cb89997768e6a1493fec9f55a",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 651.16
+          "total_memory_mb": 651.16,
+          "input_tensor_shape": [
+            1,
+            1024,
+            1024,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-l-obb_1024x1024.dxnn",
@@ -1360,7 +1486,14 @@
           "sha256": "a027ceef2b7e0bee43ed314d3aed5837493e678ad1e618348509e69fe3b221a5",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 798.96
+          "total_memory_mb": 798.96,
+          "input_tensor_shape": [
+            1,
+            1024,
+            1024,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-x-obb_1024x1024.dxnn",
@@ -1373,7 +1506,14 @@
           "sha256": "975672b1454a248024a0a1bc0a157a2ce40341316625b21637c1a5c289d8c172",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 1329.81
+          "total_memory_mb": 1329.81,
+          "input_tensor_shape": [
+            1,
+            1024,
+            1024,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-cls-n_224x224.dxnn",
@@ -1406,7 +1546,14 @@
           "sha256": "f23cc153cc565da6582b233da900346216a8b5c071aa0f914a3b788ef8ae9452",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 9.68
+          "total_memory_mb": 9.68,
+          "input_tensor_shape": [
+            1,
+            224,
+            224,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-cls-m_224x224.dxnn",
@@ -1419,7 +1566,14 @@
           "sha256": "84461e2c046f44f2ac3b35171d4118dd10258bd384a17b596f2056e20d5e959b",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 14.85
+          "total_memory_mb": 14.85,
+          "input_tensor_shape": [
+            1,
+            224,
+            224,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-cls-l_224x224.dxnn",
@@ -1432,7 +1586,14 @@
           "sha256": "e437b91249e817f9dea3ac960699cb7a28a6b485f4573815c04c5fef41ca6699",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 19.95
+          "total_memory_mb": 19.95,
+          "input_tensor_shape": [
+            1,
+            224,
+            224,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         },
         {
           "name": "yolo26-cls-x_224x224.dxnn",
@@ -1445,7 +1606,14 @@
           "sha256": "0a95422e4f95d9ec17fc0e812b0ebc270d598e01d7ac39f7898ceaa0ece7a5ab",
           "format_version": "v9",
           "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-          "total_memory_mb": 49.24
+          "total_memory_mb": 49.24,
+          "input_tensor_shape": [
+            1,
+            224,
+            224,
+            3
+          ],
+          "input_tensor_dtype": "UINT8"
         }
       ]
     },
@@ -191900,7 +192068,14 @@
             "sha256": "44d906adc564284b98e83a00ddc823eb3ee28cf67c8dc01bcfd7388e201f7dc5",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 117.81
+            "total_memory_mb": 117.81,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-s_640x640.dxnn",
@@ -191913,7 +192088,14 @@
             "sha256": "9100636f0633886bbe91dc2e5e045a5be09d779185b55073c052df914b3fccc4",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 151.94
+            "total_memory_mb": 151.94,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-m_640x640.dxnn",
@@ -191926,7 +192108,14 @@
             "sha256": "2cb24bd29a2b5b6b27659e3251b07919f49b6974a62ea36462ba7eac1af67152",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 244.61
+            "total_memory_mb": 244.61,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-l_640x640.dxnn",
@@ -191939,7 +192128,14 @@
             "sha256": "9ca9edb6efecf81dfd98368355c72efa7898dfb0412d3eb6009cc4c0407345b6",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 297.55
+            "total_memory_mb": 297.55,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-x_640x640.dxnn",
@@ -191952,7 +192148,14 @@
             "sha256": "4ffd65d004c9ef7c2afde06d5a109ab2cbe167cbc9fa723f212c6f54c6c2d086",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 528.69
+            "total_memory_mb": 528.69,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-n-pose_640x640.dxnn",
@@ -191965,7 +192168,14 @@
             "sha256": "6bea052f3a839eae25dc5b2b238578d0a18bfbf2b29b84ccf496415306482397",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 119.81
+            "total_memory_mb": 119.81,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-s-pose_640x640.dxnn",
@@ -191978,7 +192188,14 @@
             "sha256": "d44de43bfa333c377a9c553218473f598ee56c60f4bc14895c40223b25809215",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 157.87
+            "total_memory_mb": 157.87,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-m-pose_640x640.dxnn",
@@ -191991,7 +192208,14 @@
             "sha256": "ce69468c956d795f93a4979d810b28f12c85a81304d72d566090292f2a27ea14",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 256.65
+            "total_memory_mb": 256.65,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-l-pose_640x640.dxnn",
@@ -192004,7 +192228,14 @@
             "sha256": "23074e93c4be7b180bd0330ca31adfe3573ab3dc79c93b0cfaeb0e64797c3087",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 309.61
+            "total_memory_mb": 309.61,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-x-pose_640x640.dxnn",
@@ -192017,7 +192248,14 @@
             "sha256": "c22452d917421fc74a0b383417b8cd414a022fc860301d6f950d30e1d92cf7fe",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 522.54
+            "total_memory_mb": 522.54,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-n-seg_640x640.dxnn",
@@ -192030,7 +192268,14 @@
             "sha256": "98c1553f14cd09f858c8e8647b76b871264dfbde3f62baebe17860fba5be92ca",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 140.16
+            "total_memory_mb": 140.16,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-s-seg_640x640.dxnn",
@@ -192043,7 +192288,14 @@
             "sha256": "3c9847f6fa8dd06c79846771c6d049ca3797b9bb2dfe0f7e43175bdfbc7815fe",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 177.89
+            "total_memory_mb": 177.89,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-m-seg_640x640.dxnn",
@@ -192056,7 +192308,14 @@
             "sha256": "eac19b9f258a6ab91706ae680a2949f8989a2620704d69312672fbfeff8b6766",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 272.83
+            "total_memory_mb": 272.83,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-l-seg_640x640.dxnn",
@@ -192069,7 +192328,14 @@
             "sha256": "88b5df7a83363d4b08294bf20f04c397ccc8196266935e0299da989fd654127a",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 325.78
+            "total_memory_mb": 325.78,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-x-seg_640x640.dxnn",
@@ -192082,7 +192348,14 @@
             "sha256": "2a3f3e11e61f67ba0fea0763c620c0e4e9d045d87977975294d2d6139976bd03",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 560.99
+            "total_memory_mb": 560.99,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-n-obb_1024x1024.dxnn",
@@ -192095,7 +192368,14 @@
             "sha256": "85aaaa0d354bdf6257cd57a9b04e00cac3492f9df90564afd1886459131549c6",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 243.49
+            "total_memory_mb": 243.49,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-s-obb_1024x1024.dxnn",
@@ -192108,7 +192388,14 @@
             "sha256": "c5558f063e2a0ce43c19f719e7fe84d2d3f2c2f0ff83a885448afad38053f13d",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 383.29
+            "total_memory_mb": 383.29,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-m-obb_1024x1024.dxnn",
@@ -192121,7 +192408,14 @@
             "sha256": "cb788b7a0538cc99865106cf1e96623c524b5b7cb89997768e6a1493fec9f55a",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 651.16
+            "total_memory_mb": 651.16,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-l-obb_1024x1024.dxnn",
@@ -192134,7 +192428,14 @@
             "sha256": "a027ceef2b7e0bee43ed314d3aed5837493e678ad1e618348509e69fe3b221a5",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 798.96
+            "total_memory_mb": 798.96,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-x-obb_1024x1024.dxnn",
@@ -192147,7 +192448,14 @@
             "sha256": "975672b1454a248024a0a1bc0a157a2ce40341316625b21637c1a5c289d8c172",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 1329.81
+            "total_memory_mb": 1329.81,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-cls-n_224x224.dxnn",
@@ -192180,7 +192488,14 @@
             "sha256": "f23cc153cc565da6582b233da900346216a8b5c071aa0f914a3b788ef8ae9452",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 9.68
+            "total_memory_mb": 9.68,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-cls-m_224x224.dxnn",
@@ -192193,7 +192508,14 @@
             "sha256": "84461e2c046f44f2ac3b35171d4118dd10258bd384a17b596f2056e20d5e959b",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 14.85
+            "total_memory_mb": 14.85,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-cls-l_224x224.dxnn",
@@ -192206,7 +192528,14 @@
             "sha256": "e437b91249e817f9dea3ac960699cb7a28a6b485f4573815c04c5fef41ca6699",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 19.95
+            "total_memory_mb": 19.95,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-cls-x_224x224.dxnn",
@@ -192219,7 +192548,14 @@
             "sha256": "0a95422e4f95d9ec17fc0e812b0ebc270d598e01d7ac39f7898ceaa0ece7a5ab",
             "format_version": "v9",
             "dxcom_version": "v2.5.0-rc.1+c6ae2e3",
-            "total_memory_mb": 49.24
+            "total_memory_mb": 49.24,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           }
         ]
       },
@@ -196849,7 +197185,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 116.46
+            "total_memory_mb": 116.46,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26s.dxnn",
@@ -196861,7 +197204,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 151.61
+            "total_memory_mb": 151.61,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26m.dxnn",
@@ -196873,7 +197223,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 241.94
+            "total_memory_mb": 241.94,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26l.dxnn",
@@ -196885,7 +197242,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 293.55
+            "total_memory_mb": 293.55,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26x.dxnn",
@@ -196897,7 +197261,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 522.69
+            "total_memory_mb": 522.69,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26n-pose.dxnn",
@@ -196909,7 +197280,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 118.46
+            "total_memory_mb": 118.46,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26s-pose.dxnn",
@@ -196921,7 +197299,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 158.71
+            "total_memory_mb": 158.71,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26m-pose.dxnn",
@@ -196933,7 +197318,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 254.03
+            "total_memory_mb": 254.03,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26l-pose.dxnn",
@@ -196945,7 +197337,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 305.63
+            "total_memory_mb": 305.63,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26x-pose.dxnn",
@@ -196957,7 +197356,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 516.54
+            "total_memory_mb": 516.54,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26n-seg.dxnn",
@@ -196969,7 +197375,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 138.83
+            "total_memory_mb": 138.83,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26s-seg.dxnn",
@@ -196981,7 +197394,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 177.56
+            "total_memory_mb": 177.56,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26m-seg.dxnn",
@@ -196993,7 +197413,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 270.17
+            "total_memory_mb": 270.17,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26l-seg.dxnn",
@@ -197005,7 +197432,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 321.77
+            "total_memory_mb": 321.77,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26x-seg.dxnn",
@@ -197017,7 +197451,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 554.98
+            "total_memory_mb": 554.98,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26n-obb.dxnn",
@@ -197029,7 +197470,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 240.57
+            "total_memory_mb": 240.57,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26s-obb.dxnn",
@@ -197041,7 +197489,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 447.17
+            "total_memory_mb": 447.17,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26m-obb.dxnn",
@@ -197053,7 +197508,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 645.25
+            "total_memory_mb": 645.25,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26l-obb.dxnn",
@@ -197065,7 +197527,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 790.09
+            "total_memory_mb": 790.09,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26x-obb.dxnn",
@@ -197077,7 +197546,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 1316.48
+            "total_memory_mb": 1316.48,
+            "input_tensor_shape": [
+              1,
+              1024,
+              1024,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26n-cls.dxnn",
@@ -197089,7 +197565,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 4.54
+            "total_memory_mb": 4.54,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26s-cls.dxnn",
@@ -197101,7 +197584,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 9.01
+            "total_memory_mb": 9.01,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26m-cls.dxnn",
@@ -197113,7 +197603,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 15.8
+            "total_memory_mb": 15.8,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26l-cls.dxnn",
@@ -197125,7 +197622,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 19.54
+            "total_memory_mb": 19.54,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26x-cls.dxnn",
@@ -197137,7 +197641,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.3.0-rc.5",
-            "total_memory_mb": 48.62
+            "total_memory_mb": 48.62,
+            "input_tensor_shape": [
+              1,
+              224,
+              224,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           }
         ]
       },
@@ -201765,7 +202276,14 @@
             ],
             "format_version": "v8",
             "dxcom_version": "v2.4.0-rc.4",
-            "total_memory_mb": 117.8
+            "total_memory_mb": 117.8,
+            "input_tensor_shape": [
+              1,
+              640,
+              640,
+              3
+            ],
+            "input_tensor_dtype": "UINT8"
           },
           {
             "name": "yolo26-s_640x640.dxnn",

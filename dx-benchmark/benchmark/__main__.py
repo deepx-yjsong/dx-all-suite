@@ -560,15 +560,16 @@ def cmd_run(args: argparse.Namespace) -> int:
                     )
                     model_index[throughput_key] = r_dict
                     _save_result_set(model_results, out_dir / "model_results.csv", out_dir / "model_results.json")
-                    # Capture input tensor metadata
+                    # Input tensor comes from parse_model -v up front; the run_model
+                    # log only fills it in when that static read found nothing.
                     if r.input_tensor is not None:
                         for bm_entry in fp.get("benchmarked_models", []):
-                            if bm_entry["name"] == m.name:
+                            if bm_entry["name"] == m.name and not bm_entry.get("input_tensor_shape"):
                                 bm_entry["input_tensor_shape"] = r.input_tensor["shape"]
                                 bm_entry["input_tensor_dtype"] = r.input_tensor["dtype"]
+                                with open(env_path, "w") as _f:
+                                    json.dump(fp, _f, indent=2)
                                 break
-                        with open(env_path, "w") as _f:
-                            json.dump(fp, _f, indent=2)
                     fps_s = f"{r.fps:.1f}" if r.fps else "N/A"
                     print(f"  ← {fps_s} fps ({elapsed:.1f}s) [{r.status}]")
                     if _is_fatal_status(r.status):
@@ -1479,18 +1480,18 @@ def _merge_fingerprint_scope(fp: dict, prior: dict) -> None:
     if not prior:
         return
     # benchmarked_models: keyed by model name; current entry wins, prior-only preserved.
+    # On a name conflict, fields the current entry lacks (or left empty) are kept
+    # from the prior entry, so a resume can never erase recorded metadata.
     cur_models = fp.get("benchmarked_models") or []
-    have = {m.get("name"): m for m in cur_models}
+    by_name = {m.get("name"): m for m in cur_models}
     for pm in (prior.get("benchmarked_models") or []):
-        cm = have.get(pm.get("name"))
+        cm = by_name.get(pm.get("name"))
         if cm is None:
             cur_models.append(pm)
             continue
-        # Captured during a model's throughput run: a model not re-run in this session has
-        # no fresh value, so keep the prior one instead of dropping it.
-        for key in ("input_tensor_shape", "input_tensor_dtype"):
-            if key not in cm and key in pm:
-                cm[key] = pm[key]
+        for k, v in pm.items():
+            if cm.get(k) in (None, "", [], {}):
+                cm[k] = v
     fp["benchmarked_models"] = cur_models
     # families: set-union, normalised to canonical order (unknown families appended).
     if isinstance(fp.get("benchmark_params"), dict):

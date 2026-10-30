@@ -40,31 +40,20 @@ def test_current_entry_wins_on_name_conflict():
     assert entries[0].get("dxcom_version") == "vNEW"  # fresh metadata kept
 
 
-def test_resume_keeps_prior_input_tensor_of_models_not_rerun():
-    # input_tensor_* is captured while a model's throughput run executes, so a model that is
-    # not re-run in the resumed session has no fresh value; the prior one must survive.
-    prior = {"benchmarked_models": [
-        {"name": "a.dxnn", "size": "n", "input_tensor_shape": [1, 640, 640, 3], "input_tensor_dtype": "UINT8"},
-        {"name": "b.dxnn", "size": "s", "input_tensor_shape": [1, 224, 224, 3], "input_tensor_dtype": "UINT8"},
-    ], "benchmark_params": {"families": ["model"]}, "video_infos": {}}
-    cur = _fp([("a.dxnn", "n"), ("b.dxnn", "s")], ["model"], {})
+def test_conflict_keeps_prior_fields_the_current_entry_lacks():
+    # OrangePi5+ v2.5.0: a --retry-failed resume rebuilt every entry without the
+    # input shape and silently dropped 24/25 shapes recorded by the first run.
+    prior = {"benchmarked_models": [{"name": "yolo26n.dxnn", "size": "n", "dxcom_version": "vOLD",
+                                     "input_tensor_shape": [1, 640, 640, 3],
+                                     "input_tensor_dtype": "UINT8"}]}
+    cur = {"benchmarked_models": [{"name": "yolo26n.dxnn", "size": "n", "dxcom_version": "vNEW",
+                                   "input_tensor_shape": None}],
+           "benchmark_params": {"families": ["model"]}, "video_infos": {}}
     _merge_fingerprint_scope(cur, prior)
-    by_name = {m["name"]: m for m in cur["benchmarked_models"]}
-    assert by_name["a.dxnn"]["input_tensor_shape"] == [1, 640, 640, 3]
-    assert by_name["a.dxnn"]["input_tensor_dtype"] == "UINT8"
-    assert by_name["b.dxnn"]["input_tensor_shape"] == [1, 224, 224, 3]
-
-
-def test_fresh_input_tensor_beats_prior():
-    prior = {"benchmarked_models": [
-        {"name": "a.dxnn", "size": "n", "input_tensor_shape": [1, 1, 1, 3], "input_tensor_dtype": "UINT8"}],
-        "benchmark_params": {"families": ["model"]}, "video_infos": {}}
-    cur = {"benchmarked_models": [
-        {"name": "a.dxnn", "size": "n", "input_tensor_shape": [1, 640, 640, 3], "input_tensor_dtype": "FLOAT32"}],
-        "benchmark_params": {"families": ["model"]}, "video_infos": {}}
-    _merge_fingerprint_scope(cur, prior)
-    assert cur["benchmarked_models"][0]["input_tensor_shape"] == [1, 640, 640, 3]
-    assert cur["benchmarked_models"][0]["input_tensor_dtype"] == "FLOAT32"
+    (entry,) = cur["benchmarked_models"]
+    assert entry["input_tensor_shape"] == [1, 640, 640, 3]   # filled from prior
+    assert entry["input_tensor_dtype"] == "UINT8"
+    assert entry["dxcom_version"] == "vNEW"                 # current still wins when present
 
 
 def test_no_prior_is_noop():
