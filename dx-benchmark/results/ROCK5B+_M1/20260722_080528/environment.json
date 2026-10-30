@@ -240,7 +240,14 @@
       ],
       "format_version": "v8",
       "dxcom_version": "v2.4.0-rc.4",
-      "total_memory_mb": 117.8
+      "total_memory_mb": 117.8,
+      "input_tensor_shape": [
+        1,
+        640,
+        640,
+        3
+      ],
+      "input_tensor_dtype": "UINT8"
     },
     {
       "name": "yolo26-s_640x640.dxnn",
