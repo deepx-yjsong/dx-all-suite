@@ -40,6 +40,22 @@ def test_current_entry_wins_on_name_conflict():
     assert entries[0].get("dxcom_version") == "vNEW"  # fresh metadata kept
 
 
+def test_conflict_keeps_prior_fields_the_current_entry_lacks():
+    # OrangePi5+ v2.5.0: a --retry-failed resume rebuilt every entry without the
+    # input shape and silently dropped 24/25 shapes recorded by the first run.
+    prior = {"benchmarked_models": [{"name": "yolo26n.dxnn", "size": "n", "dxcom_version": "vOLD",
+                                     "input_tensor_shape": [1, 640, 640, 3],
+                                     "input_tensor_dtype": "UINT8"}]}
+    cur = {"benchmarked_models": [{"name": "yolo26n.dxnn", "size": "n", "dxcom_version": "vNEW",
+                                   "input_tensor_shape": None}],
+           "benchmark_params": {"families": ["model"]}, "video_infos": {}}
+    _merge_fingerprint_scope(cur, prior)
+    (entry,) = cur["benchmarked_models"]
+    assert entry["input_tensor_shape"] == [1, 640, 640, 3]   # filled from prior
+    assert entry["input_tensor_dtype"] == "UINT8"
+    assert entry["dxcom_version"] == "vNEW"                 # current still wins when present
+
+
 def test_no_prior_is_noop():
     cur = _fp([("yolo26n.dxnn", "n")], ["multi"], {})
     _merge_fingerprint_scope(cur, {})

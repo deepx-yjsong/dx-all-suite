@@ -426,17 +426,139 @@ def _get_ram_gb() -> float:
     return 0.0
 
 
+DEVICE_TREE_MODEL = "/proc/device-tree/model"
+PROC_CPUINFO = "/proc/cpuinfo"
+
+# (CPU implementer, CPU part) → core name for Arm Ltd (0x41) cores, decoded from
+# /proc/cpuinfo. Other implementers (Qualcomm, Apple, NVIDIA, ...) are not guessed.
+ARM_CPU_PARTS = {
+    ("0x41", "0xd03"): "Cortex-A53", ("0x41", "0xd04"): "Cortex-A35",
+    ("0x41", "0xd05"): "Cortex-A55", ("0x41", "0xd07"): "Cortex-A57",
+    ("0x41", "0xd08"): "Cortex-A72", ("0x41", "0xd09"): "Cortex-A73",
+    ("0x41", "0xd0a"): "Cortex-A75", ("0x41", "0xd0b"): "Cortex-A76",
+    ("0x41", "0xd0d"): "Cortex-A77", ("0x41", "0xd41"): "Cortex-A78",
+    ("0x41", "0xd44"): "Cortex-X1", ("0x41", "0xd46"): "Cortex-A510",
+    ("0x41", "0xd47"): "Cortex-A710", ("0x41", "0xd48"): "Cortex-X2",
+    ("0x41", "0xd4d"): "Cortex-A715", ("0x41", "0xd4e"): "Cortex-X3",
+    ("0x41", "0xd80"): "Cortex-A520", ("0x41", "0xd81"): "Cortex-A720",
+    ("0x41", "0xd82"): "Cortex-X4",
+}
+
+
+def _format_clusters(clusters: list[tuple[str, int, float]]) -> str | None:
+    """[(name, cores, max_mhz)] → "Cortex-A76 x4 + Cortex-A55 x4".
+
+    Entries with the same name are merged (RK3588 bins its two A76 clusters at
+    different clocks). A single core type is returned as the bare name, so x86
+    and homogeneous Arm hosts keep their existing value. Big cores first.
+    """
+    merged: dict[str, list] = {}
+    for name, cores, mhz in clusters:
+        if name in ("", "-"):
+            continue
+        acc = merged.setdefault(name, [0, mhz])
+        acc[0] += cores
+        acc[1] = max(acc[1], mhz)
+    if not merged:
+        return None
+    if len(merged) == 1:
+        return next(iter(merged))
+    ordered = sorted(merged.items(), key=lambda kv: kv[1][1], reverse=True)
+    return " + ".join(f"{name} x{cores}" if cores > 0 else name for name, (cores, _) in ordered)
+
+
+def _cpu_max_mhz(cpu_base: str, cpu: str) -> float:
+    try:
+        with open(f"{cpu_base}/cpu{cpu}/cpufreq/cpuinfo_max_freq") as f:
+            return int(f.read().strip()) / 1000
+    except (OSError, ValueError):
+        return 0.0
+
+
+def _parse_cpuinfo_model(text: str, cpu_base: str) -> str | None:
+    """CPU description counted per logical CPU from ``/proc/cpuinfo``.
+
+    x86 names each CPU with ``model name``; Arm gives ``CPU implementer``/``CPU part``
+    ids, decoded via ARM_CPU_PARTS. Returns None if any CPU cannot be named, so the
+    caller falls back to lscpu rather than recording a partial answer.
+    """
+    clusters: list[tuple[str, int, float]] = []
+    for block in re.split(r"\n\s*\n", text):
+        fields: dict[str, str] = {}
+        for line in block.splitlines():
+            key, sep, val = line.partition(":")
+            if sep:
+                fields.setdefault(key.strip().lower(), val.strip())
+        if "processor" not in fields or not fields["processor"].isdigit():
+            continue
+        name = fields.get("model name")
+        if not name and "cpu part" in fields:
+            name = ARM_CPU_PARTS.get((fields.get("cpu implementer", "").lower(),
+                                      fields["cpu part"].lower()))
+        if not name:
+            return None
+        clusters.append((name, 1, _cpu_max_mhz(cpu_base, fields["processor"])))
+    return _format_clusters(clusters)
+
+
+def _parse_lscpu_model(text: str) -> str | None:
+    """CPU description from ``lscpu`` output, or None when it names no model.
+
+    Each ``Model name:`` line opens a core-type block; big.LITTLE SoCs list one
+    block per cluster. ``BIOS Model name`` lines and ``-`` placeholders are not models.
+    """
+    blocks: list[dict] = []
+    for line in text.splitlines():
+        key, sep, val = line.partition(":")
+        if not sep:
+            continue
+        key, val = key.strip(), val.strip()
+        if key == "Model name":
+            blocks.append({"name": val})
+        elif blocks and key in ("Core(s) per socket", "Socket(s)", "CPU max MHz"):
+            blocks[-1][key] = val
+
+    def _num(v):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return 0.0
+
+    return _format_clusters([
+        (b["name"], int(_num(b.get("Core(s) per socket")) * (_num(b.get("Socket(s)")) or 1)),
+         _num(b.get("CPU max MHz")))
+        for b in blocks
+    ])
+
+
 def _get_cpu_model() -> str:
-    """Get CPU model name from lscpu."""
-    if not shutil.which("lscpu"):
-        return platform.processor() or "unknown"
-    raw = _run(["lscpu"])
-    for line in raw.split("\n"):
-        if "Model name" in line:
-            m = re.search(r":\s*(.+)", line)
-            if m:
-                return m.group(1).strip()
-    return raw.split("\n")[0] if raw else "unknown"
+    """CPU description, from the most to the least reliable source.
+
+    /proc/cpuinfo (per-CPU, counts exact) → lscpu → device-tree board model →
+    platform.processor() → "unknown". Never raises: a host quirk must not abort
+    the fingerprint.
+    """
+    sources = [
+        lambda: _parse_cpuinfo_model(_read_text(PROC_CPUINFO), CPU_SYSFS_BASE),
+        # LC_ALL=C: a localized lscpu would rename the "Model name" key.
+        lambda: _parse_lscpu_model(_run(["env", "LC_ALL=C", "lscpu"], default=""))
+        if shutil.which("lscpu") else None,
+        lambda: _read_text(DEVICE_TREE_MODEL).replace("\x00", "").strip() or None,
+        lambda: platform.processor() or None,
+    ]
+    for source in sources:
+        try:
+            model = source()
+        except Exception:
+            model = None
+        if model:
+            return model
+    return "unknown"
+
+
+def _read_text(path: str) -> str:
+    with open(path, errors="replace") as f:
+        return f.read()
 
 
 CPU_SYSFS_BASE = "/sys/devices/system/cpu"
@@ -742,12 +864,32 @@ def _strip_ansi(text: str) -> str:
     return re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", text)
 
 
-def collect_model_metadata(model_path: str | Path) -> dict[str, Any]:
-    """Run ``parse_model -m <model_path>`` and extract key metadata.
+def _parse_model_input_tensor(raw: str) -> dict[str, Any]:
+    """First model input's shape/dtype from ``parse_model -v`` (ANSI-stripped).
 
-    Returns a dict with ``format_version``, ``dxcom_version``, and
-    ``total_memory_mb`` plus the file ``sha256`` (parse_model fields are
-    omitted when it fails).
+    The input name comes from "Model Input Tensors:"; its ``{shape: [...], dtype: ...}``
+    detail line only appears in verbose output. Returns {} when absent.
+    """
+    m = re.search(r"Model Input Tensors:\s*\n\s*-\s*(\S+)", raw)
+    if not m:
+        return {}
+    m = re.search(re.escape(m.group(1)) + r"\s*\{shape:\s*\[([\d,\s]+)\],\s*dtype:\s*(\w+)", raw)
+    if not m:
+        return {}
+    return {
+        "input_tensor_shape": [int(x) for x in m.group(1).split(",") if x.strip()],
+        "input_tensor_dtype": m.group(2).upper(),
+    }
+
+
+def collect_model_metadata(model_path: str | Path) -> dict[str, Any]:
+    """Run ``parse_model -m <model_path> -v`` and extract key metadata.
+
+    Returns a dict with ``format_version``, ``dxcom_version``, ``total_memory_mb``
+    and the first input's ``input_tensor_shape``/``input_tensor_dtype``, plus the
+    file ``sha256`` (parse_model fields are omitted when it fails). The input
+    tensor is read here, statically, so every invocation records it for every
+    model — even on a resume that runs no cell for that model.
     """
     result: dict[str, Any] = {}
     try:
@@ -755,7 +897,11 @@ def collect_model_metadata(model_path: str | Path) -> dict[str, Any]:
     except OSError:
         pass
 
-    raw = _run(["parse_model", "-m", str(model_path)], default="")
+    raw = _run(["parse_model", "-m", str(model_path), "-v"], default="")
+    if "Format Version" not in raw:
+        # A parse_model without -v may reject the flag; the plain call still gives
+        # the non-tensor fields (the run_model log capture then fills the shape).
+        raw = _run(["parse_model", "-m", str(model_path)], default="")
     if not raw:
         return result
 
@@ -778,4 +924,5 @@ def collect_model_metadata(model_path: str | Path) -> dict[str, Any]:
     if m:
         result["total_memory_mb"] = round(int(m.group(1).replace(",", "")) / (1024 * 1024), 2)
 
+    result.update(_parse_model_input_tensor(raw))
     return result
